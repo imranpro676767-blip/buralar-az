@@ -1035,6 +1035,52 @@ function unsyncListing(id){
     console.error('Elan silmə xətası:', e); toast('Elan serverdən silinə bilmədi: '+e.message);
   });
 }
+
+/* Rezervasiyalar, ev sahibinin əl ilə bağladığı tarixlər, rəylər, rəy şikayətləri və müştəri
+   kartotekası — hamısı eyni üsulla (canlı Firestore dinləyicisi) paylaşılır ki, bir qonağın
+   etdiyi rezervasiya bütün digər qonaqlara/ev sahiblərinə/admin panelinə dərhal görünsün və
+   eyni tarixlərə iki fərqli qonaq bron edə bilməsin. */
+function renderAllShared(){
+  render(); renderBookings(); renderHost(); if(state.adminAuth) renderAdmin();
+}
+function makeCollectionSync(stateKey, collectionName, idField){
+  return {
+    start: function(){
+      if(!fbOnline) return;
+      db.collection(collectionName).onSnapshot(function(snap){
+        var arr=[];
+        snap.forEach(function(doc){ arr.push(doc.data()); });
+        state[stateKey]=arr;
+        renderAllShared();
+      }, function(err){
+        console.error(collectionName+' sinxronizasiya xətası:', err);
+        toast('Server ilə bağlantı xətası ('+collectionName+')');
+      });
+    },
+    save: function(item){
+      if(!fbOnline){ toast('Server bağlantısı yoxdur, dəyişiklik yalnız bu cihazda qalır'); return Promise.resolve(); }
+      return db.collection(collectionName).doc(String(item[idField])).set(item).catch(function(e){
+        console.error(collectionName+' yazma xətası:', e); toast('Serverə yazıla bilmədi ('+collectionName+'): '+e.message);
+        throw e;
+      });
+    },
+    remove: function(id){
+      if(!fbOnline) return Promise.resolve();
+      return db.collection(collectionName).doc(String(id)).delete().catch(function(e){
+        console.error(collectionName+' silmə xətası:', e);
+      });
+    }
+  };
+}
+var bookingsSync = makeCollectionSync('bookings','bookings','code');
+var blocksSync = makeCollectionSync('blocks','blocks','id');
+var reviewsSync = makeCollectionSync('reviews','reviews','id');
+var reportsSync = makeCollectionSync('reports','reports','id');
+var customersSync = makeCollectionSync('customers','customers','email');
+function startSharedSync(){
+  startListingsSync();
+  bookingsSync.start(); blocksSync.start(); reviewsSync.start(); reportsSync.start(); customersSync.start();
+}
 function uploadImageToStorage(file, pathPrefix){
   if(!fbOnline) return Promise.reject(new Error('Server bağlantısı yoxdur'));
   var safeName=Date.now()+'-'+Math.floor(Math.random()*1e6)+'-'+(file.name||'img').replace(/[^a-zA-Z0-9.]/g,'_');
@@ -1043,8 +1089,8 @@ function uploadImageToStorage(file, pathPrefix){
 }
 
 /* ============ storage ============ */
-function save(){ try{ localStorage.setItem('buralar_v1',JSON.stringify({bookings:state.bookings,user:state.user,notifications:state.notifications,reviews:state.reviews,reports:state.reports,customers:state.customers,blocks:state.blocks})); }catch(e){} }
-function load(){ try{ var raw=localStorage.getItem('buralar_v1'); if(raw){ var o=JSON.parse(raw); state.bookings=o.bookings||[]; state.user=o.user||null; state.notifications=o.notifications||[]; state.reviews=o.reviews||[]; state.reports=o.reports||[]; state.customers=o.customers||[]; state.blocks=o.blocks||[]; } }catch(e){} }
+function save(){ try{ localStorage.setItem('buralar_v1',JSON.stringify({user:state.user,notifications:state.notifications})); }catch(e){} }
+function load(){ try{ var raw=localStorage.getItem('buralar_v1'); if(raw){ var o=JSON.parse(raw); state.user=o.user||null; state.notifications=o.notifications||[]; } }catch(e){} }
 function all(){ return SEED.concat(state.custom); }
 function approved(){ return all().filter(function(x){return x.st==='approved';}); }
 
@@ -1169,6 +1215,7 @@ function finishLogin(){
     status:status, flags:flags, registeredAt: existing?existing.registeredAt:new Date().toISOString()
   };
   if(existing){ Object.assign(existing,rec); } else { state.customers.unshift(rec); }
+  customersSync.save(rec);
 
   state.user={name:n,email:e,phone:p,fin:f,verified:true}; save(); renderAuth(); renderBookings(); renderHost();
   setTimeout(function(){
@@ -1587,20 +1634,27 @@ function book(id){
   if(!isListingFree(x.id,a,b)){ toast("Bu tarixlər üçün ev artıq bron olunub, başqa tarix seç"); return; }
   var c=priceOf(x,n);
   var releaseAt=new Date(a+"T"+((rulesOf(x).cin)||"14:00")+":00").getTime()+RELEASE_HOURS*3600000;
-  state.bookings.unshift({
+  var newBooking={
     code:"BR-"+Math.floor(100000+Math.random()*899999), lid:x.id, title:x.t, city:x.c, sc:x.sc,
     d1:a,d2:b,n:n,g:g,bank:state.bank,host:x.host,guest:state.user.name,phone:state.user.phone,email:state.user.email,
     rent:c.rent,clean:c.clean,total:c.total,hostGets:c.hostGets,platform:c.platform,
     status:'hold', releaseAt:releaseAt, complaint:null, rules:rulesOf(x), notified24:false, checkinAt:releaseAt-RELEASE_HOURS*3600000
+  };
+  state.bookings.unshift(newBooking);
+  bookingsSync.save(newBooking).then(function(){
+    closeDetail(); go('rez'); toast("Rezervasiya təsdiqləndi");
+  }).catch(function(){
+    state.bookings=state.bookings.filter(function(b){return b.code!==newBooking.code;});
+    toast("Rezervasiya serverə yazıla bilmədi, yenidən cəhd et");
   });
-  save(); closeDetail(); go('rez'); toast("Rezervasiya təsdiqləndi");
 }
 function autoRelease(){
-  var now=Date.now(), changed=false;
+  var now=Date.now(), notifChanged=false;
   state.bookings.forEach(function(b){
+    var changed=false;
     if(b.status==='hold' && !b.complaint && now>=b.releaseAt){ b.status='released'; changed=true; }
     if((b.status==='hold'||b.status==='complaint') && !b.notified24 && now>=(b.checkinAt-24*3600000)){
-      b.notified24=true; changed=true;
+      b.notified24=true; changed=true; notifChanged=true;
       var wa=waLinkFor(b);
       b.waLink=wa.url; b.waText=wa.text; b.mapsUrl=wa.mapsUrl; b.exactAddress=wa.addrText;
       state.notifications.unshift({
@@ -1609,8 +1663,9 @@ function autoRelease(){
         text:"Ev sahibi "+b.host+"-a bildiriş göndərildi: "+b.guest+" adlı qonaq sabah \""+b.title+"\" evinə gələcək. Dəqiq ünvan qonağa WhatsApp ilə göndərilməyə hazırdır."
       });
     }
+    if(changed) bookingsSync.save(b);
   });
-  if(changed) save();
+  if(notifChanged) save();
 }
 /* Ünvanı və WhatsApp linkini hazırlayır. wa.me linki real işləyir (API açarı/xərc tələb etmir),
    amma göndərmək üçün bir kliklə təsdiq lazımdır — tam avtomatik (kliksiz) göndərmə üçün
@@ -1625,19 +1680,19 @@ function waLinkFor(booking){
   return { text:msg, addrText:addrText, mapsUrl:mapsUrl, url:"https://wa.me/"+digits+"?text="+encodeURIComponent(msg) };
 }
 function forceNotify(code){
-  state.bookings.forEach(function(b){ if(b.code===code) b.checkinAt=Date.now()-1000; });
+  state.bookings.forEach(function(b){ if(b.code===code){ b.checkinAt=Date.now()-1000; bookingsSync.save(b); } });
   autoRelease(); renderBookings(); renderHost(); if(state.adminAuth) renderAdmin(); toast("Demo: giriş 24 saat yaxınlaşdı, ev sahibinə bildiriş göndərildi");
 }
 function fastForward(code){
-  state.bookings.forEach(function(b){ if(b.code===code) b.releaseAt=Date.now()-1000; });
+  state.bookings.forEach(function(b){ if(b.code===code){ b.releaseAt=Date.now()-1000; bookingsSync.save(b); } });
   autoRelease(); renderBookings(); renderHost(); if(state.adminAuth) renderAdmin(); toast("Demo: 24 saat ötürüldü, ödəniş bölüşdürüldü");
 }
 function openComplaint(code){ state.cmpCode=code; openModal('cmpModal'); }
 function sendComplaint(){
   var reason=document.getElementById('c-reason').value, txt=document.getElementById('c-text').value.trim();
   if(txt.length<10){ toast("Zəhmət olmasa izahı yaz"); return; }
-  state.bookings.forEach(function(b){ if(b.code===state.cmpCode){ b.complaint={reason:reason,text:txt,st:'pending',date:today()}; b.status='complaint'; } });
-  save(); closeModal('cmpModal'); document.getElementById('c-text').value='';
+  state.bookings.forEach(function(b){ if(b.code===state.cmpCode){ b.complaint={reason:reason,text:txt,st:'pending',date:today()}; b.status='complaint'; bookingsSync.save(b); } });
+  closeModal('cmpModal'); document.getElementById('c-text').value='';
   renderBookings(); toast("Şikayət göndərildi, idarəetmə yoxlayır");
 }
 function resolveComplaint(code,ok){
@@ -1645,6 +1700,7 @@ function resolveComplaint(code,ok){
     if(b.code===code && b.complaint){
       b.complaint.st = ok?'approved':'rejected';
       b.status = ok?'refunded':'released';
+      bookingsSync.save(b);
     }
   });
   save(); renderAdmin(); renderBookings();
@@ -2144,15 +2200,16 @@ function addManualBlock(){
   var n=nights(a,b);
   if(n<=0){ toast('Tarixləri düzgün seç'); return; }
   if(!isListingFree(x.id,a,b)){ toast('Bu tarixlərdə artıq bron və ya bağlama var'); return; }
-  state.blocks.push({id:'BLK-'+Math.floor(100000+Math.random()*899999), lid:x.id, d1:a, d2:b});
-  save();
+  var newBlock={id:'BLK-'+Math.floor(100000+Math.random()*899999), lid:x.id, d1:a, d2:b};
+  state.blocks.push(newBlock);
+  blocksSync.save(newBlock);
   document.getElementById('cal-block-d1').value=''; document.getElementById('cal-block-d2').value='';
   renderHostCalendar();
   toast('Tarixlər bağlandı — artıq axtarışlarda görsənməyəcək');
 }
 function removeManualBlock(id){
   state.blocks = state.blocks.filter(function(bl){return bl.id!==id;});
-  save(); renderHostCalendar();
+  blocksSync.remove(id); renderHostCalendar();
   toast('Bağlama ləğv edildi');
 }
 function calMonthShift(delta){
@@ -2381,14 +2438,16 @@ function submitReview(){
   var text=document.getElementById('r-text').value.trim();
   if(text.length<5){ toast("Rəy mətni yaz"); return; }
   var avg=avgOf(state.catStars);
-  state.reviews.unshift({
+  var newReview={
     id:'RV-'+Math.floor(1e5+Math.random()*9e5), bookingCode:b.code,
     from: ctx.role==='guest'?b.guest:b.host, fromRole: ctx.role,
     about: ctx.role==='guest'?b.host:b.guest, aboutEmail: ctx.role==='guest'?null:b.email,
     categories: Object.assign({},state.catStars), catLabels: ctx.cats,
     stars: Math.round(avg), starsExact: avg, text:text, date:today(), visible:true, reportStatus:null
-  });
-  save(); closeModal('rateModal'); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
+  };
+  state.reviews.unshift(newReview);
+  reviewsSync.save(newReview);
+  closeModal('rateModal'); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
   toast("Rəy göndərildi");
 }
 /* ============ qonaq reytinqi (ev sahibi görsün) və "Etibarlı qonaq" statusu ============ */
@@ -2453,12 +2512,14 @@ function submitReport(){
   if(txt.length<10){ toast("İzahı ətraflı yaz"); return; }
   if(!state.evidenceData.length){ toast("Ən azı 1 şəkil sübutu yüklə"); return; }
   var review=state.reviews.filter(function(r){return r.id===reviewId;})[0];
-  state.reports.unshift({
+  var newReport={
     id:'RP-'+Math.floor(1e5+Math.random()*9e5), reviewId:reviewId, reason:reason, text:txt, photos:state.evidenceData.slice(),
     by: state.user?state.user.name:'—', against: review?review.from:'—', targetReviewText: review?review.text:'', date:today(), status:'pending'
-  });
-  if(review) review.reportStatus='pending';
-  save(); closeModal('reportModal'); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
+  };
+  state.reports.unshift(newReport);
+  reportsSync.save(newReport);
+  if(review){ review.reportStatus='pending'; reviewsSync.save(review); }
+  closeModal('reportModal'); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
   toast("Şikayət "+state.evidenceData.length+" şəkil sübutu ilə admin panelinə göndərildi");
 }
 function resolveReport(id,remove){
@@ -2467,7 +2528,9 @@ function resolveReport(id,remove){
   rep.status = remove?'approved':'rejected';
   if(review) review.reportStatus = remove?'approved':'rejected';
   if(review && remove) review.visible=false;
-  save(); renderAdmin(); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
+  reportsSync.save(rep);
+  if(review) reviewsSync.save(review);
+  renderAdmin(); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
   toast(remove?"Rəy silindi və reytinqdən çıxarıldı":"Şikayət rədd edildi, rəy saytda qalır");
 }
 
@@ -2653,7 +2716,7 @@ try{ var th=localStorage.getItem('buralar_theme'); if(th) document.documentEleme
 
 /* ============ start ============ */
 load();
-startListingsSync();
+startSharedSync();
 setDateValue('d1',addDays(today(),7));
 setDateValue('d2',addDays(today(),10));
 fillRegions(); renderAuth(); autoRelease(); renderPendingRooms(); updateRoomKindUI(); renderPriceTiers();
