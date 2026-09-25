@@ -1242,6 +1242,27 @@ function fullAzPhone(id){
    yüklənərsə tam eyni kod çıxır — bunu serverdə (Cloud Function) FİN ilə birlikdə müqayisə edib
    eyni şəxsiyyət vəsiqəsi şəklinin başqa hesabda istifadə olunub-olunmadığını aşkarlamaq üçün
    istifadə edirik. Brauzerlərin hamısında mövcud olan Web Crypto API ilə işləyir (yalnız HTTPS-də). */
+/* Mətn üçün SHA-256 heş kodu (ünvan və xəritə mövqeyi kimi sahələri gizli indeks
+   kolleksiyalarında sabit uzunluqlu, təhlükəsiz sənəd ID-si kimi saxlamaq üçün istifadə olunur). */
+function sha256OfString(str){
+  if(!window.crypto || !window.crypto.subtle) return Promise.resolve(null);
+  var enc = new TextEncoder().encode(str);
+  return crypto.subtle.digest('SHA-256', enc).then(function(buf){
+    var bytes=new Uint8Array(buf), hex='';
+    for(var i=0;i<bytes.length;i++){ hex += bytes[i].toString(16).padStart(2,'0'); }
+    return hex;
+  }).catch(function(){ return null; });
+}
+/* Ünvanı normallaşdırır (kiçik hərf, artıq boşluqlar silinir) ki, "Bakı, Nərimanov, Zərifə Əliyeva 12"
+   ilə "bakı,nərimanov,zərifə əliyeva 12" eyni izi versin. Xəritə mövqeyini isə ~100m-lik
+   xanalara yuvarlaqlaşdırırıq — bina dəqiq eyni nöqtədə işarələnməsə belə uyğunluq tapılsın. */
+function normalizeAddressText(city, addr){
+  return (String(city||'')+' '+String(addr||'')).toLowerCase().replace(/\s+/g,' ').trim();
+}
+function geoBucketOf(lat,lng){
+  if(lat==null||lng==null||isNaN(lat)||isNaN(lng)) return null;
+  return Math.round(lat*1000)+','+Math.round(lng*1000);
+}
 function sha256Hex(file){
   if(!window.crypto || !window.crypto.subtle) return Promise.resolve(null);
   return file.arrayBuffer().then(function(buf){
@@ -2069,7 +2090,7 @@ function isDupPhoto(dataUrl){ return allDraftPhotos().indexOf(dataUrl)>=0; }
 function handleCoverUpload(input){
   var f=input.files&&input.files[0]; if(!f) return;
   if(f.size>6*1024*1024){ toast("Şəkil 6MB-dan kiçik olmalıdır"); input.value=''; return; }
-  if(!state.coverData && hostPhotosRemaining()<=0){ toast("Ümumi şəkil limitinə çatmısan (maksimum "+HOST_PHOTO_LIMIT+" şəkil). Əvvəlcə hansısa elandan şəkil sil"); input.value=''; return; }
+  if(!state.coverData && hostPhotosRemaining()<=0){ toast("Bu ev üçün şəkil limitinə çatmısan (maksimum "+HOST_PHOTO_LIMIT+" şəkil/ev). Əvvəlcə bəzi şəkilləri sil"); input.value=''; return; }
   var reader=new FileReader();
   reader.onload=function(e){
     if(isDupPhoto(e.target.result)){ toast("Bu şəkil artıq yüklənib, başqa şəkil seç"); input.value=''; return; }
@@ -2094,15 +2115,15 @@ function handleRoomPhotos(input){
   var room=8-state.currentRoomPhotos.length;
   if(room<=0){ toast("Bir sahə üçün maksimum 8 şəkil yükləmək olar"); input.value=''; return; }
   var remaining=hostPhotosRemaining();
-  if(remaining<=0){ toast("Ümumi şəkil limitinə çatmısan (maksimum "+HOST_PHOTO_LIMIT+" şəkil). Əvvəlcə hansısa elandan şəkil sil"); input.value=''; return; }
+  if(remaining<=0){ toast("Bu ev üçün şəkil limitinə çatmısan (maksimum "+HOST_PHOTO_LIMIT+" şəkil/ev). Əvvəlcə bəzi şəkilləri sil"); input.value=''; return; }
   var cap=Math.min(room,remaining);
-  if(files.length>cap){ toast("Ümumi limitə görə yalnız "+cap+" şəkil əlavə olunacaq (maksimum "+HOST_PHOTO_LIMIT+" şəkil/ev sahibi)"); files=files.slice(0,cap); }
+  if(files.length>cap){ toast("Bu ev üçün limitə görə yalnız "+cap+" şəkil əlavə olunacaq (maksimum "+HOST_PHOTO_LIMIT+" şəkil/ev)"); files=files.slice(0,cap); }
   files.forEach(function(f){
     if(f.size>4*1024*1024){ toast(f.name+" 4MB-dan böyükdür, keçildi"); return; }
     var reader=new FileReader();
     reader.onload=function(e){
       if(isDupPhoto(e.target.result)){ toast("Bu şəkil artıq başqa yerdə istifadə olunub, keçildi"); return; }
-      if(hostPhotosRemaining()<=0){ toast("Şəkil limiti ("+HOST_PHOTO_LIMIT+") doldu, bu şəkil əlavə olunmadı"); return; }
+      if(hostPhotosRemaining()<=0){ toast("Bu ev üçün şəkil limiti ("+HOST_PHOTO_LIMIT+") doldu, bu şəkil əlavə olunmadı"); return; }
       state.currentRoomPhotos.push(e.target.result);
       state.currentRoomPhotoFiles.push(f);
       renderRoomPhotoGrid();
@@ -2116,7 +2137,7 @@ function renderRoomPhotoGrid(){
     return '<div class="thumb"><img src="'+ph+'" alt="Sahənin şəkli '+(i+1)+'"><button type="button" onclick="removeCurrentRoomPhoto('+i+')" aria-label="Şəkli sil">✕</button></div>';
   }).join('');
   var el=document.getElementById('rm-photo-remaining');
-  if(el) el.textContent = "Ümumilikdə qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
+  if(el) el.textContent = "Bu ev üçün qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
 }
 function removeCurrentRoomPhoto(i){ state.currentRoomPhotos.splice(i,1); state.currentRoomPhotoFiles.splice(i,1); renderRoomPhotoGrid(); }
 var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz'};
@@ -2222,17 +2243,13 @@ function allPhotosOf(x){
   (x.rooms||[]).forEach(function(r){ a=a.concat(r.photos); });
   return a;
 }
-/* Hər ev sahibi ümumilikdə (bütün elanları üzrə birlikdə) maksimum HOST_PHOTO_LIMIT şəkil
-   yükləyə bilər — sərhədsiz şəkil yığılıb Storage tutumunu şişirtməsin deyə. */
+/* Ev sahibi istədiyi qədər ev yerləşdirə bilər (VÖEN və ya hesab üzrə heç bir say məhdudiyyəti
+   yoxdur). Amma HƏR BİR evin özü üçün ayrıca maksimum HOST_PHOTO_LIMIT şəkil qoyula bilər —
+   sərhədsiz şəkil yığılıb bir elanın Storage tutumunu şişirtməsin deyə. Limit yerləşdirilən
+   ev sayından asılı deyil, yalnız hazırda qurulan TƏK evin (draft) şəkil sayına baxır. */
 var HOST_PHOTO_LIMIT = 50;
-function hostSavedPhotoCount(email){
-  if(!email) return 0;
-  return state.custom.filter(function(x){return x.ownerEmail===email;})
-    .reduce(function(sum,x){ return sum + allPhotosOf(x).length; }, 0);
-}
 function hostPhotosRemaining(){
-  var used = (state.user ? hostSavedPhotoCount(state.user.email) : 0) + allDraftPhotos().length;
-  return Math.max(0, HOST_PHOTO_LIMIT - used);
+  return Math.max(0, HOST_PHOTO_LIMIT - allDraftPhotos().length);
 }
 function openLightbox(list,idx){
   state.galleryList=list; state.galleryIdx=idx;
@@ -2263,7 +2280,7 @@ function addListing(e){
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
-  if(hostSavedPhotoCount(state.user.email)+allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Ümumi şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
+  if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
   if(!state.pendingRooms.some(function(r){return r.kind==='bedroom';})){ toast("Ən azı bir yataq otağı əlavə etməlisən"); return; }
   var minStay=parseInt(v('h-minstay'),10)||1;
@@ -2288,10 +2305,24 @@ function addListing(e){
       return files[i] ? uploadImageToStorage(files[i],'listings/'+id+'/rooms/'+r.id) : Promise.resolve(ph);
     }));
   });
+  /* Eyni evin pis rəylərdən sonra silinib başqa (və ya eyni) Gmail hesabından yenidən
+     yerləşdirilməsinin qarşısını almaq üçün "barmaq izi" çıxarırıq: ünvan, xəritə mövqeyi
+     və bütün şəkillərin heş kodları. Bunlar serverdəki Cloud Function tərəfindən gizli
+     indekslərlə (silinmiş elanlar da daxil) müqayisə olunur — uyğunluq taparsa, elanı
+     admin üçün "təkrar şübhəsi" bayrağı ilə işarələyir, admin təsdiqindən keçmədən sayta çıxmır. */
+  var addrFingerprintPromise = sha256OfString(normalizeAddressText(v('h-city'), v('h-addr')));
+  var geoBucket = geoBucketOf(lat,lng);
+  var allPhotoFiles = ([]).concat(state.coverFile?[state.coverFile]:[]);
+  pendingRoomsSnapshot.forEach(function(r){ (r.photoFiles||[]).forEach(function(f){ if(f) allPhotoFiles.push(f); }); });
+  var photoHashesPromise = Promise.all(allPhotoFiles.map(function(f){ return sha256Hex(f); })).then(function(hashes){
+    return hashes.filter(Boolean);
+  });
 
-  Promise.all([coverUpload, Promise.all(roomUploads)]).then(function(results){
+  Promise.all([coverUpload, Promise.all(roomUploads), addrFingerprintPromise, photoHashesPromise]).then(function(results){
     var coverUrl=results[0];
     var roomPhotoArrays=results[1];
+    var addrFingerprint=results[2];
+    var photoHashes=results[3];
     var roomsClean = pendingRoomsSnapshot.map(function(r,i){
       var copy={}; for(var k in r){ if(k!=='photoFiles') copy[k]=r[k]; }
       copy.photos = roomPhotoArrays[i];
@@ -2306,6 +2337,7 @@ function addListing(e){
       desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng,
       cover:coverUrl, rooms:roomsClean,
+      addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra')}
     };
     return syncListing(listing);
@@ -2947,6 +2979,7 @@ function renderAdmin(){
       +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban)+'</div>'
       +'<div class="m">'+(x.whatsapp?('WhatsApp (görüntülü təsdiq): <a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
       +'<div class="m">'+(roomCount?roomCount+' otaq/sahə · ':'')+photoCount+' şəkil yükləndi</div>'
+      +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
       +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
       +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
       +'</div><div class="act">'
