@@ -432,6 +432,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <option value="couple">Cütlük</option>
             <option value="men">Kişi qrupu</option>
             <option value="women">Qadın qrupu</option>
+            <option value="mixed">Qarışıq qrup (iş/tələbə yoldaşları)</option>
           </select>
         </div>
         <button class="btn-search" onclick="render(true)">
@@ -577,6 +578,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <div class="tog"><input type="checkbox" id="h-gp-men" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-men" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Kişi qrupuna</label></div>
           <div class="tog"><input type="checkbox" id="h-gp-women" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-women" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qadın qrupuna</label></div>
           <div class="tog"><input type="checkbox" id="h-gp-couple" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-couple" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Cütlüklərə</label></div>
+          <div class="tog"><input type="checkbox" id="h-gp-mixed" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-mixed" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qarışıq qrupa (iş/tələbə yoldaşları və s.)</label></div>
         </div>
       </div>
 
@@ -928,6 +930,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="tog"><input type="checkbox" id="e-gp-men" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="e-gp-men" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Kişi qrupuna</label></div>
       <div class="tog"><input type="checkbox" id="e-gp-women" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="e-gp-women" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qadın qrupuna</label></div>
       <div class="tog"><input type="checkbox" id="e-gp-couple" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="e-gp-couple" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Cütlüklərə</label></div>
+      <div class="tog"><input type="checkbox" id="e-gp-mixed" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="e-gp-mixed" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qarışıq qrupa (iş/tələbə yoldaşları və s.)</label></div>
     </div>
     <button class="btn" onclick="saveEdit()">Dəyişiklikləri göndər</button>
     <button class="btn ghost" onclick="closeModal('editModal')">İmtina</button>
@@ -1587,8 +1590,8 @@ function isListingFree(id,a,b){
     return (a < bl.d2) && (b > bl.d1);
   });
 }
-var GUEST_POLICY_LABELS={family:'Ailələrə',men:'Kişi qrupuna',women:'Qadın qrupuna',couple:'Cütlüklərə'};
-var GUEST_TYPE_LABELS={family:'Ailə',men:'Kişi qrupu',women:'Qadın qrupu',couple:'Cütlük'};
+var GUEST_POLICY_LABELS={family:'Ailələrə',men:'Kişi qrupuna',women:'Qadın qrupuna',couple:'Cütlüklərə',mixed:'Qarışıq qrupa'};
+var GUEST_TYPE_LABELS={family:'Ailə',men:'Kişi qrupu',women:'Qadın qrupu',couple:'Cütlük',mixed:'Qarışıq qrup'};
 function guestPolicyText(x){
   if(!(x.guestPolicy && x.guestPolicy.length)) return '';
   return x.guestPolicy.map(function(k){return GUEST_POLICY_LABELS[k]||k;}).join(', ');
@@ -2380,7 +2383,7 @@ function addListing(e){
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
       r:parseInt(v('h-rooms'),10)||1,b:1,cl:parseInt(v('h-clean'),10)||0,
       minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.slice(),
-      guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); return gp; })(),
+      guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); return gp; })(),
       rt:5,rv:0,sc:(id%6),host:v('h-name'),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng,
@@ -2394,7 +2397,7 @@ function addListing(e){
     document.getElementById('h-price').value=90; document.getElementById('h-guests').value=4;
     document.getElementById('h-rooms').value=2; document.getElementById('h-clean').value=20;
     document.getElementById('h-minstay').value=1; document.getElementById('h-maxstay').value=''; document.getElementById('h-minguest').value='';
-    document.getElementById('h-gp-family').checked=false; document.getElementById('h-gp-men').checked=false; document.getElementById('h-gp-women').checked=false; document.getElementById('h-gp-couple').checked=false;
+    document.getElementById('h-gp-family').checked=false; document.getElementById('h-gp-men').checked=false; document.getElementById('h-gp-women').checked=false; document.getElementById('h-gp-couple').checked=false; document.getElementById('h-gp-mixed').checked=false;
     document.getElementById('r-in').value="14:00"; document.getElementById('r-out').value="12:00";
     document.getElementById('r-kids').checked=true;
     document.getElementById('r-quiet').checked=true;
@@ -2737,6 +2740,7 @@ function openEdit(id){
   document.getElementById('e-gp-men').checked=lgp.indexOf('men')>=0;
   document.getElementById('e-gp-women').checked=lgp.indexOf('women')>=0;
   document.getElementById('e-gp-couple').checked=lgp.indexOf('couple')>=0;
+  document.getElementById('e-gp-mixed').checked=lgp.indexOf('mixed')>=0;
   openModal('editModal');
 }
 function saveEdit(){
@@ -2759,7 +2763,7 @@ function saveEdit(){
       quiet:document.getElementById('e-quiet').checked,noshoes:document.getElementById('e-noshoes').checked,
       novisitors:document.getElementById('e-novisitors').checked,camera:document.getElementById('e-camera').checked,
       cin:(x.rules&&x.rules.cin)||"14:00",cout:(x.rules&&x.rules.cout)||"12:00",extra:(x.rules&&x.rules.extra)||""},
-    guestPolicy:(function(){ var gp=[]; if(document.getElementById('e-gp-family').checked) gp.push('family'); if(document.getElementById('e-gp-men').checked) gp.push('men'); if(document.getElementById('e-gp-women').checked) gp.push('women'); if(document.getElementById('e-gp-couple').checked) gp.push('couple'); return gp; })()
+    guestPolicy:(function(){ var gp=[]; if(document.getElementById('e-gp-family').checked) gp.push('family'); if(document.getElementById('e-gp-men').checked) gp.push('men'); if(document.getElementById('e-gp-women').checked) gp.push('women'); if(document.getElementById('e-gp-couple').checked) gp.push('couple'); if(document.getElementById('e-gp-mixed').checked) gp.push('mixed'); return gp; })()
   };
   var otherChanged = pend.t!==x.t || pend.g!==x.g || pend.r!==x.r || pend.desc!==x.desc || JSON.stringify(pend.rules)!==JSON.stringify(x.rules||DEFAULT_RULES) || JSON.stringify(pend.guestPolicy)!==JSON.stringify(x.guestPolicy||[]);
   if(otherChanged) x.pendingEdit=pend;
