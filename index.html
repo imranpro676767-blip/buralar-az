@@ -317,6 +317,9 @@ table.tbl tr:last-child td{border-bottom:0}
 .guestrating{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted)}
 .evidence{display:grid;gap:8px}
 .evidence img{width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.phoneinput{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:0 12px}
+.phoneinput span{font-weight:700;color:var(--muted);flex-shrink:0}
+form.frm .phoneinput input,.box .phoneinput input{border:0;background:transparent;padding:10px 0;width:100%}
 .evgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
 .evgrid .thumb{position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
 .evgrid .thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -684,7 +687,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <label>Ad, Soyad / Şirkət adı<input id="h-name" required placeholder="Elnur Məmmədov"></label>
       <label>Bank<select id="h-bank"><option>Kapital Bank</option><option>ABB</option><option>PAŞA Bank</option><option>Bank Respublika</option><option>Unibank</option><option>Rabitəbank</option><option>AccessBank</option></select></label>
       <label>Hesab nömrəsi (IBAN)<input id="h-iban" required placeholder="AZ00XXXX00000000000000000000"></label>
-      <label>WhatsApp əlaqə nömrəsi<input id="h-whatsapp" required placeholder="+994 50 000 00 00"></label>
+      <label>WhatsApp əlaqə nömrəsi
+        <div class="phoneinput"><span>+994</span><input id="h-whatsapp" required inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
+      </label>
       <p class="note full" style="text-align:left;margin:-4px 0 0;color:var(--warn);font-weight:700">⚠ Bu nömrəni mütləq düzgün qeyd et — elanın təsdiqi üçün səninlə bu WhatsApp nömrəsi vasitəsilə görüntülü əlaqə saxlanılacaq və şəxsiyyət yoxlanılacaq.</p>
       <div class="full">
         <button class="btn dark" type="submit">Elanı təsdiqə göndər</button>
@@ -783,13 +788,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div id="loginStep2" style="display:none;gap:12px">
       <label>Ad, Soyad (şəxsiyyət vəsiqəsindəki kimi)<input id="u-name"></label>
       <label>E-poçt (Google-dan)<input id="u-email" readonly style="opacity:.7"></label>
-      <label>Telefon nömrəsi<input id="u-phone" placeholder="+994 50 000 00 00"></label>
+      <label>Telefon nömrəsi
+        <div class="phoneinput"><span>+994</span><input id="u-phone" inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
+      </label>
       <label>FİN (şəxsiyyət vəsiqəsi)<input id="u-fin" placeholder="7 simvol" maxlength="7" style="text-transform:uppercase"></label>
       <div class="evidence">
         <label class="filebtn" for="u-idphoto">Şəxsiyyət vəsiqəsinin ön üzünün şəklini yüklə (məcburidir)</label>
         <input type="file" id="u-idphoto" accept="image/*" style="display:none" onchange="previewIdPhoto(this)">
         <img id="u-idpreview" style="display:none">
-        <p class="note" style="text-align:left">Şəkil yalnız kimlik yoxlaması üçün istifadə olunur, adminə görünəcək. Real mühitdə bu addım ASAN İmza və ya oxşar rəsmi KYC provayderi ilə avtomatlaşdırılmalıdır.</p>
+        <p class="note" style="text-align:left">Şəkil yalnız kimlik yoxlaması üçün istifadə olunur, adminə görünəcək.</p>
       </div>
       <div id="verifyBox" style="display:none;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:600;color:var(--muted)"></div>
       <button class="btn" onclick="finishLogin()">Təsdiqlə və daxil ol</button>
@@ -986,7 +993,7 @@ var SEED=[
 ];
 
 var state={tab:'kesf',sub:'rezall',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
-  notifications:[],reviews:[],reports:[],customers:[],idPhotoData:null,adminAuth:false,editId:null,rateCtx:null,reportCtx:null,evidenceData:null,
+  notifications:[],reviews:[],reports:[],customers:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
   coverData:null,coverFile:null,pendingRooms:[],currentRoomPhotos:[],currentRoomPhotoFiles:[],galleryList:[],galleryIdx:0,
   calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[]};
 
@@ -1111,6 +1118,33 @@ function approved(){ return all().filter(function(x){return x.st==='approved';})
 function az(n){ return Math.round(n).toLocaleString('az-AZ')+" ₼"; }
 function az2(n){ return (Math.round(n*100)/100).toLocaleString('az-AZ',{minimumFractionDigits:2,maximumFractionDigits:2})+" ₼"; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+/* +994 sabit prefiksi olan telefon sahələri üçün: istifadəçi yalnız 9 rəqəmi yazır, biz avtomatik
+   "50 000 00 00" formatında boşluqlar qoyuruq. fullAzPhone() isə tam nömrəni ("+994 50 000 00 00")
+   digər kodun (WhatsApp linki, saxlama və s.) gözlədiyi formatda qaytarır. */
+function formatAzPhone(input){
+  var digits=input.value.replace(/\D/g,'').slice(0,9);
+  var parts=[digits.slice(0,2), digits.slice(2,5), digits.slice(5,7), digits.slice(7,9)].filter(Boolean);
+  input.value=parts.join(' ');
+}
+function fullAzPhone(id){
+  var digits=(document.getElementById(id).value||'').replace(/\D/g,'');
+  return digits ? '+994 '+digits : '';
+}
+/* Faylın məzmununun SHA-256 heş kodunu (şəklin "barmaq izi") hesablayır. Eyni fayl iki dəfə
+   yüklənərsə tam eyni kod çıxır — bunu serverdə (Cloud Function) FİN ilə birlikdə müqayisə edib
+   eyni şəxsiyyət vəsiqəsi şəklinin başqa hesabda istifadə olunub-olunmadığını aşkarlamaq üçün
+   istifadə edirik. Brauzerlərin hamısında mövcud olan Web Crypto API ilə işləyir (yalnız HTTPS-də). */
+function sha256Hex(file){
+  if(!window.crypto || !window.crypto.subtle) return Promise.resolve(null);
+  return file.arrayBuffer().then(function(buf){
+    return crypto.subtle.digest('SHA-256', buf);
+  }).then(function(hashBuf){
+    var bytes=new Uint8Array(hashBuf);
+    var hex='';
+    for(var i=0;i<bytes.length;i++){ hex += bytes[i].toString(16).padStart(2,'0'); }
+    return hex;
+  }).catch(function(e){ console.error('Heş hesablama xətası:', e); return null; });
+}
 function today(){ return new Date().toISOString().slice(0,10); }
 function addDays(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); }
 function nights(a,b){ if(!a||!b) return 0; var n=Math.round((new Date(b)-new Date(a))/86400000); return n>0?n:0; }
@@ -1176,7 +1210,7 @@ function openLogin(){
   document.getElementById('u-idpreview').style.display='none';
   document.getElementById('u-idphoto').value='';
   document.getElementById('verifyBox').style.display='none';
-  state.idPhotoData=null;
+  state.idPhotoData=null; state.idPhotoFile=null;
   openModal('loginModal');
 }
 function googleSignIn(){
@@ -1208,6 +1242,7 @@ function googleSignIn(){
 function previewIdPhoto(input){
   var f=input.files&&input.files[0]; if(!f) return;
   if(f.size>6*1024*1024){ toast("Şəkil 6MB-dan kiçik olmalıdır"); return; }
+  state.idPhotoFile=f;
   var reader=new FileReader();
   reader.onload=function(e){
     state.idPhotoData={data:e.target.result,size:f.size,name:f.name};
@@ -1217,11 +1252,11 @@ function previewIdPhoto(input){
 }
 function finishLogin(){
   var n=document.getElementById('u-name').value.trim(), e=document.getElementById('u-email').value.trim();
-  var p=document.getElementById('u-phone').value.trim(), f=document.getElementById('u-fin').value.trim().toUpperCase();
+  var p=fullAzPhone('u-phone'), f=document.getElementById('u-fin').value.trim().toUpperCase();
   var box=document.getElementById('verifyBox');
   if(!n||n.split(' ').filter(Boolean).length<2){ toast("Ad və soyadı tam yaz"); return; }
   if(!e){ toast("E-poçt tapılmadı, Google ilə davam et"); return; }
-  if(p.replace(/\D/g,'').length<9){ toast("Telefon nömrəsini tam yaz"); return; }
+  if(p.replace(/\D/g,'').length<12){ toast("Telefon nömrəsini tam yaz (9 rəqəm)"); return; }
   if(f.length!==7){ toast("FİN 7 simvoldan ibarət olmalıdır"); return; }
   if(!state.idPhotoData){ toast("Şəxsiyyət vəsiqənin şəklini yüklə"); return; }
   if(!fbAuth || !fbAuth.currentUser || fbAuth.currentUser.email!==e){
@@ -1242,10 +1277,22 @@ function finishLogin(){
     ? '⚠ Qeydiyyat tamamlandı, lakin admin nəzarəti tələb olunur:<br>'+flags.map(esc).join('<br>')
     : '✓ Kimlik məlumatları uyğundur, hesab təsdiqləndi.';
 
-  db.collection('customers').doc(e).get().then(function(snap){
+  /* Şəxsiyyət vəsiqəsi şəkli Firestore sənədinə deyil, Storage-a yüklənir — yalnız link saxlanılır.
+     Bu, həm sənəd ölçüsü limitini keçmə riskini aradan qaldırır, həm də hər sinxronizasiyada bu
+     böyük şəkli hər dinləyiciyə (admin panelinə) təkrar-təkrar köçürməyi lazımsız edir.
+     Eyni zamanda şəklin özünün "barmaq izini" (SHA-256 heş kodu) hesablayırıq — bu, serverdə
+     (Cloud Function) eyni şəklin başqa hesabda təkrar istifadə olunub-olunmadığını FİN-lə birlikdə
+     müqayisə edib avtomatik aşkarlamaq üçün istifadə olunacaq, brauzerdə heç kimin şəkli görmədən. */
+  var idPhotoUpload = state.idPhotoFile
+    ? uploadImageToStorage(state.idPhotoFile,'customers/'+fbAuth.currentUser.uid)
+    : Promise.resolve(state.idPhotoData.data);
+  var idPhotoHash = state.idPhotoFile ? sha256Hex(state.idPhotoFile) : Promise.resolve(null);
+
+  Promise.all([db.collection('customers').doc(e).get(), idPhotoUpload, idPhotoHash]).then(function(results){
+    var snap=results[0], idPhotoUrl=results[1], photoHash=results[2];
     var existing = snap.exists ? snap.data() : null;
     var rec = {
-      email:e, name:n, phone:p, fin:f, idPhoto:state.idPhotoData.data, uid:fbAuth.currentUser.uid,
+      email:e, name:n, phone:p, fin:f, idPhoto:idPhotoUrl, idPhotoHash:photoHash, uid:fbAuth.currentUser.uid,
       status:status, flags:flags, registeredAt: existing?existing.registeredAt:new Date().toISOString()
     };
     return customersSync.save(rec);
@@ -2031,8 +2078,8 @@ function addListing(e){
   if(iban.length<20 || iban.slice(0,2)!=='AZ'){ toast("IBAN AZ ilə başlamalı və tam olmalıdır"); return; }
   var lat=parseFloat(v('h-lat')), lng=parseFloat(v('h-lng'));
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
-  var whatsapp=v('h-whatsapp').trim();
-  if(whatsapp.replace(/\D/g,'').length<9){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et"); return; }
+  var whatsapp=fullAzPhone('h-whatsapp');
+  if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
   if(!state.pendingRooms.some(function(r){return r.kind==='bedroom';})){ toast("Ən azı bir yataq otağı əlavə etməlisən"); return; }
@@ -2531,7 +2578,7 @@ function categoryBreakdownHtml(r){
 
 /* ============ qərəzli rəyə sübutla şikayət ============ */
 function openReport(reviewId){
-  state.reportCtx=reviewId; state.evidenceData=[];
+  state.reportCtx=reviewId; state.evidenceData=[]; state.evidenceFiles=[];
   document.getElementById('rep-text').value='';
   document.getElementById('rep-photo').value='';
   renderEvidenceGrid();
@@ -2544,7 +2591,7 @@ function renderEvidenceGrid(){
   }).join('');
   document.getElementById('rep-photocount').textContent = state.evidenceData.length + " / 5 şəkil yükləndi (ən azı 1 şəkil tələb olunur)";
 }
-function removeEvidencePhoto(i){ state.evidenceData.splice(i,1); renderEvidenceGrid(); }
+function removeEvidencePhoto(i){ state.evidenceData.splice(i,1); state.evidenceFiles.splice(i,1); renderEvidenceGrid(); }
 function previewEvidence(input){
   var files=input.files?Array.prototype.slice.call(input.files):[];
   if(!files.length) return;
@@ -2554,7 +2601,7 @@ function previewEvidence(input){
   files.forEach(function(f){
     if(f.size>4*1024*1024){ toast(f.name+" 4MB-dan böyükdür, keçildi"); return; }
     var reader=new FileReader();
-    reader.onload=function(e){ state.evidenceData.push(e.target.result); renderEvidenceGrid(); };
+    reader.onload=function(e){ state.evidenceData.push(e.target.result); state.evidenceFiles.push(f); renderEvidenceGrid(); };
     reader.readAsDataURL(f);
   });
   input.value='';
@@ -2565,15 +2612,31 @@ function submitReport(){
   if(txt.length<10){ toast("İzahı ətraflı yaz"); return; }
   if(!state.evidenceData.length){ toast("Ən azı 1 şəkil sübutu yüklə"); return; }
   var review=state.reviews.filter(function(r){return r.id===reviewId;})[0];
-  var newReport={
-    id:'RP-'+Math.floor(1e5+Math.random()*9e5), reviewId:reviewId, reason:reason, text:txt, photos:state.evidenceData.slice(),
-    by: state.user?state.user.name:'—', against: review?review.from:'—', targetReviewText: review?review.text:'', date:today(), status:'pending'
-  };
-  state.reports.unshift(newReport);
-  reportsSync.save(newReport);
-  if(review){ review.reportStatus='pending'; reviewsSync.save(review); }
-  closeModal('reportModal'); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
-  toast("Şikayət "+state.evidenceData.length+" şəkil sübutu ilə admin panelinə göndərildi");
+  var reportId='RP-'+Math.floor(1e5+Math.random()*9e5);
+  var photoCount=state.evidenceData.length;
+
+  /* Sübut şəkilləri (adətən bir neçə şəkil, hər biri bir neçə MB ola bilər) Storage-a yüklənir —
+     Firestore sənədinə birbaşa base64 kimi yazılsaydı, tez-tez 1MB sənəd limitini keçəcəkdi. */
+  var uploads = state.evidenceData.map(function(ph,i){
+    return state.evidenceFiles[i]
+      ? uploadImageToStorage(state.evidenceFiles[i],'reports/'+reportId)
+      : Promise.resolve(ph);
+  });
+  Promise.all(uploads).then(function(photoUrls){
+    var newReport={
+      id:reportId, reviewId:reviewId, reason:reason, text:txt, photos:photoUrls,
+      by: state.user?state.user.name:'—', against: review?review.from:'—', targetReviewText: review?review.text:'', date:today(), status:'pending'
+    };
+    state.reports.unshift(newReport);
+    return reportsSync.save(newReport);
+  }).then(function(){
+    if(review){ review.reportStatus='pending'; reviewsSync.save(review); }
+    closeModal('reportModal'); renderBookings(); if(document.getElementById('p-host').classList.contains('active')) renderHost();
+    toast("Şikayət "+photoCount+" şəkil sübutu ilə admin panelinə göndərildi");
+  }).catch(function(err){
+    console.error('Şikayət göndərmə xətası:', err);
+    toast('Şikayət serverə göndərilə bilmədi: '+err.message);
+  });
 }
 function resolveReport(id,remove){
   var rep=state.reports.filter(function(r){return r.id===id;})[0]; if(!rep) return;
@@ -2616,7 +2679,7 @@ function renderCustomers(){
       return '<div><span>'+esc(b.title)+' · '+fmtDate(b.d1)+'–'+fmtDate(b.d2)+'</span><b>'+statusTag(b.status)+'</b></div>';
     }).join('') || '<div><span>Hələ rezervasiya etməyib</span></div>';
     return '<div class="bk" style="grid-template-columns:84px 1fr auto">'
-      +'<div class="th" style="border-radius:10px;overflow:hidden"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></div>'
+      +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></a>'
       +'<div><h4>'+esc(c.name)+'</h4>'
       +'<div class="m">'+esc(c.email)+' · '+esc(c.phone)+' · FİN '+esc(c.fin)+'</div>'
       +'<div class="m">Qeydiyyat: '+new Date(c.registeredAt).toLocaleDateString('az-AZ')+' · '+theirBookings.length+' rezervasiya</div>'
