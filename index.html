@@ -301,10 +301,13 @@ form.frm h4{grid-column:1/-1;font-size:15px;margin-top:6px;padding-top:12px;bord
 .gallerywrap .side .more{position:absolute;inset:0;background:rgba(10,30,26,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
 @media (max-width:760px){.gallerywrap{grid-template-columns:1fr}.gallerywrap .side{display:grid;grid-template-columns:repeat(4,1fr)}}
 .roomlist{display:grid;gap:10px}
-.roomcard{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card)}
+.roomcard{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card)}
 .roomcard-ph{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;cursor:pointer}
 .roomcard-ph img{width:100%;height:100%;object-fit:cover;display:block}
 .roomcard-ph .more{position:absolute;inset:0;background:rgba(10,30,26,.5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+.roomamen{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:5px 12px;margin-top:6px}
+.roomamen .r{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:600}
+.roomamen .r svg{flex:none;width:14px;height:14px}
 form.frm h4:first-of-type{border-top:0;padding-top:0;margin-top:0}
 .togs{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
 .tog{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:700;background:var(--paper)}
@@ -1610,31 +1613,56 @@ function galleryHtmlFor(x){
   }
   return '<div class="gallery"><div>'+scene(x.sc,x.id)+'</div><div class="side"><div>'+scene((x.sc+4)%6,x.id+9)+'</div><div>'+scene((x.sc+2)%6,x.id+3)+'</div></div></div>';
 }
+/* Hər otaq öz imkanlarını AYRICA göstərir — bir otaqda kondisioner olub digərində olmaması
+   kimi fərqlər gizli qalmasın deyə, YALNIZ mövcud olanları sadalamaq əvəzinə, mümkün bütün
+   imkanları ✓/✕ işarəsi ilə açıq şəkildə göstəririk. Beləliklə qonaq "bu evdə kondisioner var"
+   deyə ümumiləşdirmək əvəzinə, məhz hansı otaqda olub-olmadığını görür və giriş zamanı
+   mübahisə yaranmır. */
+var BEDROOM_AMENITY_OPTIONS=["Kondisioner","Paltar dolabı","Ütü","Televizor","Yazı masası","Seyf","Fen"];
+var BATHROOM_TOILETRY_OPTIONS=["Şampun","Dəsmal","Sabun","Diş fırçası","Diş pastası","Duş geli","Tualet kağızı","Fen"];
+var GYM_EQUIPMENT_OPTIONS=["Qaçış zolağı","Stasionar velosiped","Eliptik trenajor","Çəki dəstləri","Güc tərbiyəsi maşınları","Turnik","Məşq skamyası","Yoga döşəkçəsi","Boks kisəsi","Güzgülü divar","Kondisioner"];
+function roomAmenChecklistHtml(options, chosen){
+  chosen = chosen || [];
+  return '<div class="roomamen">'+options.map(function(a){
+    var has = chosen.indexOf(a)>=0;
+    return '<div class="r">'+checkIcon(has)+'<span'+(has?'':' style="color:var(--muted)"')+'>'+esc(a)+'</span></div>';
+  }).join('')+'</div>';
+}
+function gameAmenChecklistHtml(r){
+  var items=[
+    ['Domino', !!r.domino], ['Nərd', !!r.nard], ['Bilyard', !!r.billiard],
+    ['Stolüstü tennis', !!r.tennis], ['Stolüstü futbol', !!r.foosball],
+    ['Dartqın', !!r.dart], ['Hava hokkeyi', !!r.airhockey],
+    ['PlayStation'+(r.ps&&r.psGen?' ('+r.psGen+')':''), !!r.ps]
+  ];
+  return '<div class="roomamen">'+items.map(function(it){
+    return '<div class="r">'+checkIcon(it[1])+'<span'+(it[1]?'':' style="color:var(--muted)"')+'>'+esc(it[0])+'</span></div>';
+  }).join('')+'</div>';
+}
 function roomsHtmlFor(x){
   if(!(x.rooms && x.rooms.length)) return '';
   return x.rooms.map(function(r){
-    var lines=[];
+    var lines=[], checklist='';
     if(r.kind==='bedroom'){
       lines.push('Yataq: '+r.bedType); lines.push('İsitmə: '+r.heating);
       lines.push(r.privateBathroom?'Şəxsi sanuzeli var':'Şəxsi sanuzeli yoxdur');
-      if(r.amenities&&r.amenities.length) lines.push(r.amenities.join(', '));
+      checklist = roomAmenChecklistHtml(BEDROOM_AMENITY_OPTIONS, r.amenities);
     } else if(r.kind==='pool'){
       lines.push(r.poolType); lines.push('Ölçü: '+r.size); lines.push('Su: '+r.temp);
     } else if(r.kind==='game'){
-      var gg=[]; if(r.domino) gg.push('Domino'); if(r.nard) gg.push('Nərd');
-      if(r.billiard) gg.push('Bilyard'); if(r.tennis) gg.push('Stolüstü tennis');
-      if(r.foosball) gg.push('Stolüstü futbol'); if(r.dart) gg.push('Dartqın');
-      if(r.airhockey) gg.push('Hava hokkeyi'); if(r.ps) gg.push('PlayStation'+(r.psGen?' ('+r.psGen+')':''));
-      lines.push(gg.length?gg.join(', ')+' var':'Ləvazimat qeyd olunmayıb');
+      checklist = gameAmenChecklistHtml(r);
     } else if(r.kind==='bathroom'){
       lines.push(r.showerType);
-      lines.push(r.toiletries&&r.toiletries.length?r.toiletries.join(', ')+' təmin olunur':'Gigiyena ləvazimatı qeyd edilməyib');
+      checklist = roomAmenChecklistHtml(BATHROOM_TOILETRY_OPTIONS, r.toiletries);
     } else if(r.kind==='gym'){
-      lines.push(r.equipment&&r.equipment.length?r.equipment.join(', '):'Avadanlıq qeyd edilməyib');
+      checklist = roomAmenChecklistHtml(GYM_EQUIPMENT_OPTIONS, r.equipment);
     }
     return '<div class="roomcard">'
       +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img src="'+r.photos[0]+'" alt="'+ROOM_KIND_LABELS[r.kind]+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
-      +'<div><h4 style="font-size:15px">'+ROOM_KIND_LABELS[r.kind]+'</h4><div class="m" style="color:var(--muted);font-size:13.5px;font-weight:600">'+lines.map(esc).join(' · ')+'</div></div>'
+      +'<div><h4 style="font-size:15px">'+ROOM_KIND_LABELS[r.kind]+'</h4>'
+      +(lines.length?'<div class="m" style="color:var(--muted);font-size:13.5px;font-weight:600">'+lines.map(esc).join(' · ')+'</div>':'')
+      +checklist
+      +'</div>'
       +'</div>';
   }).join('');
 }
