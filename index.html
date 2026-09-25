@@ -9,10 +9,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#0E2F2A; --ink-2:#14403A; --paper:#FBF8F2; --card:#FFFFFF;
+  --ink:#0E2F2A; --ink-2:#14403A; --paper:#F6F7F6; --card:#FFFFFF;
   --nar:#A4213B; --nar-soft:#C94A62; --sand:#E6D6B8;
   --text:#16211E; --muted:#657570; --line:#E2DED4;
-  --ok:#1C6B55; --warn:#8A6A12;
+  --ok:#1C6B55; --warn:#8A6A12; --brand-green:#4ADE80;
   --radius:14px; --shadow:0 1px 2px rgba(14,47,42,.06), 0 8px 24px rgba(14,47,42,.07);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
@@ -41,10 +41,10 @@ input,select,textarea{font:inherit;color:inherit}
 
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--ink);color:#F4EFE4;border-bottom:1px solid rgba(255,255,255,.08)}
 .topbar{display:flex;align-items:center;gap:14px;padding:11px 0}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#F4EFE4;flex:none}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#FFFFFF;flex:none}
 .brand .mark{width:30px;height:30px;flex:none}
 .brand .wm{font-weight:800;font-size:20px;letter-spacing:-.045em}
-.brand .wm i{font-style:normal;color:var(--sand);font-weight:700}
+.brand .wm i{font-style:normal;color:var(--brand-green);font-weight:700}
 nav.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
 nav.tabs button{background:transparent;border:0;color:rgba(244,239,228,.72);padding:8px 13px;border-radius:999px;font-weight:600;font-size:14.5px}
 nav.tabs button:hover{color:#fff;background:rgba(255,255,255,.08)}
@@ -53,6 +53,32 @@ nav.tabs button[aria-selected="true"]{background:#F4EFE4;color:var(--ink)}
 .icon-btn.sq{width:34px;padding:0;justify-content:center}
 .who{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#F4EFE4}
 .who .av{width:28px;height:28px;border-radius:50%;background:var(--sand);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:13px}
+@media (max-width:760px){
+  .topbar{flex-wrap:wrap;row-gap:10px;padding:9px 0}
+  .brand{order:1}
+  #authArea{order:2}
+  .topbar>.icon-btn.sq{order:3}
+  nav.tabs{order:4;flex-basis:100%;width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none;-ms-overflow-style:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{flex:none;padding:8px 12px;font-size:13.5px}
+  .brand .wm{font-size:17px}
+  .who span{max-width:82px!important}
+  .icon-btn{height:38px;min-height:38px}
+  .icon-btn.sq{width:38px}
+}
+@media (max-width:480px){
+  .wrap{width:min(1180px,100% - 24px)}
+  .hero h1{font-size:clamp(24px,7vw,34px)}
+}
+@media (max-width:400px){
+  .topbar{gap:8px}
+  .brand{gap:6px}
+  .brand .wm{font-size:14.5px}
+  .brand .mark{width:24px;height:24px}
+  .who span{max-width:52px!important}
+  .who{gap:5px}
+  .icon-btn{padding:0 9px;font-size:12px}
+}
 
 .hero{background:var(--ink);color:#F4EFE4;position:relative;overflow:hidden;padding:26px 0 0}
 .hero .motif{position:absolute;inset:0;opacity:.12;pointer-events:none}
@@ -211,6 +237,7 @@ nav.tabs button[aria-selected="true"]{background:#F4EFE4;color:var(--ink)}
 .dpday.disabled{opacity:.3;cursor:not-allowed}
 .dpday.sel{background:var(--ink);color:#F4EFE4}
 .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+@media (max-width:760px){.subtabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px}.subtabs::-webkit-scrollbar{display:none}.subtabs button{flex:none;white-space:nowrap}}
 .subtabs button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 13px;font-weight:700;font-size:14px;color:var(--muted)}
 .subtabs button[aria-selected="true"]{background:var(--ink);color:#F4EFE4;border-color:var(--ink)}
 .sub{display:none}.sub.active{display:block}
@@ -283,7 +310,7 @@ form.frm h4:first-of-type{border-top:0;padding-top:0;margin-top:0}
 .tog{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:700;background:var(--paper)}
 .tog input{width:17px;height:17px;accent-color:var(--ok);flex:none;margin:0}
 .togs label{display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3}
-@media (max-width:640px){form.frm{grid-template-columns:1fr}}
+@media (max-width:640px){form.frm{grid-template-columns:1fr}.roombuilder{grid-template-columns:1fr}.rm-block{grid-template-columns:1fr}}
 
 table.tbl{width:100%;border-collapse:collapse;font-size:14px;min-width:680px}
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
@@ -363,6 +390,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
     </button>
   </div>
+  <div id="rejectionBanner" style="display:none;background:var(--nar);color:#fff;text-align:center;font-weight:700;font-size:13.5px;padding:8px 16px"></div>
 </header>
 
 <!-- KƏŞF -->
@@ -655,6 +683,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="full">
           <label class="filebtn" for="rm-photos">Bu sahənin şəkillərini yüklə</label>
           <input type="file" id="rm-photos" accept="image/*" multiple style="display:none" onchange="handleRoomPhotos(this)">
+          <p class="note" style="text-align:left;margin:4px 0 0" id="rm-photo-remaining"></p>
           <div class="evgrid" id="rm-photo-grid"></div>
         </div>
         <div class="full">
@@ -818,6 +847,23 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <label>İzah<textarea id="c-text" rows="4" placeholder="Nə baş verdiyini qısa yaz. Şəkil və yazışma varsa, qeyd et."></textarea></label>
     <button class="btn" onclick="sendComplaint()">Şikayəti göndər</button>
     <button class="btn ghost" onclick="closeModal('cmpModal')">İmtina</button>
+  </div>
+</div>
+
+<!-- TƏHLÜKƏSİZLİK SİYASƏTİ (ödənişdən əvvəl) -->
+<div class="modal" id="safetyModal" role="dialog" aria-modal="true" aria-label="Təhlükəsizlik siyasəti">
+  <div class="box">
+    <h3>Ödəniş və təhlükəsizlik siyasəti</h3>
+    <div class="note" style="text-align:left;display:grid;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
+      <p><b>1. Şəxsiyyət yoxlaması.</b> Buralar.az-da rezervasiya etmək üçün qeydiyyat zamanı şəxsiyyət təsdiqi tələb olunur. Şübhəli və ya təkrarlanan sənədlər sistem tərəfindən avtomatik aşkarlanır və admin tərəfindən əlavə yoxlanılır.</p>
+      <p><b>2. Ödənişin saxlanması.</b> Ödədiyiniz məbləğ dərhal ev sahibinə keçmir — girişdən 24 saat sonra köçürülür. Bu müddət ərzində problem yaranarsa, şikayət göndərə bilərsiniz.</p>
+      <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
+      <p><b>4. Fırıldaqçılığa qarşı tədbir.</b> Saxta sənədlə qeydiyyat aşkarlansa, hesab admin tərəfindən bloklanır. Əgər bu, ödəniş edilmiş aktiv bron zamanı baş verərsə və pul hələ ev sahibinə çatmayıbsa, bron ləğv olunur və məbləğ sizə tam qaytarılır.</p>
+      <p><b>5. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz, telefon nömrəniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür, digər istifadəçilərə açıqlanmır.</p>
+      <p style="color:var(--muted)">Qeyd: platforma hazırda test/inkişaf mərhələsindədir, ödəniş simulyasiya oluna bilər.</p>
+    </div>
+    <button class="btn" onclick="confirmSafetyAndBook()">Oxudum, qəbul edirəm və davam et</button>
+    <button class="btn ghost" onclick="closeModal('safetyModal')">İmtina</button>
   </div>
 </div>
 
@@ -995,7 +1041,7 @@ var SEED=[
 var state={tab:'kesf',sub:'rezall',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
   notifications:[],reviews:[],reports:[],customers:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
   coverData:null,coverFile:null,pendingRooms:[],currentRoomPhotos:[],currentRoomPhotoFiles:[],galleryList:[],galleryIdx:0,
-  calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[]};
+  calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null};
 
 /* ============ Firebase (paylaşılan verilənlər bazası — bütün Azərbaycandan hər kəs eyni elanları görsün) ============ */
 var firebaseConfig = {
@@ -1101,11 +1147,70 @@ function startSharedSync(){
 function startAdminOnlySync(){
   customersSync.start(); reportsSync.start();
 }
+/* Cari daxil olmuş istifadəçinin ÖZ qeydiyyat sənədini canlı izləyir — admin onun statusunu
+   (təsdiq/rədd) dəyişən kimi, həmin istifadəçi səhifəni yeniləmədən dərhal görür/bildiriş alır.
+   Firestore Rules yalnız sahibin öz sənədini oxumasına icazə verdiyi üçün bu tam təhlükəsizdir. */
+var _ownCustomerUnsub=null;
+function startOwnCustomerListener(email){
+  if(!fbOnline || !db) return;
+  if(_ownCustomerUnsub){ _ownCustomerUnsub(); _ownCustomerUnsub=null; }
+  var first=true;
+  _ownCustomerUnsub = db.collection('customers').doc(email).onSnapshot(function(snap){
+    if(!snap.exists || !state.user){ first=false; return; }
+    var data=snap.data();
+    var prevStatus=state.user.status;
+    state.user.status=data.status; state.user.rejectionReason=data.rejectionReason||null;
+    state.user.verified=(data.status==='verified');
+    save(); renderAuth();
+    if(!first && data.status!==prevStatus){
+      if(data.status==='rejected') toast('Qeydiyyatın rədd edildi: '+(data.rejectionReason||'Səbəb qeyd edilməyib'));
+      else if(data.status==='verified') toast('Qeydiyyatın admin tərəfindən təsdiqləndi ✓');
+    }
+    first=false;
+  }, function(err){ console.error('Öz qeydiyyat dinləyici xətası:', err); });
+}
+function stopOwnCustomerListener(){
+  if(_ownCustomerUnsub){ _ownCustomerUnsub(); _ownCustomerUnsub=null; }
+}
+/* Storage-a yükləmədən əvvəl şəkli sıxışdırır: uzun tərəfi maksimum 1920px-ə qədər azaldır və
+   JPEG keyfiyyətini 0.82-yə endirir. Bu, gözlə hiss olunmayan keyfiyyət itkisi ilə fayl ölçüsünü
+   adətən 5-10 dəfəyə qədər kiçildir (telefon kamerası şəkli 4-8MB-dan 300-800KB-a düşür) —
+   Firebase Storage tutumunu və trafik xərcini xeyli azaldır. Sıxılma nəticəsi orijinaldan
+   böyük çıxarsa (nadir hallarda, artıq sıxılmış kiçik şəkillərdə), orijinal fayl saxlanılır. */
+function compressImageFile(file, maxDim, quality){
+  maxDim = maxDim || 1920; quality = (quality==null) ? 0.82 : quality;
+  return new Promise(function(resolve){
+    if(!file || !/^image\//.test(file.type) || file.type==='image/svg+xml'){ resolve(file); return; }
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      URL.revokeObjectURL(url);
+      var w=img.naturalWidth, h=img.naturalHeight;
+      if(!w || !h){ resolve(file); return; }
+      var scale = Math.min(1, maxDim/Math.max(w,h));
+      var cw = Math.max(1,Math.round(w*scale)), ch = Math.max(1,Math.round(h*scale));
+      var canvas = document.createElement('canvas');
+      canvas.width=cw; canvas.height=ch;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,cw,ch);
+      canvas.toBlob(function(blob){
+        if(!blob || blob.size>=file.size){ resolve(file); return; }
+        resolve(blob);
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
 function uploadImageToStorage(file, pathPrefix){
   if(!fbOnline) return Promise.reject(new Error('Server bağlantısı yoxdur'));
-  var safeName=Date.now()+'-'+Math.floor(Math.random()*1e6)+'-'+(file.name||'img').replace(/[^a-zA-Z0-9.]/g,'_');
-  var ref=fbStorage.ref().child(pathPrefix+'/'+safeName);
-  return ref.put(file).then(function(snap){ return snap.ref.getDownloadURL(); });
+  return compressImageFile(file).then(function(out){
+    var isJpeg = out.type==='image/jpeg';
+    var ext = isJpeg ? '.jpg' : ((file.name && /\.[a-z0-9]+$/i.test(file.name)) ? file.name.match(/\.[a-z0-9]+$/i)[0] : '');
+    var safeName=Date.now()+'-'+Math.floor(Math.random()*1e6)+'-img'+ext;
+    var ref=fbStorage.ref().child(pathPrefix+'/'+safeName);
+    return ref.put(out, {contentType: out.type || file.type});
+  }).then(function(snap){ return snap.ref.getDownloadURL(); });
 }
 
 /* ============ storage ============ */
@@ -1196,9 +1301,20 @@ function scene(k,id){
 /* ============ auth ============ */
 function renderAuth(){
   var el=document.getElementById('authArea');
+  var banner=document.getElementById('rejectionBanner');
+  if(state.user && state.user.status==='rejected'){
+    banner.style.display='block';
+    banner.textContent='Qeydiyyatın rədd edildi: '+(state.user.rejectionReason||'Səbəb qeyd edilməyib')+' — yenidən sınamaq üçün "Daxil ol" bölməsindən kimlik məlumatlarını yenilə.';
+  } else {
+    banner.style.display='none';
+  }
   if(state.user){
+    var statusBadge = state.user.status==='rejected'
+      ? '<span class="tag hold" title="'+esc(state.user.rejectionReason||'')+'">Rədd edilib</span>'
+      : (state.user.status==='flagged' ? '<span class="tag wait">Yoxlanılır</span>' : '');
     el.innerHTML='<div class="who"><span class="av">'+esc(state.user.name.slice(0,1).toUpperCase())+'</span>'
       +'<span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(state.user.name)+'</span>'
+      +statusBadge
       +(isTrustedGuest(state.user.email)?'<span class="trustbadge" title="Yüksək reytinqli qonaqsınız">✓ Etibarlı qonaq</span>':'')
       +'<button class="icon-btn" onclick="logout()">Çıxış</button></div>';
   } else {
@@ -1216,6 +1332,7 @@ function openLogin(){
 function googleSignIn(){
   if(!fbOnline || !fbAuth){ toast('Server bağlantısı yoxdur, bir az sonra yenidən cəhd et'); return; }
   var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'}); /* hər dəfə hesab seçmə ekranını göstər */
   fbAuth.signInWithPopup(provider).then(function(result){
     var u = result.user;
     document.getElementById('u-name').value = u.displayName || '';
@@ -1223,14 +1340,19 @@ function googleSignIn(){
     document.getElementById('loginStep2').style.display='grid';
     /* Digər istifadəçilərin qeydiyyat məlumatları brauzerə ümumiyyətlə yüklənmir (məxfilik üçün) —
        yalnız bu hesabın ÖZ qeydiyyat sənədini server tərəfdə birbaşa yoxlayırıq (Firestore Rules
-       yalnız sahibin öz sənədini oxumasına icazə verir). Əvvəldən təsdiqlənibsə, KYC addımını
-       təkrar tələb etmirik. */
+       yalnız sahibin öz sənədini oxumasına icazə verir). Qeydiyyat artıq mövcuddursa (status nə
+       olursa olsun — təsdiqlənib, yoxlanılır, ya da rədd edilib), KYC addımını təkrar tələb etmirik,
+       sadəcə cari statusu göstəririk. */
     db.collection('customers').doc(u.email).get().then(function(snap){
-      if(snap.exists && snap.data().status==='verified'){
+      if(snap.exists){
         var existing=snap.data();
-        state.user={name:existing.name, email:existing.email, phone:existing.phone, fin:existing.fin, uid:u.uid, verified:true};
-        save(); renderAuth(); renderBookings(); renderHost(); closeModal('loginModal');
-        toast("Xoş gəldin, "+existing.name.split(' ')[0]);
+        state.user={name:existing.name, email:existing.email, phone:existing.phone, fin:existing.fin, uid:u.uid, verified:existing.status==='verified', status:existing.status, rejectionReason:existing.rejectionReason||null};
+        save(); renderAuth(); renderBookings(); renderHost(); closeModal('loginModal'); startOwnCustomerListener(u.email);
+        if(existing.status==='rejected'){
+          toast('Qeydiyyatın rədd edilib: '+(existing.rejectionReason||''));
+        } else {
+          toast("Xoş gəldin, "+existing.name.split(' ')[0]);
+        }
         if(state.pendingBook){ var pb=state.pendingBook; state.pendingBook=null; openDetail(pb); }
       }
     }).catch(function(e){ console.error('Qeydiyyat yoxlanışı xətası:', e); });
@@ -1293,11 +1415,12 @@ function finishLogin(){
     var existing = snap.exists ? snap.data() : null;
     var rec = {
       email:e, name:n, phone:p, fin:f, idPhoto:idPhotoUrl, idPhotoHash:photoHash, uid:fbAuth.currentUser.uid,
-      status:status, flags:flags, registeredAt: existing?existing.registeredAt:new Date().toISOString()
+      status:status, flags:flags, rejectionReason:null, registeredAt: existing?existing.registeredAt:new Date().toISOString()
     };
     return customersSync.save(rec);
   }).then(function(){
-    state.user={name:n,email:e,phone:p,fin:f,uid:fbAuth.currentUser.uid,verified:true}; save(); renderAuth(); renderBookings(); renderHost();
+    state.user={name:n,email:e,phone:p,fin:f,uid:fbAuth.currentUser.uid,verified:true,status:status,rejectionReason:null};
+    save(); renderAuth(); renderBookings(); renderHost(); startOwnCustomerListener(e);
     setTimeout(function(){
       closeModal('loginModal');
       toast(flags.length?("Xoş gəldin, "+n.split(' ')[0]+" — hesabın admin nəzarətindədir"):("Xoş gəldin, "+n.split(' ')[0]+"! Kimliyin təsdiqləndi"));
@@ -1309,6 +1432,7 @@ function finishLogin(){
   });
 }
 function logout(){
+  stopOwnCustomerListener();
   state.user=null; save(); renderAuth(); renderBookings(); renderHost(); toast("Hesabdan çıxdın");
   if(fbAuth) fbAuth.signOut().catch(function(e){ console.error('Çıxış xətası:', e); });
 }
@@ -1350,6 +1474,7 @@ window.addEventListener('keydown', function(e){
 function adminGoogleLogin(){
   if(!fbOnline || !fbAuth){ toast('Server bağlantısı yoxdur, bir az sonra yenidən cəhd et'); return; }
   var provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
   fbAuth.signInWithPopup(provider).then(function(result){
     var email = result.user.email||'';
     if(!isAdminEmail(email)){
@@ -1598,7 +1723,7 @@ function openDetail(id,bookingCode){
     +'<div><div style="font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px">Ödəniş üsulu</div><div class="payrow" id="banks" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>'
     +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;document.getElementById(\'bookBtn\').disabled=!this.checked">'
       +'<span>Ev qaydalarını oxudum və qəbul edirəm. Geri qaytarmanın yalnız şikayət yolu ilə mümkün olduğunu başa düşürəm.</span></label>'
-    +'<button class="btn" id="bookBtn" disabled onclick="book('+x.id+')">Dərhal rezervasiya et</button>'
+    +'<button class="btn" id="bookBtn" disabled onclick="openSafetyModal('+x.id+')">Dərhal rezervasiya et</button>'
     +'<p class="note">Təsdiq gözləmədən dərhal bron olunur. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.</p>'
   +'</div></aside></div>';
   renderBanks(); calc();
@@ -1717,6 +1842,16 @@ function calc(){
     +'<span class="hint">Ev sahibi 3% komissiya çıxıldıqdan sonra '+az2(c.hostGets)+' alacaq.</span>';
 }
 
+/* ============ ödənişdən əvvəl təhlükəsizlik siyasəti ============ */
+function openSafetyModal(id){
+  state.safetyBookId=id;
+  openModal('safetyModal');
+}
+function confirmSafetyAndBook(){
+  var id=state.safetyBookId;
+  closeModal('safetyModal');
+  if(id!=null) book(id);
+}
 /* ============ rezervasiya ============ */
 function book(id){
   if(needLogin()){ state.pendingBook=id; closeDetail(); return; }
@@ -1906,12 +2041,14 @@ function isDupPhoto(dataUrl){ return allDraftPhotos().indexOf(dataUrl)>=0; }
 function handleCoverUpload(input){
   var f=input.files&&input.files[0]; if(!f) return;
   if(f.size>6*1024*1024){ toast("Şəkil 6MB-dan kiçik olmalıdır"); input.value=''; return; }
+  if(!state.coverData && hostPhotosRemaining()<=0){ toast("Ümumi şəkil limitinə çatmısan (maksimum "+HOST_PHOTO_LIMIT+" şəkil). Əvvəlcə hansısa elandan şəkil sil"); input.value=''; return; }
   var reader=new FileReader();
   reader.onload=function(e){
     if(isDupPhoto(e.target.result)){ toast("Bu şəkil artıq yüklənib, başqa şəkil seç"); input.value=''; return; }
     state.coverData=e.target.result;
     state.coverFile=f;
     document.getElementById('h-cover-preview').innerHTML='<img src="'+e.target.result+'" alt="Evin üz şəkli">';
+    renderRoomPhotoGrid();
   };
   reader.readAsDataURL(f);
 }
@@ -1928,12 +2065,16 @@ function handleRoomPhotos(input){
   if(!files.length) return;
   var room=8-state.currentRoomPhotos.length;
   if(room<=0){ toast("Bir sahə üçün maksimum 8 şəkil yükləmək olar"); input.value=''; return; }
-  if(files.length>room) files=files.slice(0,room);
+  var remaining=hostPhotosRemaining();
+  if(remaining<=0){ toast("Ümumi şəkil limitinə çatmısan (maksimum "+HOST_PHOTO_LIMIT+" şəkil). Əvvəlcə hansısa elandan şəkil sil"); input.value=''; return; }
+  var cap=Math.min(room,remaining);
+  if(files.length>cap){ toast("Ümumi limitə görə yalnız "+cap+" şəkil əlavə olunacaq (maksimum "+HOST_PHOTO_LIMIT+" şəkil/ev sahibi)"); files=files.slice(0,cap); }
   files.forEach(function(f){
     if(f.size>4*1024*1024){ toast(f.name+" 4MB-dan böyükdür, keçildi"); return; }
     var reader=new FileReader();
     reader.onload=function(e){
       if(isDupPhoto(e.target.result)){ toast("Bu şəkil artıq başqa yerdə istifadə olunub, keçildi"); return; }
+      if(hostPhotosRemaining()<=0){ toast("Şəkil limiti ("+HOST_PHOTO_LIMIT+") doldu, bu şəkil əlavə olunmadı"); return; }
       state.currentRoomPhotos.push(e.target.result);
       state.currentRoomPhotoFiles.push(f);
       renderRoomPhotoGrid();
@@ -1946,6 +2087,8 @@ function renderRoomPhotoGrid(){
   document.getElementById('rm-photo-grid').innerHTML=state.currentRoomPhotos.map(function(ph,i){
     return '<div class="thumb"><img src="'+ph+'" alt="Sahənin şəkli '+(i+1)+'"><button type="button" onclick="removeCurrentRoomPhoto('+i+')" aria-label="Şəkli sil">✕</button></div>';
   }).join('');
+  var el=document.getElementById('rm-photo-remaining');
+  if(el) el.textContent = "Ümumilikdə qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
 }
 function removeCurrentRoomPhoto(i){ state.currentRoomPhotos.splice(i,1); state.currentRoomPhotoFiles.splice(i,1); renderRoomPhotoGrid(); }
 var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz'};
@@ -1998,7 +2141,7 @@ function addRoomToPending(){
   state.pendingRooms.push(room);
   state.currentRoomPhotos=[];
   state.currentRoomPhotoFiles=[];
-  document.getElementById('rm-photo-grid').innerHTML='';
+  renderRoomPhotoGrid();
   document.getElementById('rm-b-ac').checked=false; document.getElementById('rm-b-wardrobe').checked=true;
   document.getElementById('rm-b-iron').checked=false; document.getElementById('rm-b-tv').checked=false;
   document.getElementById('rm-b-desk').checked=false; document.getElementById('rm-b-safe').checked=false;
@@ -2021,7 +2164,7 @@ function addRoomToPending(){
   renderPendingRooms();
   toast(ROOM_KIND_LABELS[kind]+" əlavə edildi — indi növbəti sahəni yığa bilərsən");
 }
-function removeRoomFromPending(id){ state.pendingRooms=state.pendingRooms.filter(function(r){return r.id!==id;}); renderPendingRooms(); }
+function removeRoomFromPending(id){ state.pendingRooms=state.pendingRooms.filter(function(r){return r.id!==id;}); renderPendingRooms(); renderRoomPhotoGrid(); }
 function roomSummary(r){
   if(r.kind==='bedroom') return r.bedType+' · '+r.heating+(r.privateBathroom?' · Şəxsi sanuzel':'')+(r.amenities.length?' · '+r.amenities.join(', '):'');
   if(r.kind==='pool') return r.poolType+' · '+r.size+' · '+r.temp;
@@ -2042,15 +2185,26 @@ function renderPendingRooms(){
 function resetRoomBuilderDraft(){
   state.coverData=null; state.coverFile=null; state.pendingRooms=[]; state.currentRoomPhotos=[]; state.currentRoomPhotoFiles=[];
   document.getElementById('h-cover-preview').innerHTML='';
-  document.getElementById('rm-photo-grid').innerHTML='';
   document.getElementById('rm-kind').value='bedroom'; updateRoomKindUI();
-  renderPendingRooms();
+  renderPendingRooms(); renderRoomPhotoGrid();
 }
 /* ============ qalereya / lightbox ============ */
 function allPhotosOf(x){
   var a=[]; if(x.cover) a.push(x.cover);
   (x.rooms||[]).forEach(function(r){ a=a.concat(r.photos); });
   return a;
+}
+/* Hər ev sahibi ümumilikdə (bütün elanları üzrə birlikdə) maksimum HOST_PHOTO_LIMIT şəkil
+   yükləyə bilər — sərhədsiz şəkil yığılıb Storage tutumunu şişirtməsin deyə. */
+var HOST_PHOTO_LIMIT = 50;
+function hostSavedPhotoCount(email){
+  if(!email) return 0;
+  return state.custom.filter(function(x){return x.ownerEmail===email;})
+    .reduce(function(sum,x){ return sum + allPhotosOf(x).length; }, 0);
+}
+function hostPhotosRemaining(){
+  var used = (state.user ? hostSavedPhotoCount(state.user.email) : 0) + allDraftPhotos().length;
+  return Math.max(0, HOST_PHOTO_LIMIT - used);
 }
 function openLightbox(list,idx){
   state.galleryList=list; state.galleryIdx=idx;
@@ -2081,6 +2235,7 @@ function addListing(e){
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
+  if(hostSavedPhotoCount(state.user.email)+allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Ümumi şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
   if(!state.pendingRooms.some(function(r){return r.kind==='bedroom';})){ toast("Ən azı bir yataq otağı əlavə etməlisən"); return; }
   var minStay=parseInt(v('h-minstay'),10)||1;
@@ -2198,6 +2353,7 @@ function renderHost(){
     +'<div class="stat"><div class="k">Dəyişiklik təsdiqi gözləyir</div><div class="v">'+pendingEdits+'</div></div>'
     +'<div class="stat"><div class="k">Gözləyən ödəniş</div><div class="v money">'+az2(pend)+'</div></div>'
     +'<div class="stat"><div class="k">Hesabıma köçürülən</div><div class="v money">'+az2(earn)+'</div></div>';
+  renderRoomPhotoGrid();
   var el=document.getElementById('mylistings');
   if(!mine.length){ el.innerHTML='<div class="empty"><h3>Hələ elanın yoxdur</h3><p>Formanı doldur, idarəetmə təsdiqindən sonra elan saytda görünəcək.</p></div>'; }
   else el.innerHTML=mine.map(function(x){
@@ -2659,8 +2815,9 @@ function approveListing(id,ok){
 }
 /* ============ müştərilər ============ */
 function custTag(status){
-  if(status==='verified') return '<span class="tag done">Kimlik təsdiqlənib</span>';
+  if(status==='verified') return '<span class="tag done">Təsdiqlənib</span>';
   if(status==='flagged') return '<span class="tag hold">Admin nəzarətində</span>';
+  if(status==='rejected') return '<span class="tag hold" style="background:var(--nar);color:#fff">Rədd edilib</span>';
   return '<span class="tag wait">Yoxlanılmayıb</span>';
 }
 function renderCustomers(){
@@ -2686,17 +2843,47 @@ function renderCustomers(){
       +'<div class="m">'+guestRatingBadgeHtml(c.email)+'</div>'
       +'<div style="margin-top:6px">'+custTag(c.status)+'</div>'
       +(c.flags&&c.flags.length?'<div class="split" style="border-color:var(--warn)">'+c.flags.map(function(f){return '<div><span style="color:var(--warn)">⚠ '+esc(f)+'</span></div>';}).join('')+'</div>':'')
+      +(c.status==='rejected'&&c.rejectionReason?'<div class="split" style="border-color:var(--nar)"><div><span style="color:var(--nar)">✕ İmtina səbəbi: '+esc(c.rejectionReason)+'</span></div></div>':'')
       +'<div class="split" style="margin-top:8px">'+stays+'</div>'
       +'</div><div class="act">'
-      +(c.status==='flagged'?'<button class="btn sm ok" onclick="clearCustomerFlag(\''+c.email+'\')">Təsdiqlə</button>':'')
+      +(c.status!=='verified'?'<button class="btn sm ok" onclick="approveCustomer(\''+c.email+'\')">Təsdiqlə</button>':'')
+      +(c.status!=='rejected'?'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="rejectCustomer(\''+c.email+'\')">İmtina et</button>':'')
       +'</div></div>';
   }).join('');
 }
-function clearCustomerFlag(email){
+function approveCustomer(email){
   var c=state.customers.filter(function(x){return x.email===email;})[0]; if(!c) return;
-  c.status='verified'; c.flags=[];
+  c.status='verified'; c.flags=[]; c.rejectionReason=null;
   customersSync.save(c); renderCustomers(); renderAdmin();
-  toast("Müştəri əl ilə təsdiqləndi");
+  toast("Müştəri təsdiqləndi");
+}
+function rejectCustomer(email){
+  var c=state.customers.filter(function(x){return x.email===email;})[0]; if(!c) return;
+  var reason=prompt("İmtina səbəbini yaz (müştəri bunu görəcək):", c.rejectionReason||"");
+  if(reason===null) return; /* admin ləğv etdi */
+  reason=reason.trim();
+  if(!reason){ toast("Səbəb yazılmalıdır"); return; }
+  c.status='rejected'; c.rejectionReason=reason;
+  customersSync.save(c); renderCustomers(); renderAdmin();
+
+  /* Pulu hələ ev sahibinə köçürülməmiş (status:hold/complaint) bronlar avtomatik ləğv edilir
+     və müştəriyə tam geri qaytarılır — pul heç kimin hesabına getməyib, itki yoxdur. */
+  var theirBookings = state.bookings.filter(function(b){ return b.email===email; });
+  var autoRefunded = 0, alreadyPaid = 0;
+  theirBookings.forEach(function(b){
+    if(b.status==='hold' || b.status==='complaint'){
+      b.status='refunded'; b.complaint=null; b.rejectedDueToKyc=true;
+      bookingsSync.save(b); autoRefunded++;
+    } else if(b.status==='released'){
+      alreadyPaid++;
+    }
+  });
+  renderBookings(); renderHost(); if(state.adminAuth) renderAdmin();
+
+  var msg = "Müştəriyə imtina səbəbi göndərildi.";
+  if(autoRefunded>0) msg += " "+autoRefunded+" aktiv bron ləğv edilib, pul müştəriyə tam geri qaytarıldı (ev sahibinə çatmamışdı).";
+  if(alreadyPaid>0) msg += " DİQQƏT: "+alreadyPaid+" bron üzrə pul artıq ev sahibinə köçürülüb — bunu geri qaytara bilmərik, əl ilə (bank vasitəsilə) araşdırmalısınız.";
+  toast(msg);
 }
 
 function renderAdmin(){
@@ -2841,6 +3028,12 @@ if(fbAuth){
       document.getElementById('adminContent').style.display='block';
       startAdminOnlySync();
       renderAdmin();
+    }
+    /* localStorage-dan bərpa olunan bir istifadəçi sessiyası varsa, Firebase sessiyası da
+       təsdiqlənəndə öz qeydiyyat sənədinin canlı dinləyicisini işə sal ki, admin sonradan
+       təsdiq/rədd etsə, istifadəçi bunu dərhal görsün. */
+    if(u && state.user && state.user.email===u.email && !_ownCustomerUnsub){
+      startOwnCustomerListener(u.email);
     }
   });
 }
