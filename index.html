@@ -40,7 +40,7 @@ input,select,textarea{font:inherit;color:inherit}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--ink);color:#F4EFE4;border-bottom:1px solid rgba(255,255,255,.08)}
-.topbar{display:flex;align-items:center;gap:14px;padding:11px 0}
+.topbar{display:flex;align-items:center;gap:14px;padding:11px 0;padding-right:96px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#FFFFFF;flex:none}
 .brand .mark{width:30px;height:30px;flex:none}
 .brand .wm{font-weight:800;font-size:20px;letter-spacing:-.045em}
@@ -53,31 +53,33 @@ nav.tabs button[aria-selected="true"]{background:#F4EFE4;color:var(--ink)}
 .icon-btn.sq{width:34px;padding:0;justify-content:center}
 .who{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#F4EFE4}
 .who .av{width:28px;height:28px;border-radius:50%;background:var(--sand);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:13px}
+.headerRight{position:absolute;right:18px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:8px;z-index:2}
 @media (max-width:760px){
-  .topbar{flex-wrap:wrap;row-gap:10px;padding:9px 0}
+  header.top{position:sticky}
+  .topbar{flex-wrap:wrap;row-gap:10px;padding:9px 0;padding-right:78px}
   .brand{order:1}
-  #authArea{order:2}
-  .topbar>.icon-btn.sq{order:3}
   nav.tabs{order:4;flex-basis:100%;width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none;-ms-overflow-style:none}
   nav.tabs::-webkit-scrollbar{display:none}
   nav.tabs button{flex:none;padding:8px 12px;font-size:13.5px}
   .brand .wm{font-size:17px}
-  .who span{max-width:82px!important}
+  .who span{max-width:70px!important}
   .icon-btn{height:38px;min-height:38px}
   .icon-btn.sq{width:38px}
+  .headerRight{right:10px;gap:6px;top:20px;transform:none}
 }
 @media (max-width:480px){
   .wrap{width:min(1180px,100% - 24px)}
   .hero h1{font-size:clamp(24px,7vw,34px)}
 }
 @media (max-width:400px){
-  .topbar{gap:8px}
+  .topbar{gap:8px;padding-right:66px}
   .brand{gap:6px}
   .brand .wm{font-size:14.5px}
   .brand .mark{width:24px;height:24px}
-  .who span{max-width:52px!important}
+  .who span{max-width:44px!important}
   .who{gap:5px}
   .icon-btn{padding:0 9px;font-size:12px}
+  .headerRight{right:8px;gap:5px}
 }
 
 .hero{background:var(--ink);color:#F4EFE4;position:relative;overflow:hidden;padding:26px 0 0}
@@ -389,6 +391,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <button role="tab" aria-selected="false" onclick="go('rez')">Rezervasiyalarım</button>
       <button role="tab" aria-selected="false" onclick="go('host')">Ev sahibi</button>
     </nav>
+  </div>
+  <div class="headerRight">
     <div id="authArea"></div>
     <button class="icon-btn sq" onclick="toggleTheme()" aria-label="İşıqlı və qaranlıq rejim">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -526,7 +530,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p class="note" style="text-align:left;margin:-10px 0 0 0"><span id="h-title-count">0</span>/60 hərf — əsas səhifədə uzun adlar qısaldılıb göstərilir</p>
       <label>Bölgə<select id="h-region" onchange="fillDistricts()"></select></label>
       <label>Şəhər / rayon<select id="h-city"></select></label>
-      <label>Qəsəbə / ünvan<input id="h-addr" required placeholder="Məs: Sahil, Neftçilər pr. 12"></label>
+      <label>Qəsəbə / ünvan<input id="h-addr" required maxlength="50" placeholder="Məs: Sahil, Neftçilər pr. 12"></label>
       <div class="full">
         <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px">Xəritədən dəqiq ünvan seç</div>
         <div class="mappicker" style="position:relative">
@@ -555,7 +559,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <div class="f"><label for="h-lng">Uzunluq (lng)</label><input id="h-lng" readonly></div>
         </div>
       </div>
-      <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>Villa</option><option>Bağ evi</option><option>Studiya</option><option>Otaq</option></select></label>
+      <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>Villa</option><option>Bağ evi</option><option>Studiya</option><option>Otaq</option><option>A-Frame evi</option></select></label>
       <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required oninput="renderPriceTiers()"></label>
       <label>Qonaq tutumu<input id="h-guests" type="number" min="1" max="20" value="4" required></label>
       <label>Yataq otağı<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
@@ -610,6 +614,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <option value="game">Oyun zalı</option>
             <option value="bathroom">Ümumi sanuzel</option>
             <option value="pool">Hovuz</option>
+            <option value="hamam">Hamam</option>
           </select>
         </label>
         <div></div>
@@ -684,6 +689,20 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <label class="full">Hovuz növü
             <select id="rm-p-type"><option>Daşma (overflow) tipli hovuz</option><option>Konstruktor (hazır çərçivəli) hovuz</option><option>Beton, tikinti hovuz</option><option>Jakkuzi</option></select>
           </label>
+        </div>
+
+        <div id="rm-hamam" class="rm-block full" style="display:none">
+          <label class="full">Hamam növü
+            <select id="rm-h-type"><option>Buxar hamamı</option><option>Türk hamamı</option></select>
+          </label>
+          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Hamamda olanlar</div>
+          <div class="togs full">
+            <div class="tog"><input type="checkbox" id="rm-h-towel" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-towel" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Dəsmal</label></div>
+            <div class="tog"><input type="checkbox" id="rm-h-slippers" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-slippers" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Tərlik</label></div>
+            <div class="tog"><input type="checkbox" id="rm-h-robe" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-robe" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Xalat</label></div>
+            <div class="tog"><input type="checkbox" id="rm-h-shower" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-shower" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Duş</label></div>
+            <div class="tog"><input type="checkbox" id="rm-h-seating" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-seating" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Oturacaq yerləri</label></div>
+          </div>
         </div>
 
         <div id="rm-game" class="rm-block full" style="display:none">
@@ -1571,7 +1590,7 @@ function renderChips(){
   document.getElementById('chipsRegion').innerHTML=hr;
 
   var ht='<button class="chip" aria-pressed="'+(state.type==='Hamısı')+'" onclick="setType(\'Hamısı\')">Hamısı</button>';
-  ['Mənzil','Həyət evi','Villa','Bağ evi','Studiya','Otaq'].forEach(function(t){
+  ['Mənzil','Həyət evi','Villa','Bağ evi','Studiya','Otaq','A-Frame evi'].forEach(function(t){
     ht+='<button class="chip" aria-pressed="'+(state.type===t)+'" onclick="setType(\''+t+'\')">'+t+'</button>'; });
   document.getElementById('chipsType').innerHTML=ht;
 }
@@ -1725,6 +1744,9 @@ function roomsHtmlFor(x){
       checklist = roomAmenChecklistHtml(BATHROOM_TOILETRY_OPTIONS, r.toiletries);
     } else if(r.kind==='gym'){
       checklist = roomAmenChecklistHtml(GYM_EQUIPMENT_OPTIONS, r.equipment);
+    } else if(r.kind==='hamam'){
+      lines.push(r.hamamType);
+      checklist = roomAmenChecklistHtml(HAMAM_AMENITY_OPTIONS, r.hamamAmenities);
     }
     return '<div class="roomcard">'
       +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img src="'+r.photos[0]+'" alt="'+ROOM_KIND_LABELS[r.kind]+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
@@ -2158,6 +2180,7 @@ function updateRoomKindUI(){
   document.getElementById('rm-game').style.display = k==='game'?'grid':'none';
   document.getElementById('rm-bathroom').style.display = k==='bathroom'?'grid':'none';
   document.getElementById('rm-gym').style.display = k==='gym'?'grid':'none';
+  document.getElementById('rm-hamam').style.display = k==='hamam'?'grid':'none';
 }
 function handleRoomPhotos(input){
   var files=input.files?Array.prototype.slice.call(input.files):[];
@@ -2190,7 +2213,8 @@ function renderRoomPhotoGrid(){
   if(el) el.textContent = "Bu ev üçün qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
 }
 function removeCurrentRoomPhoto(i){ state.currentRoomPhotos.splice(i,1); state.currentRoomPhotoFiles.splice(i,1); renderRoomPhotoGrid(); }
-var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz'};
+var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',hamam:'Hamam'};
+var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
 function addRoomToPending(){
   var kind=document.getElementById('rm-kind').value;
   if(!state.currentRoomPhotos.length){ toast("Bu sahə üçün ən azı 1 şəkil yüklə"); return; }
@@ -2236,6 +2260,13 @@ function addRoomToPending(){
     if(ck('rm-gy-punchbag')) room.equipment.push('Boks kisəsi');
     if(ck('rm-gy-mirror')) room.equipment.push('Güzgülü divar');
     if(ck('rm-gy-ac')) room.equipment.push('Kondisioner');
+  } else if(kind==='hamam'){
+    room.hamamType=v('rm-h-type'); room.hamamAmenities=[];
+    if(ck('rm-h-towel')) room.hamamAmenities.push('Dəsmal');
+    if(ck('rm-h-slippers')) room.hamamAmenities.push('Tərlik');
+    if(ck('rm-h-robe')) room.hamamAmenities.push('Xalat');
+    if(ck('rm-h-shower')) room.hamamAmenities.push('Duş');
+    if(ck('rm-h-seating')) room.hamamAmenities.push('Oturacaq yerləri');
   }
   state.pendingRooms.push(room);
   state.currentRoomPhotos=[];
@@ -2260,6 +2291,9 @@ function addRoomToPending(){
   document.getElementById('rm-gy-bench').checked=false; document.getElementById('rm-gy-yogamat').checked=false;
   document.getElementById('rm-gy-punchbag').checked=false; document.getElementById('rm-gy-mirror').checked=false;
   document.getElementById('rm-gy-ac').checked=false;
+  document.getElementById('rm-h-towel').checked=true; document.getElementById('rm-h-slippers').checked=false;
+  document.getElementById('rm-h-robe').checked=false; document.getElementById('rm-h-shower').checked=true;
+  document.getElementById('rm-h-seating').checked=true;
   renderPendingRooms();
   toast(ROOM_KIND_LABELS[kind]+" əlavə edildi — indi növbəti sahəni yığa bilərsən");
 }
@@ -2270,6 +2304,7 @@ function roomSummary(r){
   if(r.kind==='game') return [r.domino?'Domino':null,r.nard?'Nərd':null,r.billiard?'Bilyard':null,r.tennis?'Stolüstü tennis':null,r.foosball?'Stolüstü futbol':null,r.dart?'Dartqın':null,r.airhockey?'Hava hokkeyi':null,r.ps?('PlayStation'+(r.psGen?' ('+r.psGen+')':'')):null].filter(Boolean).join(', ')||'Oyun ləvazimatı qeyd edilməyib';
   if(r.kind==='bathroom') return r.showerType+(r.toiletries&&r.toiletries.length?' · '+r.toiletries.join(', '):'');
   if(r.kind==='gym') return (r.equipment&&r.equipment.length)?r.equipment.join(', '):'Avadanlıq qeyd edilməyib';
+  if(r.kind==='hamam') return r.hamamType+(r.hamamAmenities&&r.hamamAmenities.length?' · '+r.hamamAmenities.join(', '):'');
   return r.photos.length+' şəkil';
 }
 function renderPendingRooms(){
@@ -2379,7 +2414,7 @@ function addListing(e){
       return copy;
     });
     var listing = {
-      id:id,t:v('h-title').slice(0,60),c:v('h-city'),d:v('h-addr'),ty:v('h-type'),
+      id:id,t:v('h-title').slice(0,60),c:v('h-city'),d:v('h-addr').slice(0,50),ty:v('h-type'),
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
       r:parseInt(v('h-rooms'),10)||1,b:1,cl:parseInt(v('h-clean'),10)||0,
       minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.slice(),
