@@ -778,6 +778,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
     </form>
     <h3 style="margin:26px 0 12px">Mənim elanlarım</h3>
+    <button id="tipsBadge" class="btn sm ghost" style="display:none;margin-bottom:12px;width:auto" onclick="openTipsModal()">💡 İpucu</button>
     <div class="blist" id="mylistings"></div>
   </div>
 </section>
@@ -809,6 +810,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button aria-selected="false" onclick="goSub('cust')">Müştərilər <span id="custcount"></span></button>
         <button aria-selected="false" onclick="goSub('mod')">Elan moderasiyası <span id="modcount"></span></button>
         <button aria-selected="false" onclick="goSub('hosts')">Ev sahibləri <span id="hostscount"></span></button>
+        <button aria-selected="false" onclick="goSub('stats')">Bazar statistikası</button>
         <button aria-selected="false" onclick="goSub('edits')">Elan dəyişiklikləri <span id="editcount"></span></button>
         <button aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
         <button aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
@@ -836,6 +838,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <input type="text" id="hostSearch" placeholder="Ad, e-poçt və ya VÖEN üzrə axtar..." oninput="renderHostsAdmin()"
           style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
         <div class="blist" id="hostslist"></div>
+      </div>
+      <div class="sub" id="s-stats">
+        <input type="text" id="statsSearch" placeholder="Region və ya ev tipi üzrə axtar..." oninput="renderMarketStatsAdmin()"
+          style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
+        <div class="blist" id="statslist"></div>
       </div>
       <div class="sub" id="s-edits"><div class="blist" id="editlist"></div></div>
       <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
@@ -991,6 +998,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   </div>
 </div>
 
+<div class="modal" id="tipsModal" role="dialog" aria-modal="true" aria-label="Qiymət ipuclarınız">
+  <div class="box" style="width:min(560px,100%)">
+    <h3>Qiymət ipuclarınız</h3>
+    <p class="note" style="text-align:left">Bölgənizdəki bənzər parametrli təsdiqlənmiş elanlarla müqayisəyə əsaslanır.</p>
+    <div id="tipsList" style="display:grid;gap:12px;max-height:60vh;overflow:auto"></div>
+    <button class="btn ghost" onclick="closeModal('tipsModal')">Bağla</button>
+  </div>
+</div>
+
 <!-- LIGHTBOX -->
 <div class="modal" id="lightboxModal" role="dialog" aria-modal="true" aria-label="Şəkillərə bax">
   <div class="lightbox">
@@ -1027,7 +1043,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
 <footer><div class="wrap">
   <div>Buralar.az — Azərbaycanda gündəlik kirayə platforması (demo versiya)</div>
-  <div>Dəstək: salam.buralar.az@gmail.com · +994 12 000 00 00 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a></div>
+  <div>Dəstək: salam.buralar.az@gmail.com · +994 50 331 92 99 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a></div>
 </div></footer>
 <div class="toast" id="toast"></div>
 
@@ -1757,7 +1773,7 @@ function adminLogout(){
      qonaq/ev sahibi kimi giriş edibsə, onun ümumi sessiyası (state.user) ayrıca saxlanılır və
      logout() ilə çıxılmalıdır. */
 }
-var SUBTABS=['rezall','cust','mod','hosts','edits','cmp','rep','notif','msg','fin'];
+var SUBTABS=['rezall','cust','mod','hosts','stats','edits','cmp','rep','notif','msg','fin'];
 function goSub(s){
   state.sub=s;
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
@@ -2715,6 +2731,87 @@ function reviewBlock(b){
   });
   return h;
 }
+/* ============ qiymət ipucu / bazar statistikası mühərriki ============
+   Airbnb tərzi: ev sahibinə öz elanının qiymətini regiondakı bənzər evlərlə müqayisə edərək,
+   real rezervasiya statistikasına əsaslanan ipucu göstərir. Yalnız TƏSDİQLƏNMİŞ elanlar
+   "bazar" sayılır (gözləyən/rədd edilmiş elanlar real rəqib deyil). */
+function bookingCountFor(listingId){
+  return state.bookings.filter(function(b){ return b.lid==listingId && b.status!=='refunded'; }).length;
+}
+/* x ilə "bənzər" (eyni region, eyni ev tipi, yaxın qonaq/otaq sayı) digər ev sahiblərinin
+   TƏSDİQLƏNMİŞ elanlarını qaytarır. Nümunə sayı azdırsa (<3), şərtləri tədricən yumşaldır:
+   1) otaq sayı şərtini götür  2) qonaq sayı şərtini də götür  3) yalnız region+tip qalır.
+   Son mərhələdə də 3-dən az nümunə varsa, boş massiv qaytarır — kifayət qədər bazar məlumatı yoxdur. */
+function comparableListings(x){
+  if(!x) return [];
+  var region = regionOf(x.c);
+  var pool = state.custom.filter(function(l){
+    return l.st==='approved' && l.id!==x.id && l.ownerEmail!==x.ownerEmail
+      && regionOf(l.c)===region && l.ty===x.ty;
+  });
+  var withRoomsGuests = pool.filter(function(l){ return Math.abs((l.g||0)-(x.g||0))<=1 && Math.abs((l.r||0)-(x.r||0))<=1; });
+  if(withRoomsGuests.length>=3) return withRoomsGuests;
+  var guestsOnly = pool.filter(function(l){ return Math.abs((l.g||0)-(x.g||0))<=1; });
+  if(guestsOnly.length>=3) return guestsOnly;
+  if(pool.length>=3) return pool;
+  return [];
+}
+/* Bir elan üçün qiymət ipucu hesablayır. Yalnız aşağıdakı hallarda ipucu qaytarır:
+   - ən azı 2 "ucuz" bənzər elan var (x-dən ucuz)
+   - o ucuz elanların ortalama rezervasiya sayı x-in rezervasiya sayından çoxdur
+   - o ucuz elanların ortalama qiyməti x-in qiymətindən ən azı ~5% aşağıdır (cüzi fərqlər üçün ipucu vermə)
+   Uyğun şərt yoxdursa null qaytarır. */
+function pricingTipFor(x){
+  if(!x || x.st!=='approved') return null;
+  var comps = comparableListings(x);
+  if(comps.length<3) return null;
+  var cheaper = comps.filter(function(l){ return l.p<x.p; });
+  if(cheaper.length<2) return null;
+  var avgCheaperPrice = cheaper.reduce(function(s,l){return s+l.p;},0)/cheaper.length;
+  if(avgCheaperPrice > x.p*0.95) return null; // fərq cüzidir
+  var avgCheaperBookings = cheaper.reduce(function(s,l){return s+bookingCountFor(l.id);},0)/cheaper.length;
+  var xBookings = bookingCountFor(x.id);
+  if(avgCheaperBookings<=xBookings) return null;
+  var pctMoreBookings = xBookings>0 ? Math.round(((avgCheaperBookings-xBookings)/xBookings)*100) : null;
+  return {
+    listingId:x.id, listingTitle:x.t, currentPrice:x.p,
+    avgCheaperPrice:Math.round(avgCheaperPrice), pctMoreBookings:pctMoreBookings,
+    xBookings:xBookings, avgCheaperBookings:avgCheaperBookings, sampleSize:cheaper.length
+  };
+}
+function allPricingTipsFor(hostEmail){
+  var mine = state.custom.filter(function(x){ return x.st==='approved' && x.ownerEmail===hostEmail; });
+  var out=[];
+  mine.forEach(function(x){ var t=pricingTipFor(x); if(t) out.push(t); });
+  return out;
+}
+function pricingTipMessage(t){
+  if(t.pctMoreBookings===null){
+    return "Regionunuzda bənzər evlər ortalama "+az(t.avgCheaperPrice)+" qiymətlə artıq rezervasiya alır, sizin evinizdə isə hələ rezervasiya yoxdur.";
+  }
+  return "Regionunuzdakı bənzər parametrli evlər ortalama "+az(t.avgCheaperPrice)+" qiymət qoyub və sizin evinizdən "+t.pctMoreBookings+"% daha çox rezervasiya əldə edir. Qiymətinizi bir qədər aşağı salmağı düşünə bilərsiniz.";
+}
+function renderPricingTips(){
+  var badge=document.getElementById('tipsBadge');
+  if(!badge || !state.user) { if(badge) badge.style.display='none'; return; }
+  var tips=allPricingTipsFor(state.user.email);
+  if(!tips.length){ badge.style.display='none'; state.pricingTips=[]; return; }
+  state.pricingTips=tips;
+  badge.style.display='';
+  badge.textContent='💡 İpucu ('+tips.length+')';
+}
+function openTipsModal(){
+  var tips=state.pricingTips||[];
+  var el=document.getElementById('tipsList');
+  el.innerHTML = tips.length ? tips.map(function(t){
+    return '<div class="bk" style="grid-template-columns:1fr">'
+      +'<div><h4>'+esc(t.listingTitle)+'</h4>'
+      +'<div class="m">Hazırkı qiymət: '+az(t.currentPrice)+'/gecə · Bənzər evlərin ortalaması: '+az(t.avgCheaperPrice)+'/gecə · Nümunə: '+t.sampleSize+' ev</div>'
+      +'<p style="margin:8px 0 0;font-size:14px">'+esc(pricingTipMessage(t))+'</p>'
+      +'</div><div class="act"><button class="btn sm dark" onclick="closeModal(\'tipsModal\');openEdit('+t.listingId+')">Qiyməti dəyiş</button></div></div>';
+  }).join('') : '';
+  openModal('tipsModal');
+}
 function renderHost(){
   var mine = state.custom.filter(function(x){ return state.user && x.ownerEmail===state.user.email; });
   var earn=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
@@ -2727,6 +2824,7 @@ function renderHost(){
     +'<div class="stat"><div class="k">Gözləyən ödəniş</div><div class="v money">'+az2(pend)+'</div></div>'
     +'<div class="stat"><div class="k">Hesabıma köçürülən</div><div class="v money">'+az2(earn)+'</div></div>';
   renderRoomPhotoGrid();
+  renderPricingTips();
   var el=document.getElementById('mylistings');
   if(!mine.length){ el.innerHTML='<div class="empty"><h3>Hələ elanın yoxdur</h3><p>Formanı doldur, idarəetmə təsdiqindən sonra elan saytda görünəcək.</p></div>'; }
   else el.innerHTML=mine.map(function(x){
@@ -3482,6 +3580,43 @@ function renderHostsAdmin(){
       +'</div></div>';
   }).join('');
 }
+/* Bazar statistikası: bütün TƏSDİQLƏNMİŞ elanları region+ev tipi üzrə qruplaşdırıb
+   qiymət/rezervasiya faktlarını göstərir — ev sahiblərinə göstərilən qiymət ipuclarının
+   əsaslandığı eyni məlumatın admin üçün cədvəl görünüşü. */
+function renderMarketStatsAdmin(){
+  var qEl=document.getElementById('statsSearch');
+  var q=(qEl?qEl.value:'').trim().toLowerCase();
+  var approved = state.custom.filter(function(x){return x.st==='approved';});
+  var groups={};
+  approved.forEach(function(x){
+    var region=regionOf(x.c);
+    var key=region+' · '+x.ty;
+    if(!groups[key]) groups[key]={region:region, ty:x.ty, listings:[]};
+    groups[key].listings.push(x);
+  });
+  var all=Object.keys(groups).map(function(k){return groups[k];});
+  var list=all.filter(function(g){
+    if(!q) return true;
+    return (g.region+' '+g.ty).toLowerCase().indexOf(q)>=0;
+  });
+  list.sort(function(a,b){return b.listings.length-a.listings.length;});
+
+  var el=document.getElementById('statslist'); if(!el) return;
+  if(!all.length){ el.innerHTML='<div class="empty"><h3>Hələ statistika üçün təsdiqlənmiş elan yoxdur</h3></div>'; return; }
+  if(!list.length){ el.innerHTML='<div class="empty"><h3>Axtarışa uyğun qrup tapılmadı</h3></div>'; return; }
+
+  el.innerHTML=list.map(function(g){
+    var prices=g.listings.map(function(x){return x.p;});
+    var avgPrice=prices.reduce(function(s,p){return s+p;},0)/prices.length;
+    var minPrice=Math.min.apply(null,prices), maxPrice=Math.max.apply(null,prices);
+    var avgBookings=g.listings.reduce(function(s,x){return s+bookingCountFor(x.id);},0)/g.listings.length;
+    return '<div class="bk" style="grid-template-columns:1fr">'
+      +'<div><h4>'+esc(g.region)+' · '+esc(g.ty)+'</h4>'
+      +'<div class="m"><b>'+g.listings.length+'</b> elan · Ortalama qiymət: '+az(Math.round(avgPrice))+' · Min: '+az(minPrice)+' · Maks: '+az(maxPrice)+'</div>'
+      +'<div class="m">Elan başına ortalama rezervasiya sayı: '+avgBookings.toFixed(1)+'</div>'
+      +'</div></div>';
+  }).join('');
+}
 function renderAdmin(){
   autoRelease();
   var bs=state.bookings.filter(function(b){return b.status!=='refunded';});
@@ -3525,6 +3660,7 @@ function renderAdmin(){
   }).join('') : '<div class="empty"><h3>Təsdiq gözləyən elan yoxdur</h3><p>Ev sahibləri elan göndərdikcə burada görünəcək.</p></div>';
 
   renderHostsAdmin();
+  renderMarketStatsAdmin();
 
   var cmp=state.bookings.filter(function(b){return b.complaint;});
   var open=cmp.filter(function(b){return b.complaint.st==='pending';});
