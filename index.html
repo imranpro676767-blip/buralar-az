@@ -623,6 +623,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <option value="bathroom">Ümumi sanuzel</option>
             <option value="pool">Hovuz</option>
             <option value="hamam">Hamam</option>
+            <option value="yardsit">Həyət oturma yeri</option>
+            <option value="yard">Həyət</option>
           </select>
         </label>
         <div></div>
@@ -710,6 +712,32 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <div class="tog"><input type="checkbox" id="rm-h-robe" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-robe" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Xalat</label></div>
             <div class="tog"><input type="checkbox" id="rm-h-shower" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-shower" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Duş</label></div>
             <div class="tog"><input type="checkbox" id="rm-h-seating" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-h-seating" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Oturacaq yerləri</label></div>
+          </div>
+        </div>
+
+        <div id="rm-yardsit" class="rm-block full" style="display:none">
+          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Həyət oturma yerində olanlar</div>
+          <div class="togs full">
+            <div class="tog"><input type="checkbox" id="rm-ys-seating" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-seating" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Oturma yeri</label></div>
+            <div class="tog"><input type="checkbox" id="rm-ys-table" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-table" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Stol</label></div>
+            <div class="tog"><input type="checkbox" id="rm-ys-chairs" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-chairs" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Stul</label></div>
+            <div class="tog"><input type="checkbox" id="rm-ys-outdoorkitchen" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-outdoorkitchen" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Çöl mətbəxi</label></div>
+            <div class="tog"><input type="checkbox" id="rm-ys-kitchenware" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-kitchenware" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Mətbəx ləvazimatları</label></div>
+            <div class="tog"><input type="checkbox" id="rm-ys-bbq" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-bbq" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Manqal</label></div>
+            <div class="tog"><input type="checkbox" id="rm-ys-samovar" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-samovar" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Samovar</label></div>
+            <div class="tog"><input type="checkbox" id="rm-ys-skewer" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-ys-skewer" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Şiş</label></div>
+          </div>
+        </div>
+
+        <div id="rm-yard" class="rm-block full" style="display:none">
+          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Həyətdə olanlar</div>
+          <div class="togs full">
+            <div class="tog"><input type="checkbox" id="rm-y-kids" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-y-kids" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Uşaq əyləncəsi ləvazimatı (karusel və s.)</label></div>
+            <div class="tog"><input type="checkbox" id="rm-y-greenery" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-y-greenery" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Yaşıllıq</label></div>
+            <div class="tog"><input type="checkbox" id="rm-y-flowers" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-y-flowers" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Gül-çiçək</label></div>
+            <div class="tog"><input type="checkbox" id="rm-y-bigtrees" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-y-bigtrees" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Böyük ağaclar</label></div>
+            <div class="tog"><input type="checkbox" id="rm-y-fruittrees" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-y-fruittrees" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Meyvə ağacları</label></div>
+            <div class="tog"><input type="checkbox" id="rm-y-decotrees" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-y-decotrees" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Dekorativ ağaclar</label></div>
           </div>
         </div>
 
@@ -1042,7 +1070,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 </div>
 
 <footer><div class="wrap">
-  <div>Buralar.az — Azərbaycanda gündəlik kirayə platforması (demo versiya)</div>
+  <div>buralar.az — Azərbaycanda gündəlik kirayə platforması</div>
   <div>Dəstək: salam.buralar.az@gmail.com · +994 50 331 92 99 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a></div>
 </div></footer>
 <div class="toast" id="toast"></div>
@@ -1916,6 +1944,8 @@ function galleryHtmlFor(x){
 var BEDROOM_AMENITY_OPTIONS=["Kondisioner","Paltar dolabı","Ütü","Televizor","Yazı masası","Seyf","Fen"];
 var BATHROOM_TOILETRY_OPTIONS=["Şampun","Dəsmal","Sabun","Diş fırçası","Diş pastası","Duş geli","Tualet kağızı","Fen"];
 var GYM_EQUIPMENT_OPTIONS=["Qaçış zolağı","Stasionar velosiped","Eliptik trenajor","Çəki dəstləri","Güc tərbiyəsi maşınları","Turnik","Məşq skamyası","Yoga döşəkçəsi","Boks kisəsi","Güzgülü divar","Kondisioner"];
+var YARDSIT_FEATURE_OPTIONS=["Oturma yeri","Stol","Stul","Çöl mətbəxi","Mətbəx ləvazimatları","Manqal","Samovar","Şiş"];
+var YARD_FEATURE_OPTIONS=["Uşaq əyləncəsi ləvazimatı (karusel və s.)","Yaşıllıq","Gül-çiçək","Böyük ağaclar","Meyvə ağacları","Dekorativ ağaclar"];
 function roomAmenChecklistHtml(options, chosen){
   chosen = chosen || [];
   return '<div class="roomamen">'+options.map(function(a){
@@ -1954,6 +1984,10 @@ function roomsHtmlFor(x){
     } else if(r.kind==='hamam'){
       lines.push(r.hamamType);
       checklist = roomAmenChecklistHtml(HAMAM_AMENITY_OPTIONS, r.hamamAmenities);
+    } else if(r.kind==='yardsit'){
+      checklist = roomAmenChecklistHtml(YARDSIT_FEATURE_OPTIONS, r.yardSitFeatures);
+    } else if(r.kind==='yard'){
+      checklist = roomAmenChecklistHtml(YARD_FEATURE_OPTIONS, r.yardFeatures);
     }
     return '<div class="roomcard">'
       +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img src="'+r.photos[0]+'" alt="'+ROOM_KIND_LABELS[r.kind]+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
@@ -2251,13 +2285,22 @@ function autoRelease(){
       b.waLink=wa.url; b.waText=wa.text; b.mapsUrl=wa.mapsUrl; b.exactAddress=wa.addrText;
       state.notifications.unshift({
         code:b.code, host:b.host, title:b.title, guest:b.guest, phone:b.phone,
-        checkin:b.d1, sentAt:new Date().toISOString(), waLink:wa.url, waText:wa.text, mapsUrl:wa.mapsUrl,
+        checkin:b.d1, sentAt:new Date().toISOString(), waLink:wa.url, waText:wa.text, mapsUrl:wa.mapsUrl, waSent:false,
         text:"Ev sahibi "+b.host+"-a bildiriş göndərildi: "+b.guest+" adlı qonaq sabah \""+b.title+"\" evinə gələcək. Dəqiq ünvan qonağa WhatsApp ilə göndərilməyə hazırdır."
       });
     }
     if(changed) bookingsSync.save(b);
   });
   if(notifChanged) save();
+}
+/* Admin "Qonağa WhatsApp göndər" düyməsinə klikləyən kimi (WhatsApp yeni tabda açılan andan) həmin
+   bildirişi dərhal "Göndərildi" statusuna salır — real göndərilməni yoxlaya bilmirik (bu, sadə
+   wa.me linkidir, API deyil), amma ən azı admin klikləyib bildiyimiz andan düymə deaktiv olur ki,
+   təkrar-təkrar "göndərilməyib" kimi görünməsin. */
+function markWaSent(code){
+  var changed=false;
+  state.notifications.forEach(function(n){ if(n.code===code && !n.waSent){ n.waSent=true; changed=true; } });
+  if(changed){ save(); renderAdmin(); }
 }
 /* Ünvanı və WhatsApp linkini hazırlayır. wa.me linki real işləyir (API açarı/xərc tələb etmir),
    amma göndərmək üçün bir kliklə təsdiq lazımdır — tam avtomatik (kliksiz) göndərmə üçün
@@ -2423,6 +2466,8 @@ function updateRoomKindUI(){
   document.getElementById('rm-bathroom').style.display = k==='bathroom'?'grid':'none';
   document.getElementById('rm-gym').style.display = k==='gym'?'grid':'none';
   document.getElementById('rm-hamam').style.display = k==='hamam'?'grid':'none';
+  document.getElementById('rm-yardsit').style.display = k==='yardsit'?'grid':'none';
+  document.getElementById('rm-yard').style.display = k==='yard'?'grid':'none';
 }
 function handleRoomPhotos(input){
   var files=input.files?Array.prototype.slice.call(input.files):[];
@@ -2455,7 +2500,7 @@ function renderRoomPhotoGrid(){
   if(el) el.textContent = "Bu ev üçün qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
 }
 function removeCurrentRoomPhoto(i){ state.currentRoomPhotos.splice(i,1); state.currentRoomPhotoFiles.splice(i,1); renderRoomPhotoGrid(); }
-var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',hamam:'Hamam'};
+var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
 var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
 function addRoomToPending(){
   var kind=document.getElementById('rm-kind').value;
@@ -2509,6 +2554,24 @@ function addRoomToPending(){
     if(ck('rm-h-robe')) room.hamamAmenities.push('Xalat');
     if(ck('rm-h-shower')) room.hamamAmenities.push('Duş');
     if(ck('rm-h-seating')) room.hamamAmenities.push('Oturacaq yerləri');
+  } else if(kind==='yardsit'){
+    room.yardSitFeatures=[];
+    if(ck('rm-ys-seating')) room.yardSitFeatures.push('Oturma yeri');
+    if(ck('rm-ys-table')) room.yardSitFeatures.push('Stol');
+    if(ck('rm-ys-chairs')) room.yardSitFeatures.push('Stul');
+    if(ck('rm-ys-outdoorkitchen')) room.yardSitFeatures.push('Çöl mətbəxi');
+    if(ck('rm-ys-kitchenware')) room.yardSitFeatures.push('Mətbəx ləvazimatları');
+    if(ck('rm-ys-bbq')) room.yardSitFeatures.push('Manqal');
+    if(ck('rm-ys-samovar')) room.yardSitFeatures.push('Samovar');
+    if(ck('rm-ys-skewer')) room.yardSitFeatures.push('Şiş');
+  } else if(kind==='yard'){
+    room.yardFeatures=[];
+    if(ck('rm-y-kids')) room.yardFeatures.push('Uşaq əyləncəsi ləvazimatı (karusel və s.)');
+    if(ck('rm-y-greenery')) room.yardFeatures.push('Yaşıllıq');
+    if(ck('rm-y-flowers')) room.yardFeatures.push('Gül-çiçək');
+    if(ck('rm-y-bigtrees')) room.yardFeatures.push('Böyük ağaclar');
+    if(ck('rm-y-fruittrees')) room.yardFeatures.push('Meyvə ağacları');
+    if(ck('rm-y-decotrees')) room.yardFeatures.push('Dekorativ ağaclar');
   }
   state.pendingRooms.push(room);
   state.currentRoomPhotos=[];
@@ -2536,6 +2599,13 @@ function addRoomToPending(){
   document.getElementById('rm-h-towel').checked=true; document.getElementById('rm-h-slippers').checked=false;
   document.getElementById('rm-h-robe').checked=false; document.getElementById('rm-h-shower').checked=true;
   document.getElementById('rm-h-seating').checked=true;
+  document.getElementById('rm-ys-seating').checked=true; document.getElementById('rm-ys-table').checked=true;
+  document.getElementById('rm-ys-chairs').checked=true; document.getElementById('rm-ys-outdoorkitchen').checked=false;
+  document.getElementById('rm-ys-kitchenware').checked=false; document.getElementById('rm-ys-bbq').checked=false;
+  document.getElementById('rm-ys-samovar').checked=false; document.getElementById('rm-ys-skewer').checked=false;
+  document.getElementById('rm-y-kids').checked=false; document.getElementById('rm-y-greenery').checked=false;
+  document.getElementById('rm-y-flowers').checked=false; document.getElementById('rm-y-bigtrees').checked=false;
+  document.getElementById('rm-y-fruittrees').checked=false; document.getElementById('rm-y-decotrees').checked=false;
   renderPendingRooms();
   toast(ROOM_KIND_LABELS[kind]+" əlavə edildi — indi növbəti sahəni yığa bilərsən");
 }
@@ -2547,6 +2617,8 @@ function roomSummary(r){
   if(r.kind==='bathroom') return r.showerType+(r.toiletries&&r.toiletries.length?' · '+r.toiletries.join(', '):'');
   if(r.kind==='gym') return (r.equipment&&r.equipment.length)?r.equipment.join(', '):'Avadanlıq qeyd edilməyib';
   if(r.kind==='hamam') return r.hamamType+(r.hamamAmenities&&r.hamamAmenities.length?' · '+r.hamamAmenities.join(', '):'');
+  if(r.kind==='yardsit') return (r.yardSitFeatures&&r.yardSitFeatures.length)?r.yardSitFeatures.join(', '):'Xüsusiyyət qeyd edilməyib';
+  if(r.kind==='yard') return (r.yardFeatures&&r.yardFeatures.length)?r.yardFeatures.join(', '):'Xüsusiyyət qeyd edilməyib';
   return r.photos.length+' şəkil';
 }
 function renderPendingRooms(){
@@ -3742,7 +3814,10 @@ function renderAdmin(){
       +'<div class="m" style="font-weight:500;white-space:normal">'+esc(n.text)+'</div>'
       +'<div class="m">Rezervasiya: '+n.code+' · Qonaq: '+esc(n.guest)+' ('+esc(n.phone)+') · Giriş: '+fmtDate(n.checkin)+' · Göndərilmə: '+new Date(n.sentAt).toLocaleString('az-AZ')+'</div>'
       +'</div><div class="act">'
-      +(n.waLink?'<a class="btn sm ok" style="width:auto;text-decoration:none;display:inline-block" href="'+n.waLink+'" target="_blank" rel="noopener">Qonağa WhatsApp göndər</a>':'')
+      +(n.waLink?(n.waSent
+          ? '<span class="btn sm ghost" style="width:auto;display:inline-block;opacity:.7;cursor:default">Göndərildi ✓</span>'
+          : '<a class="btn sm ok" style="width:auto;text-decoration:none;display:inline-block" href="'+n.waLink+'" target="_blank" rel="noopener" onclick="markWaSent(\''+n.code+'\')">Qonağa WhatsApp göndər</a>'
+        ):'')
       +(n.mapsUrl?'<a class="btn sm ghost" style="width:auto;text-decoration:none;display:inline-block" href="'+n.mapsUrl+'" target="_blank" rel="noopener">Xəritədə bax</a>':'')
       +'</div></div>';
   }).join('') : '<div class="empty"><h3>Hələ bildiriş göndərilməyib</h3><p>Girişə 24 saat qalanda ev sahibinə avtomatik bildiriş gedəcək və burada qeydə düşəcək.</p></div>';
