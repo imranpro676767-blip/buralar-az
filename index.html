@@ -808,6 +808,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button aria-selected="true" onclick="goSub('rezall')">Bütün rezervasiyalar</button>
         <button aria-selected="false" onclick="goSub('cust')">Müştərilər <span id="custcount"></span></button>
         <button aria-selected="false" onclick="goSub('mod')">Elan moderasiyası <span id="modcount"></span></button>
+        <button aria-selected="false" onclick="goSub('hosts')">Ev sahibləri <span id="hostscount"></span></button>
         <button aria-selected="false" onclick="goSub('edits')">Elan dəyişiklikləri <span id="editcount"></span></button>
         <button aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
         <button aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
@@ -831,6 +832,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
 
       <div class="sub" id="s-mod"><div class="blist" id="modlist"></div></div>
+      <div class="sub" id="s-hosts">
+        <input type="text" id="hostSearch" placeholder="Ad, e-poçt və ya VÖEN üzrə axtar..." oninput="renderHostsAdmin()"
+          style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
+        <div class="blist" id="hostslist"></div>
+      </div>
       <div class="sub" id="s-edits"><div class="blist" id="editlist"></div></div>
       <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
       <div class="sub" id="s-rep"><div class="blist" id="replist"></div></div>
@@ -1751,7 +1757,7 @@ function adminLogout(){
      qonaq/ev sahibi kimi giriş edibsə, onun ümumi sessiyası (state.user) ayrıca saxlanılır və
      logout() ilə çıxılmalıdır. */
 }
-var SUBTABS=['rezall','cust','mod','edits','cmp','rep','notif','msg','fin'];
+var SUBTABS=['rezall','cust','mod','hosts','edits','cmp','rep','notif','msg','fin'];
 function goSub(s){
   state.sub=s;
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
@@ -3413,6 +3419,63 @@ function rejectCustomer(email){
   toast(msg);
 }
 
+/* ============ admin — ev sahibləri (elanların qruplaşdırılması) ============ */
+function renderHostsAdmin(){
+  var qEl=document.getElementById('hostSearch');
+  var q=(qEl?qEl.value:'').trim().toLowerCase();
+
+  var groups={};
+  state.custom.forEach(function(x){
+    var key=x.ownerEmail||('__noemail__'+(x.host||''));
+    if(!groups[key]) groups[key]={ email:x.ownerEmail||'', listings:[] };
+    groups[key].listings.push(x);
+    /* ən son elan qeydini əsas götürürük (əlaqə məlumatları fərqli ola bilər) */
+    groups[key].host=x.host;
+    groups[key].voen=x.voen;
+    groups[key].bank=x.bank;
+    groups[key].iban=x.iban;
+    groups[key].whatsapp=x.whatsapp;
+  });
+  var all=Object.keys(groups).map(function(k){return groups[k];});
+
+  var list=all.filter(function(g){
+    if(!q) return true;
+    return ((g.host||'')+' '+(g.email||'')+' '+(g.voen||'')).toLowerCase().indexOf(q)>=0;
+  });
+  list.sort(function(a,b){return b.listings.length-a.listings.length;});
+
+  var countEl=document.getElementById('hostscount');
+  if(countEl) countEl.textContent = all.length?('('+all.length+')'):'';
+
+  var el=document.getElementById('hostslist'); if(!el) return;
+  if(!all.length){ el.innerHTML='<div class="empty"><h3>Hələ heç bir ev sahibi yoxdur</h3><p>Ev sahibləri elan yerləşdirdikcə burada qruplaşdırılıb görünəcəklər.</p></div>'; return; }
+  if(!list.length){ el.innerHTML='<div class="empty"><h3>Axtarışa uyğun ev sahibi tapılmadı</h3></div>'; return; }
+
+  el.innerHTML=list.map(function(g){
+    var approved=g.listings.filter(function(x){return x.st==='approved';}).length;
+    var pending=g.listings.filter(function(x){return x.st==='pending';}).length;
+    var rejected=g.listings.filter(function(x){return x.st==='rejected';}).length;
+    var breakdownParts=[];
+    if(approved) breakdownParts.push(approved+' təsdiqlənib');
+    if(pending) breakdownParts.push(pending+' gözləyir');
+    if(rejected) breakdownParts.push(rejected+' rədd edilib');
+    var breakdown=breakdownParts.join(', ')||'—';
+    var isSup=g.listings.some(function(x){return x.sup;});
+
+    var rows=g.listings.map(function(x){
+      return '<div><span>'+esc(x.t)+' · '+esc(x.c)+'</span><b>'+listingTag(x.st)+' <button class="btn sm ghost" style="padding:4px 10px;font-size:12.5px;width:auto;margin-left:6px" onclick="openAdminDetail('+x.id+')">Bax</button></b></div>';
+    }).join('');
+
+    return '<div class="bk" style="grid-template-columns:1fr">'
+      +'<div><h4>'+esc(g.host||'—')+(isSup?' <span class="badge" style="position:static;display:inline-block;margin-left:6px">Seçilmiş ev sahibi</span>':'')+'</h4>'
+      +'<div class="m">'+esc(g.email||'—')+' · VÖEN '+esc(g.voen||'—')+'</div>'
+      +'<div class="m">'+esc(g.bank||'—')+' · '+(g.iban?esc(g.iban.slice(0,8))+'…':'—')+'</div>'
+      +'<div class="m">'+(g.whatsapp?('WhatsApp: <a href="https://wa.me/'+esc(g.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(g.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
+      +'<div class="m"><b>'+g.listings.length+'</b> elan · '+breakdown+'</div>'
+      +'<div class="split" style="margin-top:8px">'+rows+'</div>'
+      +'</div></div>';
+  }).join('');
+}
 function renderAdmin(){
   autoRelease();
   var bs=state.bookings.filter(function(b){return b.status!=='refunded';});
@@ -3454,6 +3517,8 @@ function renderAdmin(){
       +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
       +'<button class="btn sm ghost" onclick="approveListing('+x.id+',false)">Rədd et</button></div></div>';
   }).join('') : '<div class="empty"><h3>Təsdiq gözləyən elan yoxdur</h3><p>Ev sahibləri elan göndərdikcə burada görünəcək.</p></div>';
+
+  renderHostsAdmin();
 
   var cmp=state.bookings.filter(function(b){return b.complaint;});
   var open=cmp.filter(function(b){return b.complaint.st==='pending';});
