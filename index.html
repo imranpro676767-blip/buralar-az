@@ -933,7 +933,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>2. Ödənişin saxlanması.</b> Ödədiyiniz məbləğ dərhal ev sahibinə keçmir — girişdən 24 saat sonra köçürülür. Bu müddət ərzində problem yaranarsa, şikayət göndərə bilərsiniz.</p>
       <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
       <p><b>4. Fırıldaqçılığa qarşı tədbir.</b> Saxta sənədlə qeydiyyat aşkarlansa, hesab admin tərəfindən bloklanır. Əgər bu, ödəniş edilmiş aktiv bron zamanı baş verərsə və pul hələ ev sahibinə çatmayıbsa, bron ləğv olunur və məbləğ sizə tam qaytarılır.</p>
-      <p><b>5. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz, telefon nömrəniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür, digər istifadəçilərə açıqlanmır.</p>
+      <p><b>5. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz isə yalnız bron edən/bron olunan qarşı tərəfə (ev sahibi ↔ qonaq) — rezervasiya edildiyi andan etibarən — açıqlanır, başqa heç bir istifadəçiyə göstərilmir.</p>
       <p style="color:var(--muted)">Qeyd: platforma hazırda test/inkişaf mərhələsindədir, ödəniş simulyasiya oluna bilər.</p>
     </div>
     <button class="btn" onclick="confirmSafetyAndBook()">Oxudum, qəbul edirəm və davam et</button>
@@ -948,12 +948,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div class="note" style="text-align:left;display:grid;gap:10px;max-height:60vh;overflow:auto;padding-right:4px">
       <p><b>1. Hansı məlumatları toplayırıq.</b> Qeydiyyat və elan yerləşdirmə zamanı ad, telefon, e-poçt, FİN, şəxsiyyət vəsiqəsinin şəkli, ev sahibləri üçün əlavə olaraq VÖEN, bank/IBAN rekvizitləri, WhatsApp nömrəsi, evin dəqiq ünvanı və yerləşdirdiyiniz şəkillər toplanılır.</p>
       <p><b>2. Nə üçün toplayırıq.</b> Bu məlumatlar yalnız hesabınızı təsdiqləmək, rezervasiyaları həyata keçirmək, ödənişləri ev sahibinə çatdırmaq, fırıldaqçılığın (saxta sənəd, təkrar qeydiyyat, təkrar elan) qarşısını almaq və mübahisə yarandıqda tərəfləri müəyyən etmək üçün istifadə olunur.</p>
-      <p><b>3. Kimlər görə bilər.</b> Şəxsiyyət sənədiniz, FİN, IBAN və dəqiq ünvan yalnız Buralar.az adminləri tərəfindən görünür. Digər istifadəçilər yalnız zəruri məlumatları (ad, ümumi ünvan, rəy/reytinq) görür. Dəqiq ünvan yalnız rezervasiya təsdiqləndikdən və giriş vaxtı yaxınlaşdıqdan sonra müvafiq qonağa göstərilir.</p>
+      <p><b>3. Kimlər görə bilər.</b> Şəxsiyyət sənədiniz, FİN, IBAN və VÖEN yalnız Buralar.az adminləri tərəfindən görünür. Digər istifadəçilər yalnız zəruri məlumatları (ad, ümumi ünvan, rəy/reytinq) görür. Telefon nömrəniz isə rezervasiya edildiyi andan etibarən yalnız həmin bronun qarşı tərəfinə (ev sahibi ↔ qonaq) açıqlanır — başqa heç bir istifadəçiyə göstərilmir. Dəqiq ünvan isə yalnız rezervasiya təsdiqləndikdən və giriş vaxtı yaxınlaşdıqdan sonra müvafiq qonağa göstərilir.</p>
       <p><b>4. Necə saxlanılır.</b> Bütün məlumatlar Google Firebase (Firestore və Storage) buludunda şifrələnmiş bağlantı üzərindən saxlanılır. Fırıldaqçılığın qarşısını almaq üçün istifadə olunan bəzi "barmaq izi" (heş) kodları adi istifadəçilərə açılmayan gizli bazalarda saxlanılır — bunlar xam məlumat deyil, təkrarı yoxlamaq üçün riyazi kodlardır.</p>
       <p><b>5. Nə qədər saxlanılır.</b> Məlumatlarınız hesabınız aktiv olduğu müddətdə saxlanılır. Hesabın silinməsini tələb etsəniz, qanuni tələb olunan minimum məlumat (fırıldaqçılıq və maliyyə qeydləri üçün) istisna olmaqla, digər şəxsi məlumatlarınız silinir.</p>
       <p><b>6. Kukilər və brauzer yaddaşı.</b> Sayt seçdiyiniz görünüş rejimi (açıq/qaranlıq) kimi kiçik texniki tənzimləmələri brauzerinizin öz yaddaşında saxlaya bilər. Bu məlumat başqa heç kimə ötürülmür.</p>
       <p><b>7. Üçüncü tərəflər.</b> Ödəniş, saxlama və autentifikasiya üçün Google Firebase infrastrukturundan istifadə olunur. Giriş bildirişləri WhatsApp linki vasitəsilə göndərilir — bu, WhatsApp-ın öz məxfilik siyasətinə tabedir.</p>
-      <p><b>8. Sizin hüquqlarınız.</b> İstənilən vaxt öz məlumatlarınıza baxmaq, düzəliş etmək və ya hesabınızın silinməsini tələb etmək hüququnuz var. Bunun üçün <a href="mailto:salam@buralar.az" style="color:var(--nar);font-weight:700">salam@buralar.az</a> ünvanına yaza bilərsiniz.</p>
+      <p><b>8. Sizin hüquqlarınız.</b> İstənilən vaxt öz məlumatlarınıza baxmaq, düzəliş etmək və ya hesabınızın silinməsini tələb etmək hüququnuz var. Bunun üçün <a href="mailto:salam.buralar.az@gmail.com" style="color:var(--nar);font-weight:700">salam.buralar.az@gmail.com</a> ünvanına yaza bilərsiniz.</p>
       <p style="color:var(--muted)">Son yenilənmə: 2026. Platforma inkişaf mərhələsində olduğu üçün bu siyasət zaman-zaman yenilənə bilər.</p>
     </div>
     <button class="btn ghost" onclick="closeModal('privacyModal')">Bağla</button>
@@ -1027,7 +1027,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
 <footer><div class="wrap">
   <div>Buralar.az — Azərbaycanda gündəlik kirayə platforması (demo versiya)</div>
-  <div>Dəstək: salam@buralar.az · +994 12 000 00 00 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a></div>
+  <div>Dəstək: salam.buralar.az@gmail.com · +994 12 000 00 00 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a></div>
 </div></footer>
 <div class="toast" id="toast"></div>
 
@@ -2295,6 +2295,11 @@ function leftText(b){
   var h=Math.floor(ms/3600000), d=Math.floor(h/24);
   return d>0 ? ("Köçürməyə "+d+" gün qalıb") : ("Köçürməyə "+h+" saat qalıb");
 }
+function hostContactHtml(lid){
+  var x=byId(lid);
+  if(!x || !x.whatsapp) return '<span style="color:var(--nar)">Qeyd edilməyib</span>';
+  return '<a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+' →</a>';
+}
 function renderBookings(){
   autoRelease();
   var el=document.getElementById('mybookings');
@@ -2309,6 +2314,7 @@ function renderBookings(){
       +'<h4>'+esc(b.title)+'</h4>'
       +'<div class="m">'+esc(b.city)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
       +'<div class="m">Kod: '+b.code+' · '+esc(b.bank)+' · giriş '+esc(R.cin)+'</div>'
+      +(b.status!=='refunded'?'<div class="m">Ev sahibi ('+esc(b.host)+') ilə əlaqə: '+hostContactHtml(b.lid)+'</div>':'')
       +'<div style="margin-top:8px">'+statusTag(b.status)+(b.status==='hold'?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
       +(b.complaint?'<div class="split"><div><span>Şikayət: '+esc(b.complaint.reason)+'</span><b>'+(b.complaint.st==='pending'?'yoxlanılır':(b.complaint.st==='approved'?'təsdiqləndi':'rədd edildi'))+'</b></div></div>':'')
       +(b.status==='hold'?'<div class="split"><div><span>Ev sahibinə çatacaq</span><b>'+az2(b.hostGets)+'</b></div><div><span>Platforma komissiyası</span><b>'+az2(b.platform)+'</b></div></div>':'')
