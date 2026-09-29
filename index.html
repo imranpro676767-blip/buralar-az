@@ -455,6 +455,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="filterlabel">Ev tipi</div>
       <div class="filterbar" id="chipsType"></div>
     </div>
+    <div class="filtergroup">
+      <div class="filterlabel">Hovuz</div>
+      <div class="filterbar" id="chipsPool"></div>
+    </div>
     <div class="sortrow">
       <div class="count" id="count"></div>
       <select id="sort" onchange="render()">
@@ -488,7 +492,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </div>
     <div class="stats" id="hoststats"></div>
 
-    <h3 style="margin:0 0 12px">Evlərimdəki rezervasiyalar</h3>
+    <h3 style="margin:0 0 12px">Yazışmalar</h3>
+    <p class="note" style="text-align:left;margin:-8px 0 12px">Qonaqlar bron etməzdən əvvəl sənə sual verə bilər — bütün yazışma sayt daxilində qalır, telefon nömrəsi paylaşımı bloklanır.</p>
+    <div class="blist" id="hostmessages"></div>
+
+    <h3 style="margin:28px 0 12px">Evlərimdəki rezervasiyalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qalıb getmiş qonaqları qiymətləndirə, lazım gələrsə haqlarında sübutlu şikayət göndərə bilərsən.</p>
     <div class="blist" id="hostbookings"></div>
 
@@ -804,6 +812,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
         <button aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
         <button aria-selected="false" onclick="goSub('notif')">Bildirişlər <span id="notifcount"></span></button>
+        <button aria-selected="false" onclick="goSub('msg')">Yazışmalar <span id="msgcount"></span></button>
         <button aria-selected="false" onclick="goSub('fin')">Maliyyə</button>
         <button class="icon-btn" style="margin-left:auto" onclick="adminLogout()">Admindən çıx</button>
       </div>
@@ -826,6 +835,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
       <div class="sub" id="s-rep"><div class="blist" id="replist"></div></div>
       <div class="sub" id="s-notif"><div class="blist" id="notiflist"></div></div>
+      <div class="sub" id="s-msg"><div class="blist" id="msglist"></div></div>
 
       <div class="sub" id="s-fin">
         <div class="tblwrap"><table class="tbl">
@@ -869,7 +879,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <label class="filebtn" for="u-idphoto">Şəxsiyyət vəsiqəsinin ön üzünün şəklini yüklə (məcburidir)</label>
         <input type="file" id="u-idphoto" accept="image/*" style="display:none" onchange="previewIdPhoto(this)">
         <img id="u-idpreview" style="display:none">
-        <p class="note" style="text-align:left">Şəkil yalnız kimlik yoxlaması üçün istifadə olunur, adminə görünəcək.</p>
+        <p class="note" style="text-align:left">Şəkil yalnız kimlik yoxlaması üçün istifadə olunur, adminə görünəcək. <a href="#" onclick="openModal('privacyModal');return false" style="color:var(--nar);font-weight:700">Məxfilik siyasətini oxu</a></p>
       </div>
       <div id="verifyBox" style="display:none;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:600;color:var(--muted)"></div>
       <button class="btn" onclick="finishLogin()">Təsdiqlə və daxil ol</button>
@@ -894,6 +904,20 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   </div>
 </div>
 
+<!-- BRON ÖNCƏSİ YAZIŞMA -->
+<div class="modal" id="chatModal" role="dialog" aria-modal="true" aria-label="Yazışma">
+  <div class="box" style="width:min(520px,100%)">
+    <h3 id="chatTitle" style="margin:0">Yazışma</h3>
+    <p class="note" style="text-align:left;margin:0">Bütün əlaqə sayt daxilində qalmalıdır — telefon nömrəsi (rəqəmlə və ya hərflə) paylaşımı avtomatik bloklanır.</p>
+    <div id="chatMessages" style="max-height:44vh;overflow:auto;padding:4px 2px"></div>
+    <div id="chatInputRow" style="display:grid;grid-template-columns:1fr auto;gap:8px">
+      <textarea id="chatInput" rows="2" placeholder="Mesajını yaz..." style="resize:vertical"></textarea>
+      <button class="btn sm" style="width:auto;align-self:end" onclick="sendChatMessage()">Göndər</button>
+    </div>
+    <button class="btn ghost" onclick="closeModal('chatModal')">Bağla</button>
+  </div>
+</div>
+
 <!-- TƏHLÜKƏSİZLİK SİYASƏTİ (ödənişdən əvvəl) -->
 <div class="modal" id="safetyModal" role="dialog" aria-modal="true" aria-label="Təhlükəsizlik siyasəti">
   <div class="box">
@@ -908,6 +932,25 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </div>
     <button class="btn" onclick="confirmSafetyAndBook()">Oxudum, qəbul edirəm və davam et</button>
     <button class="btn ghost" onclick="closeModal('safetyModal')">İmtina</button>
+  </div>
+</div>
+
+<!-- PRIVACY POLICY -->
+<div class="modal" id="privacyModal" role="dialog" aria-modal="true" aria-label="Məxfilik siyasəti">
+  <div class="box" style="width:min(640px,100%)">
+    <h3>Məxfilik siyasəti</h3>
+    <div class="note" style="text-align:left;display:grid;gap:10px;max-height:60vh;overflow:auto;padding-right:4px">
+      <p><b>1. Hansı məlumatları toplayırıq.</b> Qeydiyyat və elan yerləşdirmə zamanı ad, telefon, e-poçt, FİN, şəxsiyyət vəsiqəsinin şəkli, ev sahibləri üçün əlavə olaraq VÖEN, bank/IBAN rekvizitləri, WhatsApp nömrəsi, evin dəqiq ünvanı və yerləşdirdiyiniz şəkillər toplanılır.</p>
+      <p><b>2. Nə üçün toplayırıq.</b> Bu məlumatlar yalnız hesabınızı təsdiqləmək, rezervasiyaları həyata keçirmək, ödənişləri ev sahibinə çatdırmaq, fırıldaqçılığın (saxta sənəd, təkrar qeydiyyat, təkrar elan) qarşısını almaq və mübahisə yarandıqda tərəfləri müəyyən etmək üçün istifadə olunur.</p>
+      <p><b>3. Kimlər görə bilər.</b> Şəxsiyyət sənədiniz, FİN, IBAN və dəqiq ünvan yalnız Buralar.az adminləri tərəfindən görünür. Digər istifadəçilər yalnız zəruri məlumatları (ad, ümumi ünvan, rəy/reytinq) görür. Dəqiq ünvan yalnız rezervasiya təsdiqləndikdən və giriş vaxtı yaxınlaşdıqdan sonra müvafiq qonağa göstərilir.</p>
+      <p><b>4. Necə saxlanılır.</b> Bütün məlumatlar Google Firebase (Firestore və Storage) buludunda şifrələnmiş bağlantı üzərindən saxlanılır. Fırıldaqçılığın qarşısını almaq üçün istifadə olunan bəzi "barmaq izi" (heş) kodları adi istifadəçilərə açılmayan gizli bazalarda saxlanılır — bunlar xam məlumat deyil, təkrarı yoxlamaq üçün riyazi kodlardır.</p>
+      <p><b>5. Nə qədər saxlanılır.</b> Məlumatlarınız hesabınız aktiv olduğu müddətdə saxlanılır. Hesabın silinməsini tələb etsəniz, qanuni tələb olunan minimum məlumat (fırıldaqçılıq və maliyyə qeydləri üçün) istisna olmaqla, digər şəxsi məlumatlarınız silinir.</p>
+      <p><b>6. Kukilər və brauzer yaddaşı.</b> Sayt seçdiyiniz görünüş rejimi (açıq/qaranlıq) kimi kiçik texniki tənzimləmələri brauzerinizin öz yaddaşında saxlaya bilər. Bu məlumat başqa heç kimə ötürülmür.</p>
+      <p><b>7. Üçüncü tərəflər.</b> Ödəniş, saxlama və autentifikasiya üçün Google Firebase infrastrukturundan istifadə olunur. Giriş bildirişləri WhatsApp linki vasitəsilə göndərilir — bu, WhatsApp-ın öz məxfilik siyasətinə tabedir.</p>
+      <p><b>8. Sizin hüquqlarınız.</b> İstənilən vaxt öz məlumatlarınıza baxmaq, düzəliş etmək və ya hesabınızın silinməsini tələb etmək hüququnuz var. Bunun üçün <a href="mailto:salam@buralar.az" style="color:var(--nar);font-weight:700">salam@buralar.az</a> ünvanına yaza bilərsiniz.</p>
+      <p style="color:var(--muted)">Son yenilənmə: 2026. Platforma inkişaf mərhələsində olduğu üçün bu siyasət zaman-zaman yenilənə bilər.</p>
+    </div>
+    <button class="btn ghost" onclick="closeModal('privacyModal')">Bağla</button>
   </div>
 </div>
 
@@ -1013,7 +1056,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
 <footer><div class="wrap">
   <div>Buralar.az — Azərbaycanda gündəlik kirayə platforması (demo versiya)</div>
-  <div>Dəstək: salam@buralar.az · +994 12 000 00 00</div>
+  <div>Dəstək: salam@buralar.az · +994 12 000 00 00 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a></div>
 </div></footer>
 <div class="toast" id="toast"></div>
 
@@ -1093,7 +1136,8 @@ var SEED=[
 var state={tab:'kesf',sub:'rezall',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
   notifications:[],reviews:[],reports:[],customers:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
   coverData:null,coverFile:null,pendingRooms:[],currentRoomPhotos:[],currentRoomPhotoFiles:[],galleryList:[],galleryIdx:0,
-  calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null,guestType:null};
+  calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null,guestType:null,pool:'Hamısı',
+  chatsGuest:[],chatsHost:[],chatsAdmin:[],openChatId:null};
 
 /* ============ Firebase (paylaşılan verilənlər bazası — bütün Azərbaycandan hər kəs eyni elanları görsün) ============ */
 var firebaseConfig = {
@@ -1198,6 +1242,170 @@ function startSharedSync(){
 }
 function startAdminOnlySync(){
   customersSync.start(); reportsSync.start();
+}
+
+/* ============ Bron öncəsi qonaq–ev sahibi yazışması ============
+   Hər elan+qonaq cütü üçün bir "chat" sənədi: id = elanId + "__" + qonağın e-poçtu (sadələşdirilmiş).
+   Qonaq yalnız öz yazışmalarını (guestEmail===özü), ev sahibi yalnız öz elanlarına gələn yazışmaları
+   (hostEmail===özü) görür; admin hamısını görür (Firestore Rules-da eyni şərt təkrarlanır).
+   Telefon nömrəsi paylaşımının qarşısını almaq üçün göndərilən hər mesaj həm rəqəmlə (ayrılmış və ya
+   bitişik), həm də hərflə yazılmış (sıfır, bir, iki…) formatda yoxlanılır — tam qarantiya vermir
+   (çox məharətli gizlətmə üsullarını tuta bilməyə bilər), amma adi cəhdlərin böyük əksəriyyətini bloklayır. */
+function chatIdFor(listingId, guestEmail){
+  return String(listingId)+'__'+String(guestEmail||'').toLowerCase().replace(/[^a-z0-9]/g,'_');
+}
+var AZ_NUM_WORDS=['sıfır','bir','iki','üç','dörd','beş','altı','yeddi','səkkiz','doqquz'];
+function hasDigitPhonePattern(text){
+  /* Ən azı 3 rəqəm qrupu (2 ayırıcı) yan-yana gələndə (məs. "050 123 45 67") — sadə qiymət
+     aralığı kimi 2 qrupdan (məs. "1000-2000") ibarət yazılar bununla qarışdırılmır. Ayırıcısız
+     bitişik yazılmış nömrələr üçün (məs. "0501234567") ayrıca 9+ rəqəm şərti var. */
+  var s=String(text||'');
+  var re=/\d+(?:[\s\-()]+\d+){2,}/g, m;
+  while((m=re.exec(s))){ if(m[0].replace(/[^0-9]/g,'').length>=7) return true; }
+  return /\d{9,}/.test(s);
+}
+function hasWordPhonePattern(text){
+  /* \b (word boundary) Azərbaycan hərfləri (ə, ı, ö, ü, ş, ç, ğ) ilə düzgün işləmədiyi üçün
+     mətni hərf-olmayan simvollara görə "token"lara bölüb hər sözü ayrı-ayrı yoxlayırıq. */
+  var tokens=String(text||'').toLowerCase().split(/[^a-zçəğıöşü]+/i).filter(Boolean);
+  var run=0;
+  for(var i=0;i<tokens.length;i++){
+    if(AZ_NUM_WORDS.indexOf(tokens[i])>=0){ run++; if(run>=6) return true; } else run=0;
+  }
+  return false;
+}
+function containsPhoneAttempt(text){ return hasDigitPhonePattern(text) || hasWordPhonePattern(text); }
+
+function saveChat(chat){
+  if(!fbOnline){ toast('Server bağlantısı yoxdur'); return Promise.resolve(); }
+  return db.collection('chats').doc(chat.id).set(chat).catch(function(e){
+    console.error('chats yazma xətası:', e); toast('Mesaj göndərilə bilmədi: '+e.message);
+    throw e;
+  });
+}
+var _chatsGuestUnsub=null, _chatsHostUnsub=null, _chatsAdminUnsub=null;
+function _renderChatsSideEffects(){
+  renderHost();
+  if(document.getElementById('chatModal') && document.getElementById('chatModal').classList.contains('open') && state.openChatId){
+    renderChatModal(state.openChatId);
+  }
+  if(state.adminAuth) renderAdmin();
+}
+function startUserChatSync(email){
+  if(!fbOnline || !db || !email) return;
+  if(_chatsGuestUnsub){ _chatsGuestUnsub(); _chatsGuestUnsub=null; }
+  if(_chatsHostUnsub){ _chatsHostUnsub(); _chatsHostUnsub=null; }
+  _chatsGuestUnsub = db.collection('chats').where('guestEmail','==',email).onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){arr.push(d.data());}); state.chatsGuest=arr; _renderChatsSideEffects();
+  }, function(e){ console.error('chats(qonaq) sinxronizasiya xətası:', e); });
+  _chatsHostUnsub = db.collection('chats').where('hostEmail','==',email).onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){arr.push(d.data());}); state.chatsHost=arr; _renderChatsSideEffects();
+  }, function(e){ console.error('chats(ev sahibi) sinxronizasiya xətası:', e); });
+}
+function stopUserChatSync(){
+  if(_chatsGuestUnsub){ _chatsGuestUnsub(); _chatsGuestUnsub=null; }
+  if(_chatsHostUnsub){ _chatsHostUnsub(); _chatsHostUnsub=null; }
+  state.chatsGuest=[]; state.chatsHost=[];
+}
+function startAdminChatSync(){
+  if(!fbOnline || !db) return;
+  if(_chatsAdminUnsub){ _chatsAdminUnsub(); _chatsAdminUnsub=null; }
+  _chatsAdminUnsub = db.collection('chats').onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){arr.push(d.data());}); state.chatsAdmin=arr; if(state.adminAuth) renderAdmin();
+  }, function(e){ console.error('chats(admin) sinxronizasiya xətası:', e); });
+}
+function stopAdminChatSync(){
+  if(_chatsAdminUnsub){ _chatsAdminUnsub(); _chatsAdminUnsub=null; }
+  state.chatsAdmin=[];
+}
+function allChatsMap(){
+  var m={};
+  state.chatsGuest.forEach(function(c){m[c.id]=c;});
+  state.chatsHost.forEach(function(c){m[c.id]=c;});
+  state.chatsAdmin.forEach(function(c){m[c.id]=c;});
+  return m;
+}
+var _draftChats={};
+function findChat(id){ return allChatsMap()[id] || _draftChats[id]; }
+function openChat(listingId){
+  if(needLogin()) return;
+  var x=byId(listingId); if(!x) return;
+  if(x.ownerEmail===state.user.email){ toast('Öz elanınıza yazışma göndərə bilməzsiniz'); return; }
+  var id=chatIdFor(listingId, state.user.email);
+  var existing=findChat(id);
+  state.openChatId=id;
+  if(!existing){
+    existing={id:id, listingId:listingId, listingTitle:x.t, hostEmail:x.ownerEmail, hostName:x.host,
+      guestEmail:state.user.email, guestName:state.user.name, messages:[], lastAt:Date.now(), lastFrom:null};
+    _draftChats[id]=existing;
+  }
+  renderChatModal(id, existing);
+  openModal('chatModal');
+}
+function openChatById(id){
+  var c=findChat(id); if(!c) return;
+  state.openChatId=id;
+  renderChatModal(id, c);
+  openModal('chatModal');
+}
+function chatMessagesHtml(chat){
+  if(!chat.messages || !chat.messages.length) return '<p class="note" style="text-align:left">Hələ mesaj yoxdur. Sual verməkdən çəkinmə!</p>';
+  return chat.messages.map(function(m){
+    var mine = (m.from==='guest' && state.user && state.user.email===chat.guestEmail && !state.adminAuth) || (m.from==='host' && state.user && state.user.email===chat.hostEmail);
+    return '<div style="display:flex;justify-content:'+(mine?'flex-end':'flex-start')+';margin:6px 0">'
+      +'<div style="max-width:78%;background:'+(mine?'var(--nar)':'var(--sand)')+';color:'+(mine?'#fff':'var(--text)')+';border-radius:14px;padding:9px 13px;font-size:14.5px;font-weight:500;white-space:pre-wrap">'
+      +esc(m.text)+'<div style="font-size:11px;opacity:.75;margin-top:4px;font-weight:700">'+(m.from==='guest'?esc(chat.guestName||'Qonaq'):esc(chat.hostName||'Ev sahibi'))+' · '+new Date(m.ts).toLocaleString('az-AZ')+'</div></div></div>';
+  }).join('');
+}
+function renderChatModal(id, chatArg){
+  var chat = chatArg || findChat(id); if(!chat) return;
+  var readOnly = state.adminAuth && !(state.user && (state.user.email===chat.guestEmail || state.user.email===chat.hostEmail));
+  document.getElementById('chatTitle').textContent = esc(chat.listingTitle||'')+' — '+esc(chat.guestName||chat.guestEmail)+' ↔ '+esc(chat.hostName||chat.hostEmail);
+  document.getElementById('chatMessages').innerHTML = chatMessagesHtml(chat);
+  document.getElementById('chatInputRow').style.display = readOnly ? 'none' : 'grid';
+  var box=document.getElementById('chatMessages'); box.scrollTop=box.scrollHeight;
+}
+function sendChatMessage(){
+  var id=state.openChatId; var chat=findChat(id);
+  var input=document.getElementById('chatInput'); var text=(input.value||'').trim();
+  if(!text) return;
+  if(containsPhoneAttempt(text)){ toast('Telefon nömrəsi paylaşmaq olmaz — bütün əlaqə sayt daxilində qalmalıdır'); return; }
+  if(!state.user){ needLogin(); return; }
+  var role = (state.user.email===chat.hostEmail) ? 'host' : 'guest';
+  if(role!=='host' && role!=='guest'){ return; }
+  chat = chat || {};
+  chat.messages = chat.messages || [];
+  chat.messages.push({from:role, text:text, ts:Date.now()});
+  chat.lastAt=Date.now(); chat.lastFrom=role;
+  input.value='';
+  saveChat(chat).then(function(){ renderChatModal(id, chat); });
+}
+function renderHostMessagesList(mine){
+  var el=document.getElementById('hostmessages'); if(!el) return;
+  var myIds = mine.map(function(x){return x.id;});
+  var list = state.chatsHost.filter(function(c){ return myIds.indexOf(c.listingId)>=0; })
+    .sort(function(a,b){return (b.lastAt||0)-(a.lastAt||0);});
+  if(!list.length){ el.innerHTML='<div class="empty"><h3>Hələ yazışma yoxdur</h3><p>Qonaqlar bron etməzdən əvvəl sənə sual verə bilər, burada görünəcək.</p></div>'; return; }
+  el.innerHTML = list.map(function(c){
+    var last = c.messages && c.messages.length ? c.messages[c.messages.length-1] : null;
+    return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
+      +'<h4>'+esc(c.listingTitle||'')+' — '+esc(c.guestName||c.guestEmail)+'</h4>'
+      +(last?'<div class="m" style="white-space:normal">'+(last.from==='host'?'Sən: ':'Qonaq: ')+esc(last.text.slice(0,90))+'</div>':'<div class="m">Mesaj yoxdur</div>')
+      +'</div><div class="act"><button class="btn sm dark" onclick="openChatById(\''+c.id+'\')">Aç</button></div></div>';
+  }).join('');
+}
+function renderAdminMessages(){
+  var el=document.getElementById('msglist'); if(!el) return;
+  document.getElementById('msgcount').textContent = state.chatsAdmin.length?('('+state.chatsAdmin.length+')'):'';
+  if(!state.chatsAdmin.length){ el.innerHTML='<div class="empty"><h3>Hələ yazışma yoxdur</h3><p>Qonaqla ev sahibi arasındakı bütün bron-öncəsi yazışmalar burada görünəcək.</p></div>'; return; }
+  var list = state.chatsAdmin.slice().sort(function(a,b){return (b.lastAt||0)-(a.lastAt||0);});
+  el.innerHTML = list.map(function(c){
+    return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
+      +'<h4>'+esc(c.listingTitle||'')+'</h4>'
+      +'<div class="m">Qonaq: '+esc(c.guestName||'')+' ('+esc(c.guestEmail)+') · Ev sahibi: '+esc(c.hostName||'')+' ('+esc(c.hostEmail)+')</div>'
+      +'<div class="m">'+(c.messages?c.messages.length:0)+' mesaj · son fəaliyyət: '+(c.lastAt?new Date(c.lastAt).toLocaleString('az-AZ'):'—')+'</div>'
+      +'</div><div class="act"><button class="btn sm ghost" onclick="openChatById(\''+c.id+'\')">Bax</button></div></div>';
+  }).join('');
 }
 /* Cari daxil olmuş istifadəçinin ÖZ qeydiyyat sənədini canlı izləyir — admin onun statusunu
    (təsdiq/rədd) dəyişən kimi, həmin istifadəçi səhifəni yeniləmədən dərhal görür/bildiriş alır.
@@ -1420,7 +1628,7 @@ function googleSignIn(){
       if(snap.exists){
         var existing=snap.data();
         state.user={name:existing.name, email:existing.email, phone:existing.phone, fin:existing.fin, uid:u.uid, verified:existing.status==='verified', status:existing.status, rejectionReason:existing.rejectionReason||null};
-        save(); renderAuth(); renderBookings(); renderHost(); closeModal('loginModal'); startOwnCustomerListener(u.email);
+        save(); renderAuth(); renderBookings(); renderHost(); closeModal('loginModal'); startOwnCustomerListener(u.email); startUserChatSync(u.email);
         if(existing.status==='rejected'){
           toast('Qeydiyyatın rədd edilib: '+(existing.rejectionReason||''));
         } else {
@@ -1493,7 +1701,7 @@ function finishLogin(){
     return customersSync.save(rec);
   }).then(function(){
     state.user={name:n,email:e,phone:p,fin:f,uid:fbAuth.currentUser.uid,verified:true,status:status,rejectionReason:null};
-    save(); renderAuth(); renderBookings(); renderHost(); startOwnCustomerListener(e);
+    save(); renderAuth(); renderBookings(); renderHost(); startOwnCustomerListener(e); startUserChatSync(e);
     setTimeout(function(){
       closeModal('loginModal');
       toast(flags.length?("Xoş gəldin, "+n.split(' ')[0]+" — hesabın admin nəzarətindədir"):("Xoş gəldin, "+n.split(' ')[0]+"! Kimliyin təsdiqləndi"));
@@ -1506,6 +1714,7 @@ function finishLogin(){
 }
 function logout(){
   stopOwnCustomerListener();
+  stopUserChatSync();
   state.user=null; save(); renderAuth(); renderBookings(); renderHost(); toast("Hesabdan çıxdın");
   if(fbAuth) fbAuth.signOut().catch(function(e){ console.error('Çıxış xətası:', e); });
 }
@@ -1559,6 +1768,7 @@ function adminGoogleLogin(){
     document.getElementById('adminGate').style.display='none';
     document.getElementById('adminContent').style.display='block';
     startAdminOnlySync();
+    startAdminChatSync();
     renderAdmin();
     toast("Admin panelinə xoş gəldin");
   }).catch(function(e){
@@ -1568,6 +1778,7 @@ function adminGoogleLogin(){
 }
 function adminLogout(){
   state.adminAuth=false;
+  stopAdminChatSync();
   document.getElementById('adminGate').style.display='flex';
   document.getElementById('adminContent').style.display='none';
   toast("Admin paneldən çıxıldı");
@@ -1575,7 +1786,7 @@ function adminLogout(){
      qonaq/ev sahibi kimi giriş edibsə, onun ümumi sessiyası (state.user) ayrıca saxlanılır və
      logout() ilə çıxılmalıdır. */
 }
-var SUBTABS=['rezall','cust','mod','edits','cmp','rep','notif','fin'];
+var SUBTABS=['rezall','cust','mod','edits','cmp','rep','notif','msg','fin'];
 function goSub(s){
   state.sub=s;
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
@@ -1593,9 +1804,16 @@ function renderChips(){
   ['Mənzil','Həyət evi','Villa','Bağ evi','Studiya','Otaq','A-Frame evi'].forEach(function(t){
     ht+='<button class="chip" aria-pressed="'+(state.type===t)+'" onclick="setType(\''+t+'\')">'+t+'</button>'; });
   document.getElementById('chipsType').innerHTML=ht;
+
+  var pt='<button class="chip" aria-pressed="'+(state.pool==='Hamısı')+'" onclick="setPool(\'Hamısı\')">Hamısı</button>'
+    +'<button class="chip" aria-pressed="'+(state.pool==='var')+'" onclick="setPool(\'var\')">Hovuzlu</button>'
+    +'<button class="chip" aria-pressed="'+(state.pool==='yox')+'" onclick="setPool(\'yox\')">Hovuzsuz</button>';
+  document.getElementById('chipsPool').innerHTML=pt;
 }
 function setRegion(r){ state.region=(state.region===r?'Hamısı':r); render(); }
 function setType(t){ state.type=(state.type===t?'Hamısı':t); render(); }
+function setPool(p){ state.pool=p; render(); }
+function listingHasPool(x){ return !!(x.rooms && x.rooms.some(function(r){return r.kind==='pool';})); }
 
 function isListingFree(id,a,b){
   var bookingConflict = state.bookings.some(function(bk){
@@ -1629,6 +1847,8 @@ function filtered(){
   var list=approved().filter(function(x){
     if(state.region!=='Hamısı' && regionOf(x.c)!==state.region) return false;
     if(state.type!=='Hamısı' && x.ty!==state.type) return false;
+    if(state.pool==='var' && !listingHasPool(x)) return false;
+    if(state.pool==='yox' && listingHasPool(x)) return false;
     if(x.g<g) return false;
     if(q && (x.t+' '+x.c+' '+x.d+' '+x.ty).toLowerCase().indexOf(q)<0) return false;
     if(!listingAcceptsGuestType(x,state.guestType)) return false;
@@ -1681,7 +1901,7 @@ function render(scroll){
   }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Bu filtrlərlə ev tapılmadı</h3><p>Bölgəni dəyiş və ya filtrləri sıfırla.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>';
   if(scroll) document.getElementById('chipsRegion').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function resetFilters(){ state.region='Hamısı'; state.type='Hamısı'; document.getElementById('q').value=''; render(); }
+function resetFilters(){ state.region='Hamısı'; state.type='Hamısı'; state.pool='Hamısı'; document.getElementById('q').value=''; render(); }
 
 /* ============ detal ============ */
 function byId(id){ return all().filter(function(x){return x.id==id;})[0]; }
@@ -1834,6 +2054,7 @@ function openDetail(id,bookingCode){
     +(((x.minNights&&x.minNights>1)||x.maxNights)?'<div class="hint" style="margin:-4px 0 2px">'+(x.minNights>1?('Minimum '+x.minNights+' gecə'):'')+(x.minNights>1&&x.maxNights?' · ':'')+(x.maxNights?('Maksimum '+x.maxNights+' gecə'):'')+'</div>':'')
     +(x.minGuestRating?'<div class="hint" style="margin:-2px 0 2px;color:var(--warn)">Yalnız '+x.minGuestRating+'+ ulduz reytinqli qonaqlar bron edə bilər</div>':'')
     +(guestPolicyText(x)?'<div class="hint" style="margin:-2px 0 2px;color:var(--warn)">Yalnız bunlara icarəyə verilir: '+esc(guestPolicyText(x))+'</div>':'')
+    +((!state.user || x.ownerEmail!==state.user.email)?'<button type="button" class="btn sm ghost" onclick="openChat('+x.id+')">Ev sahibi ilə yazış</button>':'')
     +priceTiersTableHtml(x)
     +'<div class="fieldgrid"><div class="f"><label for="b1">Giriş</label><input type="hidden" id="b1" value="'+d1+'" onchange="calc()"><button type="button" class="dateBtn" id="b1-btn" onclick="toggleDatePicker(\'b1\',\''+today()+'\')">'+fmtAzDate(d1)+'</button></div>'
     +'<div class="f"><label for="b2">Çıxış</label><input type="hidden" id="b2" value="'+d2+'" onchange="calc()"><button type="button" class="dateBtn" id="b2-btn" onclick="toggleDatePicker(\'b2\',\''+today()+'\')">'+fmtAzDate(d2)+'</button></div></div>'
@@ -2516,6 +2737,7 @@ function renderHost(){
   }).join('');
 
   renderHostCalendar();
+  renderHostMessagesList(mine);
 
   var myIds = mine.map(function(x){return x.id;});
   var hb = state.bookings.filter(function(b){ return myIds.indexOf(b.lid)>=0; });
@@ -3161,6 +3383,8 @@ function renderAdmin(){
       +(n.mapsUrl?'<a class="btn sm ghost" style="width:auto;text-decoration:none;display:inline-block" href="'+n.mapsUrl+'" target="_blank" rel="noopener">Xəritədə bax</a>':'')
       +'</div></div>';
   }).join('') : '<div class="empty"><h3>Hələ bildiriş göndərilməyib</h3><p>Girişə 24 saat qalanda ev sahibinə avtomatik bildiriş gedəcək və burada qeydə düşəcək.</p></div>';
+
+  renderAdminMessages();
 }
 
 /* ============ tema ============ */
@@ -3182,6 +3406,7 @@ if(fbAuth){
       document.getElementById('adminGate').style.display='none';
       document.getElementById('adminContent').style.display='block';
       startAdminOnlySync();
+      startAdminChatSync();
       renderAdmin();
     }
     /* localStorage-dan bərpa olunan bir istifadəçi sessiyası varsa, Firebase sessiyası da
@@ -3189,6 +3414,7 @@ if(fbAuth){
        təsdiq/rədd etsə, istifadəçi bunu dərhal görsün. */
     if(u && state.user && state.user.email===u.email && !_ownCustomerUnsub){
       startOwnCustomerListener(u.email);
+      startUserChatSync(u.email);
     }
   });
 }
