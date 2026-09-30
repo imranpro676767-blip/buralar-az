@@ -2620,7 +2620,8 @@ function renderBookings(){
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.total)+'</div>'
       +(b.status==='hold'
-        ? '<button class="btn sm ghost" onclick="openComplaint(\''+b.code+'\')">Şikayət et</button>'
+        ? '<button class="btn sm ghost" onclick="openDetail('+b.lid+',\''+b.code+'\')">Evə bax</button>'
+          +'<button class="btn sm ghost" onclick="openComplaint(\''+b.code+'\')">Şikayət et</button>'
           +(b.notified24?'<span class="m">Ev sahibinə bildiriş göndərilib</span>':'')
         : (b.status==='released'
             ? '<button class="btn sm ghost" onclick="openDetail('+b.lid+',\''+b.code+'\')">Evə bax</button>'
