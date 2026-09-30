@@ -863,6 +863,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
 
       <div class="sub active" id="s-rezall">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn sm ghost" onclick="exportBookingsCsv()">⬇ CSV ixrac et</button></div>
         <div class="tblwrap"><table class="tbl">
           <thead><tr><th>Kod</th><th>Ev</th><th>Qonaq</th><th>Telefon</th><th>Ev sahibi</th><th>Tarix</th><th>Gecə</th><th>Ödəniş</th><th>Bank</th><th>Status</th><th>Admin əməliyyatı</th></tr></thead>
           <tbody id="rezalltable"></tbody>
@@ -870,12 +871,18 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
 
       <div class="sub" id="s-cust">
-        <input type="text" id="custSearch" placeholder="Ad, telefon, e-poçt və ya FİN üzrə axtar..." oninput="renderCustomers()"
-          style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <input type="text" id="custSearch" placeholder="Ad, telefon, e-poçt və ya FİN üzrə axtar..." oninput="renderCustomers()"
+            style="flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px">
+          <button class="btn sm ghost" style="width:auto;white-space:nowrap" onclick="exportCustomersCsv()">⬇ CSV</button>
+        </div>
         <div class="blist" id="customerlist"></div>
       </div>
 
-      <div class="sub" id="s-mod"><div class="blist" id="modlist"></div></div>
+      <div class="sub" id="s-mod">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn sm ghost" onclick="exportListingsCsv()">⬇ Bütün elanları CSV ixrac et</button></div>
+        <div class="blist" id="modlist"></div>
+      </div>
       <div class="sub" id="s-hosts">
         <input type="text" id="hostSearch" placeholder="Ad, e-poçt və ya VÖEN üzrə axtar..." oninput="renderHostsAdmin()"
           style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
@@ -894,6 +901,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="sub" id="s-support"><div class="blist" id="supportlist"></div></div>
 
       <div class="sub" id="s-fin">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn sm ghost" onclick="exportBookingsCsv()">⬇ Mühasibatlıq üçün CSV ixrac et</button></div>
         <div class="tblwrap"><table class="tbl">
           <thead><tr><th>Kod</th><th>Ev</th><th>Tarix</th><th>Gecə</th><th>Kirayə</th><th>Müştəri ödəyir</th><th>Ev sahibinə</th><th>Komissiya</th><th>Status</th></tr></thead>
           <tbody id="admintable"></tbody>
@@ -1033,6 +1041,25 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   </div>
 </div>
 
+<!-- TERMS OF SERVICE -->
+<div class="modal" id="tosModal" role="dialog" aria-modal="true" aria-label="İstifadə şərtləri">
+  <div class="box" style="width:min(640px,100%)">
+    <h3>İstifadə Şərtləri</h3>
+    <div class="note" style="text-align:left;display:grid;gap:10px;max-height:60vh;overflow:auto;padding-right:4px">
+      <p><b>1. Platformanın rolu.</b> Buralar.az qonaqları və ev sahiblərini bir araya gətirən vasitəçi (marketplace) platformadır — evlərin sahibi Buralar.az deyil, hər elan öz ev sahibinin mülkiyyətidir. Buralar.az tərəflər arasında rezervasiya, ödəniş və əlaqə prosesini asanlaşdırır, lakin ev ilə bağlı vəziyyət, təsvirin dəqiqliyi və qonaqpərvərlik öhdəliyi birbaşa ev sahibinə aiddir.</p>
+      <p><b>2. Hesab və doğrulama.</b> Rezervasiya etmək üçün qeydiyyat və şəxsiyyət doğrulaması (KYC) məcburidir. Admin istənilən hesabı — saxta məlumat, şübhəli sənəd və ya təkrar qeydiyyat aşkar olunduqda — rədd edə və ya bloklaya bilər.</p>
+      <p><b>3. Rezervasiya və ödəniş.</b> Rezervasiya təsdiqləndikdən sonra ödəniş girişə qədər platformada "gözləmə" statusunda saxlanılır və giriş tarixindən sonra ev sahibinə köçürülür (platforma xidmət haqqı çıxılmaqla). Qonaq ödəməni bron zamanı göstərilən bank rekvizitlərinə köçürməlidir; saxta və ya natamam köçürmə rezervasiyanın ləğvinə səbəb ola bilər.</p>
+      <p><b>4. Ləğvetmə və şikayət.</b> Ev sahibinin təqsiri üzündən (ev təsvirə uyğun olmaması, giriş verilməməsi və s.) yaranan problemlər üzrə qonaq admin-ə şikayət təqdim edə bilər; admin araşdırıb ödənişin qismən və ya tam geri qaytarılmasına qərar verə bilər. Şikayət olmadan ləğvetmə qaydaları hər elanın öz səhifəsində göstərilən qaydalara tabedir.</p>
+      <p><b>5. Davranış qaydaları.</b> Saxta rəy yazmaq, saxta sənəd təqdim etmək, başqasının bronunu və ya hesabını icazəsiz dəyişdirməyə cəhd etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın həmişəlik bloklanmasına səbəb ola bilər.</p>
+      <p><b>6. Məsuliyyətin məhdudlaşdırılması.</b> Buralar.az elanların dəqiqliyinə görə mümkün qədər yoxlama aparsa da, ev sahibinin təqdim etdiyi məlumatın tam düzgünlüyünə zəmanət vermir. Platforma qonaq və ev sahibi arasındakı mübahisələrdə vasitəçilik edir, lakin birbaşa hüquqi məsuliyyət daşımır.</p>
+      <p><b>7. Şərtlərin dəyişməsi.</b> Bu şərtlər platforma inkişaf etdikcə yenilənə bilər; əhəmiyyətli dəyişikliklər saytda elan olunur. Platformadan istifadəni davam etdirmək yenilənmiş şərtləri qəbul etmək deməkdir.</p>
+      <p><b>8. Əlaqə.</b> Suallarınız üçün <a href="mailto:salam.buralar.az@gmail.com" style="color:var(--nar);font-weight:700">salam.buralar.az@gmail.com</a> ünvanına yaza bilərsiniz.</p>
+      <p style="color:var(--muted)">Son yenilənmə: 2026. Platforma inkişaf mərhələsində olduğu üçün bu şərtlər zaman-zaman yenilənə bilər.</p>
+    </div>
+    <button class="btn ghost" onclick="closeModal('tosModal')">Bağla</button>
+  </div>
+</div>
+
 <!-- VERIFY CALL NOTICE -->
 <div class="modal" id="verifyCallModal" role="dialog" aria-modal="true" aria-label="Görüntülü təsdiq bildirişi">
   <div class="box">
@@ -1110,7 +1137,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
 <footer><div class="wrap">
   <div>buralar.az — Azərbaycanda gündəlik kirayə platforması</div>
-  <div>Dəstək: salam.buralar.az@gmail.com · +994 50 331 92 99 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a></div>
+  <div>Dəstək: salam.buralar.az@gmail.com · +994 50 331 92 99 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a> · <a href="#" onclick="openModal('tosModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">İstifadə şərtləri</a></div>
 </div></footer>
 <div class="toast" id="toast"></div>
 
@@ -1118,6 +1145,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-functions-compat.js"></script>
 <script>
 /* ============ sabitlər ============ */
 var GUEST_FEE=0.10, HOST_FEE=0.03, RELEASE_HOURS=24;
@@ -1209,12 +1237,13 @@ var firebaseConfig = {
    siyahını brauzer konsolundan dəyişsə belə, serverə admin yazısı edə bilməz. */
 var ADMIN_EMAILS=["imranpro676767@gmail.com"];
 function isAdminEmail(email){ return !!email && ADMIN_EMAILS.indexOf(email.toLowerCase())>=0; }
-var db=null, fbStorage=null, fbAuth=null, fbOnline=false;
+var db=null, fbStorage=null, fbAuth=null, fbFunctions=null, fbOnline=false;
 try{
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   fbStorage = firebase.storage();
   fbAuth = firebase.auth();
+  fbFunctions = firebase.functions();
   fbOnline = true;
 }catch(e){ console.error('Firebase başlatma xətası:', e); }
 /* Elanlar (state.custom) artıq localStorage-da yox, Firestore-un "listings" kolleksiyasında saxlanılır.
@@ -2136,16 +2165,25 @@ function cardPriceHtml(x){
   if(lowest<x.p) return az(lowest)+'-dan <span>/ gecə (uzun müddətə endirim)</span>';
   return az(x.p)+' <span>/ gecə</span>';
 }
-function render(scroll){
+/* Pagination: 500+ elan olanda hamısını eyni anda DOM-a çəkmək saytı yavaşladırdı (xüsusilə telefonda).
+   İndi ilk növbədə yalnız GRID_PAGE_SIZE qədər kart göstərilir, qalanı "Daha çox göstər" düyməsi ilə
+   tələb üzrə əlavə olunur. "gridShown" adi (localStorage-a düşməyən) dəyişəndir — filtr/axtarış hər
+   dəyişəndə sıfırlanır, yalnız "loadMoreListings()" onu artırır. */
+var GRID_PAGE_SIZE=30, gridShown=GRID_PAGE_SIZE;
+var adminRezShown=100, adminFinShown=100;
+function loadMoreListings(){ gridShown+=GRID_PAGE_SIZE; render(false,true); }
+function render(scroll,keepPage){
   renderChips();
+  if(!keepPage) gridShown=GRID_PAGE_SIZE;
   if(!state.guestType){
     document.getElementById('count').textContent="Əvvəlcə kim olduğunuzu seçin";
     document.getElementById('grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Zəhmət olmasa əvvəlcə "Kimsiniz?" sahəsini seçin</h3><p>Axtarış nəticələrini göstərmək üçün ailə, kişi qrupu və ya qadın qrupu olduğunuzu qeyd etməlisiniz.</p></div>';
     return;
   }
-  var list=filtered();
-  document.getElementById('count').textContent=list.length+" ev tapıldı";
-  document.getElementById('grid').innerHTML = list.map(function(x){
+  var full=filtered();
+  document.getElementById('count').textContent=full.length+" ev tapıldı";
+  var list=full.slice(0,gridShown);
+  document.getElementById('grid').innerHTML = (list.map(function(x){
     var thumb = x.cover ? '<img src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return '<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
       +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+'</div>'
@@ -2153,7 +2191,8 @@ function render(scroll){
       +'<div class="loc">'+esc(x.c)+', '+esc(x.d)+' · '+esc(x.ty)+'</div>'
       +'<div class="meta">'+x.g+' qonaq · '+x.r+' otaq · '+x.b+' sanitar qovşaq</div>'
       +'<div class="price">'+cardPriceHtml(x)+'</div></div>';
-  }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Bu filtrlərlə ev tapılmadı</h3><p>Bölgəni dəyiş və ya filtrləri sıfırla.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>';
+  }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Bu filtrlərlə ev tapılmadı</h3><p>Bölgəni dəyiş və ya filtrləri sıfırla.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>')
+    + (full.length>gridShown ? '<div style="grid-column:1/-1;text-align:center;padding:12px 0"><button class="btn ghost" onclick="loadMoreListings()">Daha çox göstər ('+(full.length-gridShown)+' qalır)</button></div>' : '');
   if(scroll) document.getElementById('chipsRegion').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function resetFilters(){ state.region='Hamısı'; state.type='Hamısı'; state.pool='Hamısı'; document.getElementById('q').value=''; render(); }
@@ -2508,20 +2547,23 @@ function book(id){
   }
   if(!state.accepted){ toast("Ev qaydalarını qəbul et"); return; }
   if(!isListingFree(x.id,a,b)){ toast("Bu tarixlər üçün ev artıq bron olunub, başqa tarix seç"); return; }
-  var c=priceOf(x,n);
-  var releaseAt=new Date(a+"T"+((rulesOf(x).cin)||"14:00")+":00").getTime()+RELEASE_HOURS*3600000;
-  var newBooking={
-    code:"BR-"+Math.floor(100000+Math.random()*899999), lid:x.id, title:x.t, city:x.c, sc:x.sc,
-    d1:a,d2:b,n:n,g:g,bank:state.bank,host:x.host,guest:state.user.name,phone:state.user.phone,email:state.user.email,
-    rent:c.rent,clean:c.clean,total:c.total,hostGets:c.hostGets,platform:c.platform,
-    status:'hold', releaseAt:releaseAt, complaint:null, rules:rulesOf(x), notified24:false, checkinAt:releaseAt-RELEASE_HOURS*3600000
-  };
-  state.bookings.unshift(newBooking);
-  bookingsSync.save(newBooking).then(function(){
+  /* İkiqat-bron qarşısı: bron artıq client-də tərtib edilib birbaşa Firestore-a yazılmır — server
+     tərəfdə ("createBooking" Cloud Function) bir Firestore TRANZAKSİYASI daxilində yenidən yoxlanılıb
+     yaradılır. Əvvəllər yalnız yuxarıdakı "isListingFree" yoxlanması var idi ki, bu, İKİ qonaq eyni
+     anda "Bron et" düyməsinə basanda hər ikisinin "uğurlu" nəticə almasının qarşısını ala bilmirdi
+     (klassik "race condition"). Tranzaksiya bunu Firestore səviyyəsində qeyri-mümkün edir: ikinci
+     sorğu birincinin bitməsini gözləyir və tarix toqquşması aşkarlanarsa rədd edilir. Qiymət və KYC
+     statusu da eyni funksiyada YENİDƏN, serverdə hesablanır/yoxlanılır — client-in göndərdiyi rəqəmlər
+     yalnız "faktiki daxil edilən gecə/qonaq sayı" üçün istifadə olunur. */
+  var btn=document.getElementById('bookBtn'); if(btn){ btn.disabled=true; btn.textContent='Göndərilir...'; }
+  fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g}).then(function(res){
     closeDetail(); go('rez'); toast("Rezervasiya təsdiqləndi");
-  }).catch(function(){
-    state.bookings=state.bookings.filter(function(b){return b.code!==newBooking.code;});
-    toast("Rezervasiya serverə yazıla bilmədi, yenidən cəhd et");
+  }).catch(function(err){
+    console.error('Bron yaradılma xətası:', err);
+    var msg = (err && err.message) || "Rezervasiya serverə yazıla bilmədi, yenidən cəhd et";
+    toast(msg);
+  }).finally(function(){
+    if(btn){ btn.disabled=false; btn.textContent='Dərhal rezervasiya et'; }
   });
 }
 /* Bron sənədini YALNIZ bunlardan biri Firestore-a yaza bilər (bax firestore.rules): admin, bronun
@@ -2535,33 +2577,35 @@ function canWriteBooking(b){
   var listing=byId(b.lid);
   return !!(listing && listing.ownerEmail===state.user.email);
 }
+/* Bu, artıq YALNIZ bir "sürətləndirici" — həqiqi/etibarlı mənbə server tərəfdəki "autoReleaseBookings"
+   Cloud Function-udur (hər 15 dəqiqədə bir işləyir, heç bir brauzerdən asılı olmadan). Kimsə saytı
+   açıq saxlayıbsa, dəyişiklik dərhal görünsün deyə bu, eyni məntiqi lokal olaraq da tətbiq edir, amma
+   HEÇ KİMİN ekranı açıq olmasa belə, server öz işini görəcək. Admin-in "bildirişlər" siyahısı da artıq
+   lokal state.notifications-dan deyil, birbaşa (bütün cihazlar arası sinxron olan) "bookings"
+   sənədlərindəki notified24/waLink sahələrindən qurulur (bax renderAdmin). */
 function autoRelease(){
-  var now=Date.now(), notifChanged=false;
+  var now=Date.now();
   state.bookings.forEach(function(b){
     var changed=false;
     if(b.status==='hold' && !b.complaint && now>=b.releaseAt){ b.status='released'; changed=true; }
     if((b.status==='hold'||b.status==='complaint') && !b.notified24 && now>=(b.checkinAt-24*3600000)){
-      b.notified24=true; changed=true; notifChanged=true;
+      b.notified24=true; changed=true;
       var wa=waLinkFor(b);
       b.waLink=wa.url; b.waText=wa.text; b.mapsUrl=wa.mapsUrl; b.exactAddress=wa.addrText;
-      state.notifications.unshift({
-        code:b.code, host:b.host, title:b.title, guest:b.guest, phone:b.phone,
-        checkin:b.d1, sentAt:new Date().toISOString(), waLink:wa.url, waText:wa.text, mapsUrl:wa.mapsUrl, waSent:false,
-        text:"Ev sahibi "+b.host+"-a bildiriş göndərildi: "+b.guest+" adlı qonaq sabah \""+b.title+"\" evinə gələcək. Dəqiq ünvan qonağa WhatsApp ilə göndərilməyə hazırdır."
-      });
     }
     if(changed && canWriteBooking(b)) bookingsSync.save(b);
   });
-  if(notifChanged) save();
 }
 /* Admin "Qonağa WhatsApp göndər" düyməsinə klikləyən kimi (WhatsApp yeni tabda açılan andan) həmin
-   bildirişi dərhal "Göndərildi" statusuna salır — real göndərilməni yoxlaya bilmirik (bu, sadə
-   wa.me linkidir, API deyil), amma ən azı admin klikləyib bildiyimiz andan düymə deaktiv olur ki,
-   təkrar-təkrar "göndərilməyib" kimi görünməsin. */
+   bronun "waSent" sahəsini Firestore-da dərhal true edir — real göndərilməni yoxlaya bilmirik (bu,
+   sadə wa.me linkidir, API deyil), amma ən azı admin klikləyib bildiyimiz andan düymə deaktiv olur
+   ki, təkrar-təkrar "göndərilməyib" kimi görünməsin. Bu sahə bookings sənədinin özündə saxlanıldığı
+   üçün admin başqa cihazdan/brauzerdən daxil olsa belə eyni statusu görür. */
 function markWaSent(code){
-  var changed=false;
-  state.notifications.forEach(function(n){ if(n.code===code && !n.waSent){ n.waSent=true; changed=true; } });
-  if(changed){ save(); renderAdmin(); }
+  var b=state.bookings.filter(function(x){return x.code===code;})[0];
+  if(!b || b.waSent) return;
+  b.waSent=true;
+  bookingsSync.save(b).then(function(){ renderAdmin(); }).catch(function(){ b.waSent=false; toast('Serverə yazıla bilmədi'); });
 }
 /* Ünvanı və WhatsApp linkini hazırlayır. wa.me linki real işləyir (API açarı/xərc tələb etmir),
    amma göndərmək üçün bir kliklə təsdiq lazımdır — tam avtomatik (kliksiz) göndərmə üçün
@@ -3978,6 +4022,40 @@ function renderMarketStatsAdmin(){
       +'</div></div>';
   }).join('');
 }
+/* ============ CSV ixracı (mühasibatlıq/hesabatlıq üçün) ============ */
+function toCsvValue(v){
+  if(v==null) return '';
+  var s=String(v);
+  if(/[",\n;]/.test(s)) s='"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function downloadCsv(filename, headers, rows){
+  var lines=[headers.map(toCsvValue).join(',')];
+  rows.forEach(function(r){ lines.push(r.map(toCsvValue).join(',')); });
+  var csv='﻿'+lines.join('\r\n'); /* BOM: Excel-də Azərbaycan hərfləri (ə,ş,ç...) düzgün görünsün */
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
+}
+function exportBookingsCsv(){
+  var headers=['Kod','Ev','Şəhər','Qonaq','Telefon','E-poçt','Ev sahibi','Giriş','Çıxış','Gecə','Qonaq sayı','Kirayə','Təmizlik','Cəmi','Ev sahibinə','Komissiya','Status'];
+  var rows=state.bookings.map(function(b){ return [b.code,b.title,b.city,b.guest,b.phone,b.email,b.host,b.d1,b.d2,b.n,b.g,b.rent,b.clean,b.total,b.hostGets,b.platform,b.status]; });
+  downloadCsv('buralar-bronlar-'+today()+'.csv', headers, rows);
+  toast('CSV yükləndi ('+rows.length+' bron)');
+}
+function exportListingsCsv(){
+  var headers=['ID','Başlıq','Şəhər','Tip','Ev sahibi','E-poçt','Qiymət','Status','Reytinq','Rəy sayı'];
+  var rows=state.custom.map(function(x){ return [x.id,x.t,x.c,x.sc,x.host,x.ownerEmail,x.p,x.st,x.rt,x.rv]; });
+  downloadCsv('buralar-elanlar-'+today()+'.csv', headers, rows);
+  toast('CSV yükləndi ('+rows.length+' elan)');
+}
+function exportCustomersCsv(){
+  var headers=['Ad','E-poçt','Telefon','FİN','Status','Qeydiyyat tarixi'];
+  var rows=state.customers.map(function(c){ return [c.name,c.email,c.phone,c.fin,c.status,c.registeredAt]; });
+  downloadCsv('buralar-musteriler-'+today()+'.csv', headers, rows);
+  toast('CSV yükləndi ('+rows.length+' müştəri)');
+}
 function renderAdmin(){
   autoRelease();
   var bs=state.bookings.filter(function(b){return b.status!=='refunded';});
@@ -4040,15 +4118,20 @@ function renderAdmin(){
       +'</div></div>';
   }).join('') : '<div class="empty"><h3>Şikayət yoxdur</h3><p>Qonaqlar yalnız ev uyğun gəlmədikdə və ya açar verilmədikdə şikayət göndərə bilər.</p></div>';
 
+  /* Pagination: yüzlərlə rezervasiya olanda bu iki cədvəli bir dəfəyə tam çəkmək admin panelini
+     yavaşladırırdı. "Daha çox göstər" ilə tələb üzrə açılır; CSV ixracı isə həmişə TAM siyahını verir. */
   var tb=document.getElementById('admintable');
-  tb.innerHTML = state.bookings.length ? state.bookings.map(function(b){
+  var finRows=state.bookings.slice(0,adminFinShown);
+  tb.innerHTML = (state.bookings.length ? finRows.map(function(b){
     return '<tr><td>'+b.code+'</td><td>'+esc(b.title.slice(0,30))+'</td><td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td>'
       +'<td class="money">'+az2(b.rent)+'</td><td class="money">'+az2(b.total)+'</td><td class="money">'+az2(b.status==='refunded'?0:b.hostGets)+'</td>'
       +'<td class="money" style="color:var(--nar)">'+az2(b.status==='refunded'?0:b.platform)+'</td><td>'+statusTag(b.status)+'</td></tr>';
-  }).join('') : '<tr><td colspan="9" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>';
+  }).join('') : '<tr><td colspan="9" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
+    + (state.bookings.length>adminFinShown ? '<tr><td colspan="9" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminFinShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminFinShown)+' qalır)</button></td></tr>' : '');
 
   var rt=document.getElementById('rezalltable');
-  rt.innerHTML = state.bookings.length ? state.bookings.map(function(b){
+  var rezRows=state.bookings.slice(0,adminRezShown);
+  rt.innerHTML = (state.bookings.length ? rezRows.map(function(b){
     var ops = b.status==='hold'
       ? ((!b.notified24?'<button class="btn sm ghost" style="width:auto;padding:6px 10px;font-size:12.5px" onclick="forceNotify(\''+b.code+'\')">Demo: 24s bildirişi göndər</button>':'<span class="m">Bildiriş göndərilib</span>')
         +' <button class="btn sm dark" style="width:auto;padding:6px 10px;font-size:12.5px" onclick="fastForward(\''+b.code+'\')">Demo: ödənişi köçür</button>')
@@ -4056,7 +4139,8 @@ function renderAdmin(){
     return '<tr><td>'+b.code+'</td><td>'+esc(b.title.slice(0,26))+'</td><td>'+esc(b.guest||'—')+'</td><td>'+esc(b.phone||'—')+'</td>'
       +'<td>'+esc(b.host)+'</td><td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td>'
       +'<td class="money">'+az2(b.total)+'</td><td>'+esc(b.bank)+'</td><td>'+statusTag(b.status)+'</td><td style="white-space:nowrap">'+ops+'</td></tr>';
-  }).join('') : '<tr><td colspan="11" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>';
+  }).join('') : '<tr><td colspan="11" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
+    + (state.bookings.length>adminRezShown ? '<tr><td colspan="11" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminRezShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminRezShown)+' qalır)</button></td></tr>' : '');
 
   var edits=state.custom.filter(function(x){return x.pendingEdit;});
   document.getElementById('editcount').textContent = edits.length?('('+edits.length+')'):'';
@@ -4096,12 +4180,17 @@ function renderAdmin(){
       +'</div></div>';
   }).join('') : '<div class="empty"><h3>Rəy şikayəti yoxdur</h3><p>Qonaq və ev sahibi bir-birinin haqqında yazdığı qərəzli rəyi sübutla bildirə bilər.</p></div>';
 
-  document.getElementById('notifcount').textContent = state.notifications.length?('('+state.notifications.length+')'):'';
-  document.getElementById('notiflist').innerHTML = state.notifications.length ? state.notifications.map(function(n){
+  /* Bu siyahı artıq lokal (yalnız bu brauzerə aid) state.notifications-dan deyil, birbaşa
+     "bookings" sənədlərindən qurulur — server (autoReleaseBookings Cloud Function) və ya hər hansı
+     açıq brauzer bu sahələri yazdığı andan bütün admin cihazlarında eyni siyahı görünür. */
+  var waNotifs = state.bookings.filter(function(b){ return b.notified24 && b.waLink; })
+    .sort(function(a,b){ return (b.checkinAt||0)-(a.checkinAt||0); });
+  document.getElementById('notifcount').textContent = waNotifs.length?('('+waNotifs.length+')'):'';
+  document.getElementById('notiflist').innerHTML = waNotifs.length ? waNotifs.map(function(n){
     return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
       +'<h4>'+esc(n.title)+'</h4>'
-      +'<div class="m" style="font-weight:500;white-space:normal">'+esc(n.text)+'</div>'
-      +'<div class="m">Rezervasiya: '+n.code+' · Qonaq: '+esc(n.guest)+' ('+esc(n.phone)+') · Giriş: '+fmtDate(n.checkin)+' · Göndərilmə: '+new Date(n.sentAt).toLocaleString('az-AZ')+'</div>'
+      +'<div class="m" style="font-weight:500;white-space:normal">Ev sahibi '+esc(n.host)+'-a bildiriş: '+esc(n.guest)+' adlı qonaq sabah "'+esc(n.title)+'" evinə gələcək. Dəqiq ünvan qonağa WhatsApp ilə göndərilməyə hazırdır.</div>'
+      +'<div class="m">Rezervasiya: '+n.code+' · Qonaq: '+esc(n.guest)+' ('+esc(n.phone)+') · Giriş: '+fmtDate(n.d1)+'</div>'
       +'</div><div class="act">'
       +(n.waLink?(n.waSent
           ? '<span class="btn sm ghost" style="width:auto;display:inline-block;opacity:.7;cursor:default">Göndərildi ✓</span>'
