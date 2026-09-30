@@ -903,10 +903,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="sub" id="s-fin">
         <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn sm ghost" onclick="exportBookingsCsv()">⬇ Mühasibatlıq üçün CSV ixrac et</button></div>
         <div class="tblwrap"><table class="tbl">
-          <thead><tr><th>Kod</th><th>Ev</th><th>Tarix</th><th>Gecə</th><th>Kirayə</th><th>Müştəri ödəyir</th><th>Ev sahibinə</th><th>Komissiya</th><th>Status</th></tr></thead>
+          <thead><tr><th>Kod</th><th>Ev</th><th>Tarix</th><th>Gecə</th><th>Kirayə</th><th>Müştəri ödəyir</th><th>Ev sahibinə</th><th>Komissiya</th><th>Status</th><th>Ev sahibinə ödəniş</th></tr></thead>
           <tbody id="admintable"></tbody>
         </table></div>
-        <p class="note" style="text-align:left;margin-top:14px">Demo versiyada ödənişlər simulyasiya olunur. Real ödənişlər üçün lisenziyalı provayder inteqrasiyası və fərdi sahibkar statusu üzrə müqavilələr lazımdır.</p>
+        <p class="note" style="text-align:left;margin-top:14px">Qonaqdan ödəniş yığımı platformada avtomatlaşdırılıb, amma ev sahibinə ödəniş (payout) hazırda manual — admin Epoint/bank kabinetindən köçürmə edir, sonra aşağıdakı "Ev sahibinə ödənildi" düyməsi ilə burada qeyd edir (mühasibatlıq üçün).</p>
       </div>
     </div>
   </div>
@@ -1146,6 +1146,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-check-compat.js"></script>
 <script>
 /* ============ sabitlər ============ */
 var GUEST_FEE=0.10, HOST_FEE=0.03, RELEASE_HOURS=24;
@@ -1246,6 +1247,23 @@ try{
   fbFunctions = firebase.functions();
   fbOnline = true;
 }catch(e){ console.error('Firebase başlatma xətası:', e); }
+/* Firebase App Check — bot/skript ilə edilən sürətli, kütləvi sorğulara (məs. dev tools-dan
+   birbaşa Firestore/Functions çağıraraq "flood" etmək) qarşı əlavə qoruma qatı. Chat/support
+   spam-qorunması artıq firestore.rules-da 1.2 saniyəlik məhdudiyyətlə var — App Check bunu real
+   bot-larla (insan olmayan skriptlərlə) gələn kütləvi sorğulara qarşı gücləndirir.
+   QEYD: RECAPTCHA_SITE_KEY Firebase Console-da (Build → App Check → "Fraud Defense" provayderi,
+   yəni reCAPTCHA Enterprise-in yeni adı) qeydiyyatdan keçirilmiş HƏQİQİ sitekey-dir. Sitekey
+   qoyulmayıbsa, bu blok sükutla keçilir — heç nəyi pozmur, sadəcə bu əlavə qat aktiv olmur (əsas
+   qorumalar — KYC, ikiqat-bron, qiymət yoxlaması — bundan asılı deyil, onsuz da işləyir). */
+try{
+  var RECAPTCHA_SITE_KEY = "6LeFGtgtAAAAANWDRUJcZ-bHfWvxbFcNkiP-jKna";
+  if(fbOnline && RECAPTCHA_SITE_KEY.indexOf('BURAYA_')!==0){
+    firebase.appCheck().activate(
+      new firebase.appCheck.ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY),
+      true
+    );
+  }
+}catch(e){ console.error('App Check aktivləşmədi:', e); }
 /* Elanlar (state.custom) artıq localStorage-da yox, Firestore-un "listings" kolleksiyasında saxlanılır.
    onSnapshot canlı dinləyicisi sayəsində bir ev sahibi elan əlavə edən/dəyişən kimi, bunu bütün
    açıq brauzer pəncərələri (fərqli şəhər, fərqli cihaz) dərhal görür — heç bir səhifə yeniləməsi lazım deyil. */
@@ -2606,6 +2624,23 @@ function markWaSent(code){
   if(!b || b.waSent) return;
   b.waSent=true;
   bookingsSync.save(b).then(function(){ renderAdmin(); }).catch(function(){ b.waSent=false; toast('Serverə yazıla bilmədi'); });
+}
+/* Ev sahibinə ödəniş (payout) hələ ki manual — admin Epoint/bank kabinetindən özü köçürmə edir
+   (heç bir Azərbaycan ödəniş provayderi platformadan üçüncü tərəfə avtomatik "marketplace"
+   bölüşdürməsini dəstəkləmir). Bu düymə real pulu göndərmir — YALNIZ admin real köçürməni edəndən
+   SONRA bunu sistemdə qeyd etmək üçündür ki, mühasibatlıq/CSV ixracında "kim ödənilib, kim yox"
+   aydın olsun. Referans nömrəsi (Epoint/bank əməliyyat kodu) izləmə üçün saxlanılır. */
+function markPayout(code){
+  var b=state.bookings.filter(function(x){return x.code===code;})[0];
+  if(!b || b.status!=='released' || b.payoutStatus==='paid') return;
+  var ref=prompt('Epoint/bank köçürmə referans nömrəsi (boş buraxa bilərsiniz):','');
+  if(ref===null) return;
+  var prevStatus=b.payoutStatus, prevRef=b.payoutRef, prevAt=b.payoutAt;
+  b.payoutStatus='paid'; b.payoutRef=ref||''; b.payoutAt=Date.now();
+  bookingsSync.save(b).then(function(){ renderAdmin(); toast('Ev sahibinə ödəniş qeyd olundu'); }).catch(function(){
+    b.payoutStatus=prevStatus; b.payoutRef=prevRef; b.payoutAt=prevAt;
+    toast('Serverə yazıla bilmədi, yenidən cəhd et');
+  });
 }
 /* Ünvanı və WhatsApp linkini hazırlayır. wa.me linki real işləyir (API açarı/xərc tələb etmir),
    amma göndərmək üçün bir kliklə təsdiq lazımdır — tam avtomatik (kliksiz) göndərmə üçün
@@ -4039,8 +4074,9 @@ function downloadCsv(filename, headers, rows){
   setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
 }
 function exportBookingsCsv(){
-  var headers=['Kod','Ev','Şəhər','Qonaq','Telefon','E-poçt','Ev sahibi','Giriş','Çıxış','Gecə','Qonaq sayı','Kirayə','Təmizlik','Cəmi','Ev sahibinə','Komissiya','Status'];
-  var rows=state.bookings.map(function(b){ return [b.code,b.title,b.city,b.guest,b.phone,b.email,b.host,b.d1,b.d2,b.n,b.g,b.rent,b.clean,b.total,b.hostGets,b.platform,b.status]; });
+  var headers=['Kod','Ev','Şəhər','Qonaq','Telefon','E-poçt','Ev sahibi','Giriş','Çıxış','Gecə','Qonaq sayı','Kirayə','Təmizlik','Cəmi','Ev sahibinə','Komissiya','Status','Ev sahibinə ödəniş statusu','Ödəniş referansı','Ödəniş tarixi'];
+  var rows=state.bookings.map(function(b){ return [b.code,b.title,b.city,b.guest,b.phone,b.email,b.host,b.d1,b.d2,b.n,b.g,b.rent,b.clean,b.total,b.hostGets,b.platform,b.status,
+    (b.status==='released'?(b.payoutStatus==='paid'?'Ödənilib':'Gözləyir'):'—'), b.payoutRef||'', b.payoutAt?new Date(b.payoutAt).toLocaleString('az-AZ'):'']; });
   downloadCsv('buralar-bronlar-'+today()+'.csv', headers, rows);
   toast('CSV yükləndi ('+rows.length+' bron)');
 }
@@ -4123,11 +4159,15 @@ function renderAdmin(){
   var tb=document.getElementById('admintable');
   var finRows=state.bookings.slice(0,adminFinShown);
   tb.innerHTML = (state.bookings.length ? finRows.map(function(b){
+    var payoutCell = b.status!=='released' ? '<span class="m">—</span>'
+      : (b.payoutStatus==='paid'
+          ? '<span class="tag done" title="'+esc(b.payoutRef||'')+'">Ödənildi ✓'+(b.payoutRef?' <span style="font-weight:400">('+esc(b.payoutRef)+')</span>':'')+'</span>'
+          : '<button class="btn sm ok" style="width:auto;padding:6px 10px;font-size:12.5px" onclick="markPayout(\''+b.code+'\')">Ev sahibinə ödənildi</button>');
     return '<tr><td>'+b.code+'</td><td>'+esc(b.title.slice(0,30))+'</td><td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td>'
       +'<td class="money">'+az2(b.rent)+'</td><td class="money">'+az2(b.total)+'</td><td class="money">'+az2(b.status==='refunded'?0:b.hostGets)+'</td>'
-      +'<td class="money" style="color:var(--nar)">'+az2(b.status==='refunded'?0:b.platform)+'</td><td>'+statusTag(b.status)+'</td></tr>';
-  }).join('') : '<tr><td colspan="9" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
-    + (state.bookings.length>adminFinShown ? '<tr><td colspan="9" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminFinShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminFinShown)+' qalır)</button></td></tr>' : '');
+      +'<td class="money" style="color:var(--nar)">'+az2(b.status==='refunded'?0:b.platform)+'</td><td>'+statusTag(b.status)+'</td><td style="white-space:nowrap">'+payoutCell+'</td></tr>';
+  }).join('') : '<tr><td colspan="10" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
+    + (state.bookings.length>adminFinShown ? '<tr><td colspan="10" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminFinShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminFinShown)+' qalır)</button></td></tr>' : '');
 
   var rt=document.getElementById('rezalltable');
   var rezRows=state.bookings.slice(0,adminRezShown);
