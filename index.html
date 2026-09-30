@@ -1049,7 +1049,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <h3 id="rateTitle">Qiymətləndir</h3>
     <p id="rateSub"></p>
     <div id="catStarsBox" style="display:grid;gap:10px"></div>
-    <label>Rəy<textarea id="r-text" rows="3" placeholder="Təcrübəni qısa təsvir et"></textarea></label>
+    <label>Rəy<textarea id="r-text" rows="3" maxlength="250" oninput="updateReviewCharCount()" placeholder="Təcrübəni qısa təsvir et"></textarea></label>
+    <div id="r-text-count" class="note" style="text-align:right;margin:-6px 0 0">0 / 250</div>
     <button class="btn" onclick="submitReview()">Rəyi göndər</button>
     <button class="btn ghost" onclick="closeModal('rateModal')">İmtina</button>
   </div>
@@ -2513,6 +2514,17 @@ function book(id){
     toast("Rezervasiya serverə yazıla bilmədi, yenidən cəhd et");
   });
 }
+/* Bron sənədini YALNIZ bunlardan biri Firestore-a yaza bilər (bax firestore.rules): admin, bronun
+   qonağı, ya da bronun aid olduğu evin sahibi. Əvvəllər İSTƏNİLƏN daxil olmuş istifadəçi hər bronu
+   yaza bilirdi (təhlükəsizlik boşluğu idi) — bu funksiya həmin boşluq bağlanandan sonra "icazəsiz
+   yazı" xətalarının (və istifadəçiyə lazımsız "Serverə yazıla bilmədi" bildirişinin) qarşısını alır. */
+function canWriteBooking(b){
+  if(state.adminAuth) return true;
+  if(!state.user) return false;
+  if(b.email===state.user.email) return true;
+  var listing=byId(b.lid);
+  return !!(listing && listing.ownerEmail===state.user.email);
+}
 function autoRelease(){
   var now=Date.now(), notifChanged=false;
   state.bookings.forEach(function(b){
@@ -2528,7 +2540,7 @@ function autoRelease(){
         text:"Ev sahibi "+b.host+"-a bildiriş göndərildi: "+b.guest+" adlı qonaq sabah \""+b.title+"\" evinə gələcək. Dəqiq ünvan qonağa WhatsApp ilə göndərilməyə hazırdır."
       });
     }
-    if(changed) bookingsSync.save(b);
+    if(changed && canWriteBooking(b)) bookingsSync.save(b);
   });
   if(notifChanged) save();
 }
@@ -3640,7 +3652,12 @@ function openRate(code,role){
   document.getElementById('rateTitle').textContent = role==='guest' ? "Ev sahibini qiymətləndir" : "Qonağı qiymətləndir";
   document.getElementById('rateSub').textContent = role==='guest' ? (b.host+" haqqında rəy yaz") : (b.guest+" haqqında rəy yaz");
   document.getElementById('r-text').value='';
+  updateReviewCharCount();
   renderCatStars(); openModal('rateModal');
+}
+function updateReviewCharCount(){
+  var el=document.getElementById('r-text'), out=document.getElementById('r-text-count');
+  if(el && out) out.textContent = el.value.length+' / 250';
 }
 function renderCatStars(){
   var box=document.getElementById('catStarsBox'); if(!box) return;
@@ -3660,7 +3677,7 @@ function submitReview(){
   var ctx=state.rateCtx; if(!ctx) return;
   var b=state.bookings.filter(function(x){return x.code===ctx.code;})[0]; if(!b) return;
   if(reviewsFor(ctx.role,ctx.code).length){ toast("Siz artıq bu rezervasiyanı qiymətləndirmisiniz"); closeModal('rateModal'); return; }
-  var text=document.getElementById('r-text').value.trim();
+  var text=document.getElementById('r-text').value.trim().slice(0,250);
   if(text.length<5){ toast("Rəy mətni yaz"); return; }
   var avg=avgOf(state.catStars);
   var newReview={
