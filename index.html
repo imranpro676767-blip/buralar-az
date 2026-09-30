@@ -3681,7 +3681,9 @@ function submitReview(){
   if(text.length<5){ toast("Rəy mətni yaz"); return; }
   var avg=avgOf(state.catStars);
   var newReview={
-    id:'RV-'+Math.floor(1e5+Math.random()*9e5), bookingCode:b.code,
+    /* ID məcburi "BRON_KODU_rol" formatındadır (firestore.rules-da tələb olunur) — bu, eyni
+       bronun eyni tərəfdən İKİ DƏFƏ qiymətləndirilməsinin qarşısını server tərəfdə də bağlayır. */
+    id:b.code+'_'+ctx.role, bookingCode:b.code,
     from: ctx.role==='guest'?b.guest:b.host, fromRole: ctx.role,
     about: ctx.role==='guest'?b.host:b.guest, aboutEmail: ctx.role==='guest'?null:b.email,
     categories: Object.assign({},state.catStars), catLabels: ctx.cats,
