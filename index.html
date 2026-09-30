@@ -2486,6 +2486,16 @@ function confirmSafetyAndBook(){
 /* ============ rezervasiya ============ */
 function book(id){
   if(needLogin()){ state.pendingBook=id; closeDetail(); return; }
+  /* KYC: admin təsdiqləməyib ("flagged"/şübhəli) və ya rədd edib ("rejected") olan hesab bron edə
+     bilməz — əvvəllər bu yoxlanmırdı, admin heç bir addım atmasa belə istənilən qeydiyyatlı (hətta
+     şübhəli işarələnmiş) istifadəçi rahatlıqla bron edib ödəyə bilirdi. Server tərəfdə də eyni şərt
+     firestore.rules-da təkrarlanır ki, brauzer konsolundan bu yoxlamanı keçmək mümkün olmasın. */
+  if(state.user && state.user.status!=='verified'){
+    toast(state.user.status==='rejected'
+      ? "Qeydiyyatın rədd edilib, bron edə bilməzsən"
+      : "Hesabın hələ admin təsdiqini gözləyir, təsdiqləndikdən sonra bron edə bilərsən");
+    return;
+  }
   var x=byId(id);
   var a=document.getElementById('b1').value,b=document.getElementById('b2').value,g=document.getElementById('bg').value;
   var n=nights(a,b);
