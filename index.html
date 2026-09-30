@@ -40,46 +40,52 @@ input,select,textarea{font:inherit;color:inherit}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--ink);color:#F4EFE4;border-bottom:1px solid rgba(255,255,255,.08)}
-.topbar{display:flex;align-items:center;gap:14px;padding:11px 0;padding-right:96px}
+.topbar{display:flex;align-items:center;gap:14px;padding:11px 0;flex-wrap:wrap;row-gap:10px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#FFFFFF;flex:none}
 .brand .mark{width:30px;height:30px;flex:none}
 .brand .wm{font-weight:800;font-size:20px;letter-spacing:-.045em}
 .brand .wm i{font-style:normal;color:var(--brand-green);font-weight:700}
-nav.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
-nav.tabs button{background:transparent;border:0;color:rgba(244,239,228,.72);padding:8px 13px;border-radius:999px;font-weight:600;font-size:14.5px}
+nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
+nav.tabs button{background:transparent;border:0;color:rgba(244,239,228,.72);padding:8px 13px;border-radius:999px;font-weight:600;font-size:14.5px;white-space:nowrap}
 nav.tabs button:hover{color:#fff;background:rgba(255,255,255,.08)}
 nav.tabs button[aria-selected="true"]{background:#F4EFE4;color:var(--ink)}
 .icon-btn{background:transparent;border:1px solid rgba(255,255,255,.22);color:inherit;border-radius:999px;height:34px;padding:0 12px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;flex:none}
 .icon-btn.sq{width:34px;padding:0;justify-content:center}
-.who{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#F4EFE4}
-.who .av{width:28px;height:28px;border-radius:50%;background:var(--sand);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:13px}
-.headerRight{position:absolute;right:18px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:8px;z-index:2}
+.who{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#F4EFE4;flex:none}
+.who .av{width:28px;height:28px;border-radius:50%;background:var(--sand);color:var(--ink);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+.who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* headerRight: nav.tabs-dən sonra gələn normal flex element (əvvəllər position:absolute idi —
+   bu, dəstək/bildiriş ikonları əlavə olunandan sonra mobil ekranlarda nav.tabs ilə üst-üstə
+   düşməyə səbəb olurdu). İndi hər şey adi flex axınında, ehtiyac olanda öz sətrinə keçir. */
+.headerRight{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
 @media (max-width:760px){
   header.top{position:sticky}
-  .topbar{flex-wrap:wrap;row-gap:10px;padding:9px 0;padding-right:78px}
+  .topbar{padding:9px 0}
   .brand{order:1}
-  nav.tabs{order:4;flex-basis:100%;width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none;-ms-overflow-style:none}
+  .headerRight{order:2;margin-left:auto}
+  nav.tabs{order:3;flex-basis:100%;width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none;-ms-overflow-style:none}
   nav.tabs::-webkit-scrollbar{display:none}
   nav.tabs button{flex:none;padding:8px 12px;font-size:13.5px}
   .brand .wm{font-size:17px}
-  .who span{max-width:70px!important}
+  .who span{max-width:64px!important}
   .icon-btn{height:38px;min-height:38px}
   .icon-btn.sq{width:38px}
-  .headerRight{right:10px;gap:6px;top:20px;transform:none}
+  .headerRight{gap:6px}
 }
 @media (max-width:480px){
   .wrap{width:min(1180px,100% - 24px)}
   .hero h1{font-size:clamp(24px,7vw,34px)}
 }
 @media (max-width:400px){
-  .topbar{gap:8px;padding-right:66px}
+  .topbar{gap:8px}
   .brand{gap:6px}
   .brand .wm{font-size:14.5px}
   .brand .mark{width:24px;height:24px}
-  .who span{max-width:44px!important}
-  .who{gap:5px}
+  .who span{display:none}
+  .who{gap:4px}
   .icon-btn{padding:0 9px;font-size:12px}
-  .headerRight{right:8px;gap:5px}
+  .icon-btn.sq{width:32px;height:32px}
+  .headerRight{gap:5px}
 }
 
 .hero{background:var(--ink);color:#F4EFE4;position:relative;overflow:hidden;padding:26px 0 0}
@@ -391,19 +397,19 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <button role="tab" aria-selected="false" onclick="go('rez')">Rezervasiyalarım</button>
       <button role="tab" aria-selected="false" onclick="go('host')">Ev sahibi</button>
     </nav>
-  </div>
-  <div class="headerRight">
-    <button class="icon-btn sq" id="supportBtn" style="display:none" onclick="openSupportModal()" title="Dəstək" aria-label="Dəstək">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.2 0-2.3-.25-3.35-.7L3 21l1.8-5.05A8.46 8.46 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z"/></svg>
-    </button>
-    <button class="icon-btn sq" id="inboxBtn" style="display:none;position:relative" onclick="openInboxModal()" title="Bildirişlər" aria-label="Bildirişlər">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span id="inboxDot" style="display:none;position:absolute;top:1px;right:1px;background:var(--nar);color:#fff;border-radius:999px;min-width:14px;height:14px;font-size:10px;line-height:14px;text-align:center;font-weight:800;padding:0 3px"></span>
-    </button>
-    <div id="authArea"></div>
-    <button class="icon-btn sq" onclick="toggleTheme()" aria-label="İşıqlı və qaranlıq rejim">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-    </button>
+    <div class="headerRight">
+      <button class="icon-btn sq" id="supportBtn" style="display:none" onclick="openSupportModal()" title="Dəstək" aria-label="Dəstək">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.2 0-2.3-.25-3.35-.7L3 21l1.8-5.05A8.46 8.46 0 0 1 3.5 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z"/></svg>
+      </button>
+      <button class="icon-btn sq" id="inboxBtn" style="display:none;position:relative" onclick="openInboxModal()" title="Bildirişlər" aria-label="Bildirişlər">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span id="inboxDot" style="display:none;position:absolute;top:1px;right:1px;background:var(--nar);color:#fff;border-radius:999px;min-width:14px;height:14px;font-size:10px;line-height:14px;text-align:center;font-weight:800;padding:0 3px"></span>
+      </button>
+      <div id="authArea"></div>
+      <button class="icon-btn sq" onclick="toggleTheme()" aria-label="İşıqlı və qaranlıq rejim">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
   </div>
   <div id="rejectionBanner" style="display:none;background:var(--nar);color:#fff;text-align:center;font-weight:700;font-size:13.5px;padding:8px 16px"></div>
 </header>
