@@ -428,7 +428,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </svg>
     <div class="wrap hero-inner">
       <div>
-        <h1>Bakıdan Xınalığa qədər — bütün buraların evləri</h1>
+        <h1>Bakıdan uzaq kəndlərə qədər — Azərbaycanda bütün <span style="color:var(--brand-green)">buralar</span>ın evləri bir yerdə</h1>
         <p class="sub">Azərbaycanın hər şəhər və rayonunda gündəlik kirayə evlər. Yerli kartla ödə, açarı al, rahat qal.</p>
       </div>
       <div class="search">
@@ -442,7 +442,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="f"><label for="g">Qonaq</label>
           <input id="g" type="number" min="1" max="50" step="1" value="2" onchange="if(!this.value||this.value<1)this.value=1;render()" oninput="render()">
         </div>
-        <div class="f"><label for="gt">Kimsiniz?</label>
+        <div class="f"><label for="gt">Qonaq tipi</label>
           <select id="gt" required onchange="state.guestType=this.value||null;render()">
             <option value="" disabled selected hidden>Seçin (məcburidir)</option>
             <option value="family">Ailə</option>
@@ -461,8 +461,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   </div>
   <div class="wrap">
     <div class="filtergroup">
-      <div class="filterlabel">Bölgə</div>
-      <div class="filterbar" id="chipsRegion"></div>
+      <button type="button" class="filterlabel" id="regionToggle" onclick="toggleRegionFilter()" style="cursor:pointer;background:none;border:0;padding:0;display:flex;align-items:center;gap:4px;font:inherit;color:inherit">Bölgəyə görə axtar <span id="regionToggleArrow">⌄</span></button>
+      <div class="filterbar" id="chipsRegion" style="display:none"></div>
     </div>
     <div class="filtergroup">
       <div class="filterlabel">Ev tipi</div>
@@ -580,7 +580,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <div class="f"><label for="h-lng">Uzunluq (lng)</label><input id="h-lng" readonly></div>
         </div>
       </div>
-      <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>Villa</option><option>Bağ evi</option><option>Studiya</option><option>Otaq</option><option>A-Frame evi</option></select></label>
+      <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>A-Frame</option><option>Villa</option><option>Bağ evi</option><option>Otaq</option></select></label>
       <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required oninput="renderPriceTiers()"></label>
       <label>Qonaq tutumu<input id="h-guests" type="number" min="1" max="20" value="4" required></label>
       <label>Yataq otağı<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
@@ -1158,7 +1158,7 @@ var REGIONS = {
  "Gəncə-Qazax":["Gəncə","Naftalan","Şəmkir","Tovuz","Qazax","Ağstafa","Göygöl","Daşkəsən","Gədəbəy","Goranboy","Samux"],
  "Dağlıq Şirvan":["Şamaxı","İsmayıllı","Ağsu","Qobustan"],
  "Aran":["Mingəçevir","Yevlax","Şirvan","Bərdə","Ağcabədi","Ağdaş","Beyləqan","Biləsuvar","Göyçay","Hacıqabul","İmişli","Kürdəmir","Neftçala","Saatlı","Sabirabad","Salyan","Ucar","Zərdab"],
- "Lənkəran":["Lənkəran","Astara","Masallı","Lerik","Cəlilabad","Yardımlı"],
+ "Masallı-Lənkəran":["Lənkəran","Astara","Masallı","Lerik","Cəlilabad","Yardımlı"],
  "Qarabağ":["Xankəndi","Şuşa","Ağdam","Füzuli","Tərtər","Xocalı","Xocavənd","Cəbrayıl"],
  "Şərqi Zəngəzur":["Laçın","Kəlbəcər","Qubadlı","Zəngilan"],
  "Naxçıvan":["Naxçıvan","Ordubad","Culfa","Şahbuz","Şərur","Babək","Kəngərli","Sədərək"]
@@ -1171,7 +1171,7 @@ function allPlaces(){ var a=[]; for(var r in REGIONS) a=a.concat(REGIONS[r]); re
 var REGION_CENTERS = {
  "Abşeron":[40.4093,49.8671], "Quba-Xaçmaz":[41.3606,48.5128], "Şəki-Zaqatala":[41.2000,47.1667],
  "Gəncə-Qazax":[40.6828,46.3606], "Dağlıq Şirvan":[40.6308,48.6367], "Aran":[40.7702,47.0500],
- "Lənkəran":[38.7529,48.8514], "Qarabağ":[39.7573,46.7495], "Şərqi Zəngəzur":[39.6423,46.1258],
+ "Masallı-Lənkəran":[38.7529,48.8514], "Qarabağ":[39.7573,46.7495], "Şərqi Zəngəzur":[39.6423,46.1258],
  "Naxçıvan":[39.2089,45.4122]
 };
 
@@ -2097,13 +2097,26 @@ function goSub(s){
 }
 
 /* ============ siyahı ============ */
+/* Bölgə seçimi defolt gizlidir — çoxu "Hara gedirsən?" qutusuna birbaşa yazıb axtarır, bölgə
+   siyahısı yalnız "harasa" deyə gəzmək istəyənlər üçün əlavə (istəyə bağlı) bir vasitədir. Əgər
+   konkret bir bölgə artıq seçilibsə, açıq saxlanılır ki, istifadəçi öz seçimini görsün. */
+function toggleRegionFilter(){
+  var box=document.getElementById('chipsRegion');
+  var open = box.style.display==='none';
+  box.style.display = open?'flex':'none';
+  document.getElementById('regionToggleArrow').textContent = open?'︿':'⌄';
+}
 function renderChips(){
   var hr='<button class="chip" aria-pressed="'+(state.region==='Hamısı')+'" onclick="setRegion(\'Hamısı\')">Bütün bölgələr</button>';
   for(var r in REGIONS) hr+='<button class="chip" aria-pressed="'+(state.region===r)+'" onclick="setRegion(\''+r+'\')">'+r+'</button>';
   document.getElementById('chipsRegion').innerHTML=hr;
+  if(state.region!=='Hamısı'){
+    document.getElementById('chipsRegion').style.display='flex';
+    document.getElementById('regionToggleArrow').textContent='︿';
+  }
 
   var ht='<button class="chip" aria-pressed="'+(state.type==='Hamısı')+'" onclick="setType(\'Hamısı\')">Hamısı</button>';
-  ['Mənzil','Həyət evi','Villa','Bağ evi','Studiya','Otaq','A-Frame evi'].forEach(function(t){
+  ['Mənzil','Həyət evi','A-Frame','Villa','Bağ evi','Otaq'].forEach(function(t){
     ht+='<button class="chip" aria-pressed="'+(state.type===t)+'" onclick="setType(\''+t+'\')">'+t+'</button>'; });
   document.getElementById('chipsType').innerHTML=ht;
 
@@ -2195,7 +2208,7 @@ function render(scroll,keepPage){
   if(!keepPage) gridShown=GRID_PAGE_SIZE;
   if(!state.guestType){
     document.getElementById('count').textContent="Əvvəlcə kim olduğunuzu seçin";
-    document.getElementById('grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Zəhmət olmasa əvvəlcə "Kimsiniz?" sahəsini seçin</h3><p>Axtarış nəticələrini göstərmək üçün ailə, kişi qrupu və ya qadın qrupu olduğunuzu qeyd etməlisiniz.</p></div>';
+    document.getElementById('grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Zəhmət olmasa əvvəlcə "Qonaq tipi" sahəsini seçin</h3><p>Axtarış nəticələrini göstərmək üçün ailə, kişi qrupu və ya qadın qrupu olduğunuzu qeyd etməlisiniz.</p></div>';
     return;
   }
   var full=filtered();
@@ -2360,8 +2373,8 @@ function openDetail(id,bookingCode){
     return;
   }
 
-  var d1=document.getElementById('d1').value||addDays(today(),7);
-  var d2=document.getElementById('d2').value||addDays(today(),10);
+  var d1=document.getElementById('d1').value||today();
+  var d2=document.getElementById('d2').value||addDays(today(),1);
   var g=document.getElementById('g').value||2;
 
   document.getElementById('detailBody').innerHTML=
@@ -4281,8 +4294,8 @@ if(fbAuth){
 /* ============ start ============ */
 load();
 startSharedSync();
-setDateValue('d1',addDays(today(),7));
-setDateValue('d2',addDays(today(),10));
+setDateValue('d1',today());
+setDateValue('d2',addDays(today(),1));
 fillRegions(); renderAuth(); autoRelease(); renderPendingRooms(); updateRoomKindUI(); renderPriceTiers();
 render(); renderBookings(); renderHost(); renderAdmin();
 checkAdminRoute();
