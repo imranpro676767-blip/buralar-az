@@ -1336,7 +1336,7 @@ var reportsSync = makeCollectionSync('reports','reports','id');
 var customersSync = makeCollectionSync('customers','customers','email');
 function startSharedSync(){
   startListingsSync();
-  bookingsSync.start(); blocksSync.start(); reviewsSync.start();
+  bookingsSync.start(); blocksSync.start(); reviewsSync.start(); handlePayReturn();
   /* customers və reports kolleksiyaları HAMI üçün sinxronlaşdırılmır — bunlar şəxsi məlumat
      (şəxsiyyət vəsiqəsi şəkli, telefon, FİN) və şikayət mətnləri saxlayır. Yalnız admin daxil
      olanda startAdminOnlySync() ilə açılır; Firestore Rules də eyni şəkildə bunu tələb edir,
@@ -2353,7 +2353,7 @@ function bookedAsideHtml(x,bk){
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Tarixlər</span>'+fmtDate(bk.d1)+' – '+fmtDate(bk.d2)+' · '+bk.n+' gecə</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Qonaq sayı</span>'+bk.g+' nəfər</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Rezervasiya kodu</span>'+bk.code+'</div>'
-      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Status</span>'+statusTag(bk.status)+'</div>'
+      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Status</span>'+statusTag(bk.status,bk)+'</div>'
     +'</div>'
     +'<hr class="sep" style="margin:6px 0">'
     +'<p class="note">Bu ev artıq sənin tərəfindən rezerv olunub — tarix seçimi və yenidən ödəniş bu ev üçün deaktiv edilib.</p>'
@@ -2588,7 +2588,8 @@ function book(id){
      yalnız "faktiki daxil edilən gecə/qonaq sayı" üçün istifadə olunur. */
   var btn=document.getElementById('bookBtn'); if(btn){ btn.disabled=true; btn.textContent='Göndərilir...'; }
   fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g}).then(function(res){
-    closeDetail(); go('rez'); toast("Rezervasiya təsdiqləndi");
+    toast("Ödəniş səhifəsinə yönləndirilirsən...");
+    return payBooking(res.data.code);
   }).catch(function(err){
     console.error('Bron yaradılma xətası:', err);
     var msg = (err && err.message) || "Rezervasiya serverə yazıla bilmədi, yenidən cəhd et";
@@ -2596,6 +2597,25 @@ function book(id){
   }).finally(function(){
     if(btn){ btn.disabled=false; btn.textContent='Dərhal rezervasiya et'; }
   });
+}
+/* Epoint ödəniş səhifəsinə yönləndirmə. Məbləği server bron sənədindən götürür. */
+function payBooking(code){
+  return fbFunctions.httpsCallable('createEpointPayment')({code:code}).then(function(r){
+    window.location.href=r.data.url;
+    return new Promise(function(){}); /* yönləndirmə gedir */
+  }).catch(function(err){
+    closeDetail(); go('rez');
+    toast((err&&err.message)||"Ödəniş səhifəsi açıla bilmədi — Rezervasiyalarım bölməsindən 'Ödə' düyməsinə bas");
+  });
+}
+function handlePayReturn(){
+  try{
+    var q=new URLSearchParams(location.search), p=q.get('pay');
+    if(!p) return;
+    history.replaceState(null,'',location.pathname);
+    go('rez');
+    toast(p==='success'?"Ödəniş qəbul edildi, rezervasiya təsdiqlənir...":"Ödəniş alınmadı. Rezervasiyalarım bölməsindən yenidən cəhd edə bilərsən (45 dəqiqə ərzində)");
+  }catch(e){}
 }
 /* Bron sənədini YALNIZ bunlardan biri Firestore-a yaza bilər (bax firestore.rules): admin, bronun
    qonağı, ya da bronun aid olduğu evin sahibi. Əvvəllər İSTƏNİLƏN daxil olmuş istifadəçi hər bronu
@@ -2618,6 +2638,7 @@ function autoRelease(){
   var now=Date.now();
   state.bookings.forEach(function(b){
     var changed=false;
+    if(b.paymentStatus==='pending'||b.paymentStatus==='failed'||b.paymentStatus==='expired') return;
     if(b.status==='hold' && !b.complaint && now>=b.releaseAt){ b.status='released'; changed=true; }
     if((b.status==='hold'||b.status==='complaint') && !b.notified24 && now>=(b.checkinAt-24*3600000)){
       b.notified24=true; changed=true;
@@ -2694,7 +2715,10 @@ function resolveComplaint(code,ok){
   save(); renderAdmin(); renderBookings();
   toast(ok?"Şikayət təsdiqləndi, 100% geri qaytarılır":"Şikayət rədd edildi, ödəniş ev sahibinə köçürüldü");
 }
-function statusTag(s){
+function statusTag(s,b){
+  if(b && b.paymentStatus==='pending' && s==='hold') return '<span class="tag wait">Ödəniş gözlənilir</span>';
+  if(b && b.paymentStatus==='failed' && s==='hold') return '<span class="tag cancel">Ödəniş alınmadı</span>';
+  if(s==='expired') return '<span class="tag cancel">Ödəniş vaxtı bitib</span>';
   if(s==='hold') return '<span class="tag hold">Vəsait saxlanılır</span>';
   if(s==='released') return '<span class="tag done">Ev sahibinə köçürülüb</span>';
   if(s==='complaint') return '<span class="tag wait">Şikayət yoxlanılır</span>';
@@ -2727,13 +2751,16 @@ function renderBookings(){
       +'<div class="m">'+esc(b.city)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
       +'<div class="m">Kod: '+b.code+' · '+esc(b.bank)+' · giriş '+esc(R.cin)+'</div>'
       +(b.status!=='refunded'?'<div class="m">Ev sahibi ('+esc(b.host)+') ilə əlaqə: '+hostContactHtml(b.lid)+'</div>':'')
-      +'<div style="margin-top:8px">'+statusTag(b.status)+(b.status==='hold'?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
+      +'<div style="margin-top:8px">'+statusTag(b.status,b)+(b.status==='hold'&&!(b.paymentStatus==='pending'||b.paymentStatus==='failed')?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
       +(b.complaint?'<div class="split"><div><span>Şikayət: '+esc(b.complaint.reason)+'</span><b>'+(b.complaint.st==='pending'?'yoxlanılır':(b.complaint.st==='approved'?'təsdiqləndi':'rədd edildi'))+'</b></div></div>':'')
       +(b.status==='hold'?'<div class="split"><div><span>Ev sahibinə çatacaq</span><b>'+az2(b.hostGets)+'</b></div><div><span>Platforma komissiyası</span><b>'+az2(b.platform)+'</b></div></div>':'')
       +(b.notified24&&b.exactAddress?'<div class="split"><div><span>Dəqiq ünvan</span><b>'+esc(b.exactAddress)+'</b></div></div>'+(b.mapsUrl?'<a href="'+b.mapsUrl+'" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:var(--nar)">Xəritədə göstər →</a>':''):'')
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.total)+'</div>'
-      +(b.status==='hold'
+      +((b.status==='hold'&&(b.paymentStatus==='pending'||b.paymentStatus==='failed'))
+        ? '<button class="btn sm dark" onclick="payBooking(\''+b.code+'\')">Ödə</button>'
+        : b.status==='expired' ? '<span class="m">Tarixlər azad edilib</span>'
+        : b.status==='hold'
         ? '<button class="btn sm ghost" onclick="openDetail('+b.lid+',\''+b.code+'\')">Evə bax</button>'
           +'<button class="btn sm ghost" onclick="openComplaint(\''+b.code+'\')">Şikayət et</button>'
           +(b.notified24?'<span class="m">Ev sahibinə bildiriş göndərilib</span>':'')
@@ -3241,7 +3268,7 @@ function openTipsModal(){
 function renderHost(){
   var mine = state.custom.filter(function(x){ return state.user && x.ownerEmail===state.user.email; });
   var earn=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
-  var pend=state.bookings.filter(function(b){return b.status==='hold'||b.status==='complaint';}).reduce(function(s,b){return s+b.hostGets;},0);
+  var pend=state.bookings.filter(function(b){return (b.status==='hold'||b.status==='complaint')&&b.paymentStatus!=='pending'&&b.paymentStatus!=='failed';}).reduce(function(s,b){return s+b.hostGets;},0);
   var pendingEdits=mine.filter(function(x){return x.pendingEdit;}).length;
   document.getElementById('hoststats').innerHTML=
      '<div class="stat"><div class="k">Elanlarım</div><div class="v">'+mine.length+'</div></div>'
@@ -3279,7 +3306,7 @@ function renderHost(){
       +'<div class="m">Qonaq: '+esc(b.guest)+' · '+esc(b.phone)+'</div>'
       +'<div class="m">'+guestRatingBadgeHtml(b.email)+'</div>'
       +'<div class="m">'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə</div>'
-      +'<div style="margin-top:8px">'+statusTag(b.status)+'</div>'
+      +'<div style="margin-top:8px">'+statusTag(b.status,b)+'</div>'
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.hostGets)+'</div>'
       +(b.status==='released'?(reviewsFor('host',b.code).length?'<span class="m">Qiymətləndirmisiniz</span>':'<button class="btn sm dark" onclick="openRate(\''+b.code+'\',\'host\')">Qonağı qiymətləndir</button>'):'')
@@ -3923,7 +3950,7 @@ function renderCustomers(){
   el.innerHTML=list.map(function(c){
     var theirBookings=state.bookings.filter(function(b){return b.email===c.email || b.phone===c.phone;});
     var stays=theirBookings.map(function(b){
-      return '<div><span>'+esc(b.title)+' · '+fmtDate(b.d1)+'–'+fmtDate(b.d2)+'</span><b>'+statusTag(b.status)+'</b></div>';
+      return '<div><span>'+esc(b.title)+' · '+fmtDate(b.d1)+'–'+fmtDate(b.d2)+'</span><b>'+statusTag(b.status,b)+'</b></div>';
     }).join('') || '<div><span>Hələ rezervasiya etməyib</span></div>';
     return '<div class="bk" style="grid-template-columns:84px 1fr auto">'
       +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></a>'
@@ -4159,7 +4186,7 @@ function renderAdmin(){
       +'<div class="m">Kod '+b.code+' · '+esc(b.guest||'—')+' · '+esc(b.phone||'—')+'</div>'
       +'<div class="m" style="color:var(--nar)">'+esc(b.complaint.reason)+'</div>'
       +'<div class="m" style="font-weight:500;white-space:normal">'+esc(b.complaint.text)+'</div>'
-      +'<div style="margin-top:8px">'+statusTag(b.status)+'</div></div>'
+      +'<div style="margin-top:8px">'+statusTag(b.status,b)+'</div></div>'
       +'<div class="act"><div class="money" style="font-size:18px">'+az2(b.total)+'</div>'
       +(b.complaint.st==='pending'
         ? '<button class="btn sm" onclick="resolveComplaint(\''+b.code+'\',true)">Təsdiqlə, 100% qaytar</button><button class="btn sm ghost" onclick="resolveComplaint(\''+b.code+'\',false)">Rədd et</button>'
@@ -4178,7 +4205,7 @@ function renderAdmin(){
           : '<button class="btn sm ok" style="width:auto;padding:6px 10px;font-size:12.5px" onclick="markPayout(\''+b.code+'\')">Ev sahibinə ödənildi</button>');
     return '<tr><td>'+b.code+'</td><td>'+esc(b.title.slice(0,30))+'</td><td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td>'
       +'<td class="money">'+az2(b.rent)+'</td><td class="money">'+az2(b.total)+'</td><td class="money">'+az2(b.status==='refunded'?0:b.hostGets)+'</td>'
-      +'<td class="money" style="color:var(--nar)">'+az2(b.status==='refunded'?0:b.platform)+'</td><td>'+statusTag(b.status)+'</td><td style="white-space:nowrap">'+payoutCell+'</td></tr>';
+      +'<td class="money" style="color:var(--nar)">'+az2(b.status==='refunded'?0:b.platform)+'</td><td>'+statusTag(b.status,b)+'</td><td style="white-space:nowrap">'+payoutCell+'</td></tr>';
   }).join('') : '<tr><td colspan="10" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
     + (state.bookings.length>adminFinShown ? '<tr><td colspan="10" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminFinShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminFinShown)+' qalır)</button></td></tr>' : '');
 
@@ -4191,7 +4218,7 @@ function renderAdmin(){
       : '<span class="m">—</span>';
     return '<tr><td>'+b.code+'</td><td>'+esc(b.title.slice(0,26))+'</td><td>'+esc(b.guest||'—')+'</td><td>'+esc(b.phone||'—')+'</td>'
       +'<td>'+esc(b.host)+'</td><td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td>'
-      +'<td class="money">'+az2(b.total)+'</td><td>'+esc(b.bank)+'</td><td>'+statusTag(b.status)+'</td><td style="white-space:nowrap">'+ops+'</td></tr>';
+      +'<td class="money">'+az2(b.total)+'</td><td>'+esc(b.bank)+'</td><td>'+statusTag(b.status,b)+'</td><td style="white-space:nowrap">'+ops+'</td></tr>';
   }).join('') : '<tr><td colspan="11" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
     + (state.bookings.length>adminRezShown ? '<tr><td colspan="11" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminRezShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminRezShown)+' qalır)</button></td></tr>' : '');
 
