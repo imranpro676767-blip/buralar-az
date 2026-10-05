@@ -581,7 +581,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
       </div>
       <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>A-Frame</option><option>Villa</option><option>Bağ evi</option><option>Otaq</option></select></label>
-      <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required oninput="renderPriceTiers()"></label>
+      <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required onfocus="this.min=(state.user&&isAdminEmail(state.user.email))?1:15" oninput="renderPriceTiers()"></label>
       <label>Qonaq tutumu<input id="h-guests" type="number" min="1" max="20" value="4" required></label>
       <label>Yataq otağı<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
       <label>Təmizlik haqqı (₼)<input id="h-clean" type="number" min="0" max="300" value="20"></label>
