@@ -283,7 +283,8 @@ form.frm input,form.frm select,form.frm textarea{border:1px solid var(--line);ba
 form.frm textarea{min-height:86px;resize:vertical;font-family:inherit}
 form.frm h4{grid-column:1/-1;font-size:15px;margin-top:6px;padding-top:12px;border-top:1px solid var(--line)}
 .mappicker{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card)}
-.mappicker svg{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
+.gmap{width:100%;background:var(--sand)}
+.mappicker gmp-place-autocomplete{width:100%}
 .mappicker .note{padding:0 12px 12px}
 .mapzoom{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
 .mapzoom button{width:32px;height:32px;background:var(--card);border:0;border-bottom:1px solid var(--line);font-size:18px;font-weight:800;color:var(--text);line-height:1}
@@ -554,26 +555,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <label>Qəsəbə / ünvan<input id="h-addr" required maxlength="50" placeholder="Məs: Sahil, Neftçilər pr. 12"></label>
       <div class="full">
         <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px">Xəritədən dəqiq ünvan seç</div>
-        <div class="mappicker" style="position:relative">
-          <svg id="pinMap" viewBox="0 0 600 260" onclick="dropPin(event)" onwheel="mapWheel(event)" role="img" aria-label="Ünvan seçmək üçün xəritə">
-            <defs><pattern id="mapgrid" width="30" height="30" patternUnits="userSpaceOnUse">
-              <path d="M30 0H0V30" fill="none" stroke="var(--line)" stroke-width="1"/>
-            </pattern></defs>
-            <rect x="-600" y="-260" width="1800" height="780" fill="var(--card)"/>
-            <rect x="-600" y="-260" width="1800" height="780" fill="url(#mapgrid)"/>
-            <path d="M0 90 Q150 60 300 100 T600 90" stroke="var(--sand)" stroke-width="14" fill="none" opacity=".55"/>
-            <path d="M0 190 Q200 220 400 180 T600 210" stroke="var(--sand)" stroke-width="10" fill="none" opacity=".4"/>
-            <g id="pinGroup" transform="translate(300,130)" style="cursor:grab">
-              <circle r="5" fill="none"/>
-              <path d="M0 -26c9 0 16 7 16 16 0 12-16 30-16 30S-16 -2 -16 -10C-16 -19 -9 -26 0 -26Z" fill="var(--nar)"/>
-              <circle cy="-10" r="5.5" fill="#fff"/>
-            </g>
-          </svg>
-          <div class="mapzoom">
-            <button type="button" onclick="zoomMap(0.65)" aria-label="Yaxınlaşdır">+</button>
-            <button type="button" onclick="zoomMap(1/0.65)" aria-label="Uzaqlaşdır">−</button>
-          </div>
-          <p class="note" style="text-align:left;margin-top:8px">Xəritəyə klikləyib evin dəqiq yerini göstər, + / − ilə yaxınlaşıb-uzaqlaş (siçanın "scroll"u ilə də olur). Google Xəritə API açarı qoşulanda bu hissə real peyk xəritəsi ilə əvəz olunacaq — kodun qalanı dəyişmədən işləyəcək.</p>
+        <div class="mappicker">
+          <div id="gmapSearch" style="padding:10px 10px 0"></div>
+          <div id="gmapPick" class="gmap" style="height:340px"><p class="note" style="padding:12px">Xəritə yüklənir...</p></div>
+          <p class="note" style="text-align:left;margin-top:8px">Ünvanı yuxarıdakı xanada axtar, ya da xəritəyə klikləyib / qırmızı nişanı sürüşdürüb evin dəqiq yerini göstər. Bu yer qonağa yalnız təxmini ərazi kimi göstərilir, dəqiq ünvan rezervasiya təsdiqlənəndən və girişə 24 saat qalandan sonra açılır.</p>
         </div>
         <div class="fieldgrid" style="margin-top:8px">
           <div class="f"><label for="h-lat">Enlik (lat)</label><input id="h-lat" readonly></div>
@@ -1177,44 +1162,7 @@ var REGION_CENTERS = {
 
 var DEFAULT_RULES = {kids:true,pets:false,smoke:false,party:false,quiet:true,noshoes:false,novisitors:false,camera:false,cin:"14:00",cout:"12:00",extra:""};
 
-var SEED=[
- {id:1,t:"Dəniz mənzərəli mənzil, Bakı bulvarı",c:"Bakı",d:"Sahil",ty:"Mənzil",p:145,g:4,r:2,b:2,cl:25,rt:4.92,rv:128,sc:0,host:"Elnur",sup:true,st:"approved",
-  desc:"Bulvara 3 dəqiqəlik məsafədə, İçərişəhər metrosuna yaxın. Balkondan Xəzər və Alov Qüllələri görünür. Yeni təmir, mərkəzi kondisioner.",
-  rules:{kids:true,pets:false,smoke:false,party:false,cin:"14:00",cout:"12:00",extra:"Saat 23:00-dan sonra səs-küy olmaz. Binada mühafizə qeydiyyat aparır, şəxsiyyət vəsiqəsi ilə gəlin."}},
- {id:2,t:"Dağ evi, meşə kənarında",c:"Qəbələ",d:"Vəndam",ty:"Həyət evi",p:180,g:8,r:4,b:2,cl:35,rt:4.87,rv:74,sc:1,host:"Səbinə",sup:true,st:"approved",
-  desc:"Tufandağ kanat yoluna 10 dəqiqə. Böyük həyət, mangal yeri, uşaqlar üçün geniş sahə.",
-  rules:{kids:true,pets:true,smoke:true,party:false,cin:"15:00",cout:"11:00",extra:"Mangal yalnız həyətdəki ayrılmış yerdə qalanır. Odun ayrıca ödənişlidir."}},
- {id:3,t:"Şəbəkəli köhnə karvansara otağı",c:"Şəki",d:"Yuxarı Baş",ty:"Otaq",p:75,g:2,r:1,b:1,cl:10,rt:4.95,rv:203,sc:2,host:"Tofiq",sup:true,st:"approved",
-  desc:"Tarixi mərkəzdə, Xan Sarayına piyada 6 dəqiqə. Əl işi şəbəkə pəncərələr, səhər yeməyi qiymətə daxildir.",
-  rules:{kids:true,pets:false,smoke:false,party:false,cin:"14:00",cout:"12:00",extra:"Bina tarixi abidədir, divarlara heç nə vurmaq olmaz."}},
- {id:4,t:"Xəzər sahilində villa, hovuzla",c:"Bakı",d:"Novxanı",ty:"Villa",p:420,g:10,r:5,b:3,cl:60,rt:4.78,rv:41,sc:3,host:"Rəşad",sup:false,st:"approved",
-  desc:"Şəxsi çimərlik çıxışı, açıq hovuz, 2 mangal zonası.",
-  rules:{kids:true,pets:false,smoke:true,party:false,cin:"15:00",cout:"12:00",extra:"Toy, ad günü və digər tədbirlər qadağandır. Hovuz gecə 22:00-dan sonra bağlanır."}},
- {id:5,t:"Studiya, 28 May metrosunun yanında",c:"Bakı",d:"Nəsimi",ty:"Studiya",p:68,g:2,r:1,b:1,cl:12,rt:4.71,rv:315,sc:4,host:"Aysel",sup:false,st:"approved",
-  desc:"Qısa səfərlər üçün sərfəli seçim. Metroya 2 dəqiqə, sürətli internet, iş masası var.",
-  rules:{kids:false,pets:false,smoke:false,party:false,cin:"14:00",cout:"11:00",extra:"Yalnız 2 nəfər qala bilər, əlavə qonaq qəbul edilmir."}},
- {id:6,t:"Alp üslubunda bağ evi",c:"Qusar",d:"Laza yolu",ty:"Bağ evi",p:210,g:6,r:3,b:2,cl:30,rt:4.89,rv:52,sc:1,host:"Nihad",sup:true,st:"approved",
-  desc:"Şahdağ kurortuna 15 dəqiqə. Kaminli qonaq otağı, xizək saxlamaq üçün ayrıca otaq.",
-  rules:{kids:true,pets:true,smoke:false,party:false,cin:"15:00",cout:"11:00",extra:"Kamin üçün odun qiymətə daxildir. Qışda qar zənciri tövsiyə olunur."}},
- {id:7,t:"Bağ evi, nar bağının içində",c:"Quba",d:"Krasnaya Sloboda",ty:"Həyət evi",p:120,g:5,r:3,b:1,cl:20,rt:4.83,rv:66,sc:5,host:"Mehriban",sup:false,st:"approved",
-  desc:"Alma və nar bağının ortasında sakit ev. Şəhərə maşınla 8 dəqiqə.",
-  rules:{kids:true,pets:true,smoke:true,party:true,cin:"14:00",cout:"12:00",extra:"Bağdakı meyvələri dərmək sərbəstdir."}},
- {id:8,t:"Çay kənarı evi, sitrus bağı ilə",c:"Lənkəran",d:"Haftoni",ty:"Həyət evi",p:95,g:6,r:3,b:2,cl:18,rt:4.66,rv:38,sc:5,host:"Vüqar",sup:false,st:"approved",
-  desc:"İstisuya yaxın, geniş eyvan. Yerli çay və mürəbbə təklif olunur.",
-  rules:{kids:true,pets:false,smoke:true,party:false,cin:"14:00",cout:"12:00",extra:"Uşaqlar çayın kənarında nəzarətsiz buraxılmamalıdır."}},
- {id:9,t:"Panoramik mənzil, Port Baku ətrafı",c:"Bakı",d:"Xaqani",ty:"Mənzil",p:260,g:4,r:2,b:2,cl:30,rt:4.9,rv:97,sc:0,host:"Kamran",sup:true,st:"approved",
-  desc:"18-ci mərtəbə, şəhər və liman mənzərəsi. Mühafizə, yeraltı parkinq, lift.",
-  rules:{kids:true,pets:false,smoke:false,party:false,cin:"15:00",cout:"12:00",extra:"Parkinq yeri bir avtomobil üçün nəzərdə tutulub."}},
- {id:10,t:"Kənd evi, Xınalıq yolunda",c:"Quba",d:"Xınalıq",ty:"Həyət evi",p:85,g:4,r:2,b:1,cl:15,rt:4.74,rv:29,sc:1,host:"Şahin",sup:false,st:"approved",
-  desc:"Dəniz səviyyəsindən 2000 m yüksəklikdə. Yerli mətbəx, soba istiliyi.",
-  rules:{kids:true,pets:true,smoke:true,party:false,cin:"13:00",cout:"11:00",extra:"Qışda yol bağlana bilər, gəlməzdən əvvəl ev sahibi ilə əlaqə saxlayın."}},
- {id:11,t:"Sanatoriyalara yaxın mənzil",c:"Naftalan",d:"Mərkəz",ty:"Mənzil",p:70,g:3,r:2,b:1,cl:12,rt:4.6,rv:44,sc:4,host:"Zaur",sup:false,st:"approved",
-  desc:"Müalicə üçün gələnlər üçün rahat, sanatoriyalara piyada məsafə. Mətbəx tam təchiz olunub.",
-  rules:{kids:true,pets:false,smoke:false,party:false,cin:"14:00",cout:"12:00",extra:""}},
- {id:12,t:"Eyvanlı tarixi ev, İlisu",c:"Qax",d:"İlisu",ty:"Həyət evi",p:110,g:6,r:3,b:2,cl:20,rt:4.81,rv:57,sc:2,host:"Günel",sup:true,st:"approved",
-  desc:"İlisu şəlaləsinə yaxın, daş divarlı köhnə ev. Həyətdə tut ağacı və taxt.",
-  rules:{kids:true,pets:true,smoke:true,party:false,cin:"14:00",cout:"12:00",extra:"Səhər yeməyi sifarişlə, nəfər başı 12 ₼."}}
-];
+var SEED=[]; /* nümunə evlər silindi — yalnız real elanlar (Firestore) göstərilir */
 
 var state={tab:'kesf',sub:'rezall',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
   notifications:[],reviews:[],reports:[],customers:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,editingListingId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
@@ -2029,7 +1977,7 @@ function go(tab){
   window.scrollTo(0,0);
   if(tab==='kesf') render();
   if(tab==='rez') renderBookings();
-  if(tab==='host') renderHost();
+  if(tab==='host'){ renderHost(); setTimeout(ensureHostMap,60); }
   if(tab==='admin'){
     document.getElementById('adminGate').style.display = state.adminAuth?'none':'flex';
     document.getElementById('adminContent').style.display = state.adminAuth?'block':'none';
@@ -2309,6 +2257,7 @@ function roomsHtmlFor(x){
   }).join('');
 }
 function leftInfoHtml(x){
+  setTimeout(function(){ initDetailMap(x); },0);
   var R=rulesOf(x);
   var amen=["Wi-Fi","Mətbəx","Kondisioner","Pulsuz parkinq","Paltaryuyan","Televizor","İstilik","Eyvan"];
   var roomsHtml = roomsHtmlFor(x);
@@ -2324,6 +2273,7 @@ function leftInfoHtml(x){
     +(roomsHtml
       ? '<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Otaqlar və sahələr</h3><div class="roomlist">'+roomsHtml+'</div>'
       : '<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Evdə nələr var</h3><div class="amen">'+amen.map(function(a){return '<div>'+checkIcon(true)+a+'</div>';}).join('')+'</div>')
+    +locationSectionHtml(x)
     +'<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Ev qaydaları</h3>'
     +'<div class="rules">'
       +'<div class="r">'+checkIcon(R.kids)+'<span>'+(R.kids?'Uşaqlarla qalmaq olar':'Uşaqlarla qalmaq olmaz')+'</span></div>'
@@ -2785,38 +2735,105 @@ function fillDistricts(){
   centerPinOnRegion();
 }
 
-/* ============ xəritədən ünvan seçimi (Google Maps qoşulana qədər sadə əvəzedici) ============ */
-var mapView={x:0,y:0,w:600,h:260};
-function applyMapView(){ var svg=document.getElementById('pinMap'); if(svg) svg.setAttribute('viewBox', mapView.x+' '+mapView.y+' '+mapView.w+' '+mapView.h); }
-function zoomMap(factor){
-  var newW=Math.max(60,Math.min(600,mapView.w*factor));
-  var newH=newW*(260/600);
-  var cx=mapView.x+mapView.w/2, cy=mapView.y+mapView.h/2;
-  mapView.w=newW; mapView.h=newH; mapView.x=cx-newW/2; mapView.y=cy-newH/2;
-  applyMapView();
+/* ============ Google Maps ============ */
+var GMAPS_KEY="AIzaSyBJ9UUTprxzreGblUEsLRfDeA4emKgwyE0"; /* brauzer açarıdır — yalnız buralar.az domeninə və 3 API-yə məhdudlaşdırılıb */
+(function(){
+  var sc=document.createElement('script'); sc.async=true;
+  sc.src='https://maps.googleapis.com/maps/api/js?key='+GMAPS_KEY+'&v=weekly&loading=async&language=az&region=AZ';
+  document.head.appendChild(sc);
+})();
+window.gm_authFailure=function(){ window.gmFailed=true; console.error('Google Maps açarı bu ünvanda işləmir (domen məhdudiyyəti və ya API aktiv deyil)'); };
+var gmLibsReady=false;
+function whenMaps(cb,tries){
+  tries=tries||0;
+  if(window.gmFailed) return;
+  if(window.google && google.maps && google.maps.importLibrary){
+    if(gmLibsReady){ cb(); return; }
+    Promise.all([google.maps.importLibrary('maps'),google.maps.importLibrary('marker')]).then(function(){ gmLibsReady=true; cb(); }).catch(function(e){ console.error('Google Maps yüklənmədi',e); });
+    return;
+  }
+  if(tries<100) setTimeout(function(){ whenMaps(cb,tries+1); },300);
 }
-function mapWheel(evt){ evt.preventDefault(); zoomMap(evt.deltaY<0?0.85:1/0.85); }
+var gmPick={map:null,marker:null};
+function regionCenter(){
+  var r=(document.getElementById('h-region')||{}).value;
+  return REGION_CENTERS[r]||REGION_CENTERS["Abşeron"];
+}
+function setPinLatLng(lat,lng,pan,zoom){
+  document.getElementById('h-lat').value=Number(lat).toFixed(5);
+  document.getElementById('h-lng').value=Number(lng).toFixed(5);
+  if(gmPick.map && gmPick.marker){
+    var pos={lat:Number(lat),lng:Number(lng)};
+    gmPick.marker.setPosition(pos);
+    if(pan){ gmPick.map.setCenter(pos); if(zoom) gmPick.map.setZoom(zoom); }
+  }
+}
 function centerPinOnRegion(){
-  var r=document.getElementById('h-region').value, c=REGION_CENTERS[r]||REGION_CENTERS["Abşeron"];
-  mapView={x:0,y:0,w:600,h:260}; applyMapView();
-  setPin(300,130,c[0],c[1]);
+  var c=regionCenter();
+  setPinLatLng(c[0],c[1],true,11);
 }
-function setPin(x,y,lat,lng){
-  document.getElementById('pinGroup').setAttribute('transform','translate('+x+','+y+')');
-  document.getElementById('h-lat').value=lat.toFixed(5);
-  document.getElementById('h-lng').value=lng.toFixed(5);
+function ensureHostMap(){
+  var el=document.getElementById('gmapPick'); if(!el) return;
+  whenMaps(function(){
+    if(!gmPick.map){
+      el.innerHTML='';
+      var lat=parseFloat(document.getElementById('h-lat').value), lng=parseFloat(document.getElementById('h-lng').value);
+      var c=regionCenter();
+      var start=(!isNaN(lat)&&!isNaN(lng))?{lat:lat,lng:lng}:{lat:c[0],lng:c[1]};
+      gmPick.map=new google.maps.Map(el,{center:start,zoom:11,mapTypeControl:true,streetViewControl:false,fullscreenControl:false,gestureHandling:'cooperative'});
+      gmPick.marker=new google.maps.Marker({map:gmPick.map,position:start,draggable:true});
+      gmPick.map.addListener('click',function(e){ setPinLatLng(e.latLng.lat(),e.latLng.lng(),false); });
+      gmPick.marker.addListener('dragend',function(e){ setPinLatLng(e.latLng.lat(),e.latLng.lng(),false); });
+      initPlaceSearch();
+    } else {
+      google.maps.event.trigger(gmPick.map,'resize');
+      var la=parseFloat(document.getElementById('h-lat').value), ln=parseFloat(document.getElementById('h-lng').value);
+      if(!isNaN(la)&&!isNaN(ln)){ gmPick.marker.setPosition({lat:la,lng:ln}); gmPick.map.setCenter({lat:la,lng:ln}); }
+    }
+  });
 }
-function dropPin(evt){
-  var svg=document.getElementById('pinMap');
-  var pt=svg.createSVGPoint(); pt.x=evt.clientX; pt.y=evt.clientY;
-  var loc=pt.matrixTransform(svg.getScreenCTM().inverse());
-  var x=Math.max(10,Math.min(590,loc.x)), y=Math.max(10,Math.min(250,loc.y));
-  var r=document.getElementById('h-region').value, c=REGION_CENTERS[r]||REGION_CENTERS["Abşeron"];
-  /* ekran koordinatını mərkəzə nisbətən təxmini enlik/uzunluğa çeviririk — real inteqrasiyada bunun yerinə
-     Google Maps-in verdiyi əsl lat/lng dəyəri birbaşa gələcək */
-  var lat = c[0] + (130-y)*0.0018;
-  var lng = c[1] + (x-300)*0.0022;
-  setPin(x,y,lat,lng);
+function initPlaceSearch(){
+  var box=document.getElementById('gmapSearch'); if(!box || box.childNodes.length) return;
+  google.maps.importLibrary('places').then(function(lib){
+    var pac=new lib.PlaceAutocompleteElement({includedRegionCodes:['az']});
+    box.appendChild(pac);
+    var onSel=function(ev){
+      var place=ev.place || (ev.placePrediction && ev.placePrediction.toPlace());
+      if(!place) return;
+      place.fetchFields({fields:['location','formattedAddress','displayName']}).then(function(){
+        if(!place.location) return;
+        setPinLatLng(place.location.lat(),place.location.lng(),true,17);
+        var a=document.getElementById('h-addr');
+        if(a && !a.value.trim()){ a.value=String(place.displayName||place.formattedAddress||'').slice(0,50); }
+      });
+    };
+    pac.addEventListener('gmp-select',onSel);
+    pac.addEventListener('gmp-placeselect',onSel);
+  }).catch(function(e){ console.error('Ünvan axtarışı yüklənmədi',e); box.innerHTML='<p class="note" style="padding:0">Ünvan axtarışı hazırda əlçatan deyil — xəritəyə klikləyin.</p>'; });
+}
+/* Evin detal səhifəsi: dəqiq yer GİZLİ saxlanılır — təxmini ərazi dairəsi göstərilir. Dairənin mərkəzi
+   elan nömrəsindən asılı sabit bir məsafəyə sürüşdürülür ki, dairənin mərkəzi evin dəqiq yeri olmasın. */
+function approxCenterFor(x){
+  var seed=((Number(x.id)||0)*9301+49297)%233280/233280;
+  var seed2=((Number(x.id)||0)*7919+12345)%233280/233280;
+  var ang=seed*2*Math.PI, dist=120+seed2*150;
+  var dLat=dist*Math.cos(ang)/111320, dLng=dist*Math.sin(ang)/(111320*Math.cos(x.lat*Math.PI/180));
+  return {lat:x.lat+dLat,lng:x.lng+dLng};
+}
+function locationSectionHtml(x){
+  if(x.lat==null||x.lng==null||isNaN(x.lat)||isNaN(x.lng)) return '';
+  return '<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Yerləşmə</h3>'
+    +'<div id="gmapDetail-'+x.id+'" class="gmap" style="height:260px;border-radius:14px;overflow:hidden;border:1px solid var(--line)"></div>'
+    +'<p class="note" style="text-align:left;margin-top:8px">Təxmini ərazi göstərilir. Dəqiq ünvan rezervasiya təsdiqlənəndən və girişə 24 saat qalandan sonra açılır.</p>';
+}
+function initDetailMap(x){
+  whenMaps(function(){
+    var el=document.getElementById('gmapDetail-'+x.id); if(!el || el.dataset.ready) return;
+    el.dataset.ready='1';
+    var c=approxCenterFor(x);
+    var map=new google.maps.Map(el,{center:c,zoom:14,disableDefaultUI:true,zoomControl:true,gestureHandling:'cooperative'});
+    new google.maps.Circle({map:map,center:c,radius:600,strokeColor:'#c0392b',strokeOpacity:.8,strokeWeight:2,fillColor:'#c0392b',fillOpacity:.15});
+  });
 }
 /* ============ üz şəkli + otaq-otaq quruculuq ============ */
 function allDraftPhotos(){
@@ -3659,11 +3676,7 @@ function openEdit(id){
   formatAzPhone(document.getElementById('h-whatsapp'));
 
   if(live.lat!=null && live.lng!=null && !isNaN(live.lat) && !isNaN(live.lng)){
-    var c=REGION_CENTERS[region]||REGION_CENTERS["Abşeron"];
-    var py = 130 - (live.lat-c[0])/0.0018;
-    var px = 300 + (live.lng-c[1])/0.0022;
-    px=Math.max(10,Math.min(590,px)); py=Math.max(10,Math.min(250,py));
-    setPin(px,py,live.lat,live.lng);
+    setPinLatLng(live.lat,live.lng,true,16);
   }
 
   document.getElementById('listingFormHeading').textContent='Elanı redaktə et';
