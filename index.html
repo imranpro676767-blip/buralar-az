@@ -502,7 +502,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   <div class="wrap">
     <div class="pagehead">
       <h2>Ev sahibi paneli</h2>
-      <p>Elan yerləşdirmək üçün VÖEN və bank hesabı tələb olunur. Elan idarəetmə tərəfindən təsdiqləndikdən sonra saytda görünür. Səndən 3% komissiya tutulur.</p>
+      <p>Elan yerləşdirmək üçün VÖEN və bank hesabı tələb olunur. Elan idarəetmə tərəfindən təsdiqləndikdən və Epoint ödəniş hesabınız qoşulduqdan sonra saytda görünür. Səndən 3% komissiya tutulur. Rezervasiya ödənişi Epoint vasitəsilə avtomatik hesabına bölünür.</p>
     </div>
     <div class="stats" id="hoststats"></div>
 
@@ -1720,7 +1720,8 @@ function uploadImageToStorage(file, pathPrefix){
 function save(){ try{ localStorage.setItem('buralar_v1',JSON.stringify({user:state.user,notifications:state.notifications})); }catch(e){} }
 function load(){ try{ var raw=localStorage.getItem('buralar_v1'); if(raw){ var o=JSON.parse(raw); state.user=o.user||null; state.notifications=o.notifications||[]; } }catch(e){} }
 function all(){ return SEED.concat(state.custom); }
-function approved(){ return all().filter(function(x){return x.st==='approved';}); }
+function approved(){ return all().filter(function(x){return x.st==='approved' && isEpointId(x.epointId);}); }
+function isEpointId(v){ return /^i\d{6,12}$/.test(String(v||'').trim()); }
 
 /* ============ helpers ============ */
 function az(n){ return Math.round(n).toLocaleString('az-AZ')+" ₼"; }
@@ -2375,7 +2376,7 @@ function openAdminDetail(id){
     +'</div>'
     +'<hr class="sep" style="margin:6px 0">'
     +(x.st==='pending'
-      ? '<button class="btn ok" onclick="approveListing('+x.id+',true);closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
+      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
       : '<p class="note">Bu elan artıq baxılıb ('+(x.st==='approved'?'təsdiqlənib':'rədd edilib')+').</p>')
   +'</div></aside>';
   document.getElementById('detailBody').innerHTML = galleryHtmlFor(x) + '<div class="detail">' + leftInfoHtml(x) + adminAside + '</div>';
@@ -3301,6 +3302,7 @@ function renderHost(){
     return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ty)+' · '+x.g+' qonaq · '+az(x.p)+'/gecə</div>'
       +'<div class="m">VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban.slice(0,8))+'…</div>'
+      +(x.st==='approved'&&!isEpointId(x.epointId)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
       +(x.st==='pending'?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
       +'<div style="margin-top:8px">'+listingTag(x.st)+(x.pendingEdit?' <span class="pendingbadge">Dəyişiklik admin təsdiqini gözləyir</span>':'')+'</div></div>'
       +'<div class="act"><div class="money" style="font-size:18px">'+az(x.p)+'</div>'
@@ -3939,9 +3941,23 @@ function resolveReport(id,remove){
 /* ============ admin ============ */
 function approveListing(id,ok){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  if(ok){
+    var inp=document.getElementById('ep-'+id)||document.getElementById('ep-d-'+id);
+    var val=String(inp&&inp.value?inp.value:(x.epointId||'')).trim().toLowerCase();
+    if(!isEpointId(val)){ toast('Təsdiq üçün ev sahibinin Epoint tacir ID-sini yaz (məs. i000123456)'); return false; }
+    x.epointId = val;
+  }
   x.st = ok?'approved':'rejected';
   syncListing(x); renderAdmin(); renderHost(); render();
   toast(ok?"Elan təsdiqləndi və saytda göründü":"Elan rədd edildi");
+}
+function saveEpointId(id){
+  var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  var inp=document.getElementById('epa-'+id);
+  var val=String(inp&&inp.value||'').trim().toLowerCase();
+  if(!isEpointId(val)){ toast('Epoint ID düzgün deyil (məs. i000123456)'); return; }
+  x.epointId=val;
+  syncListing(x).then(function(){ toast('Epoint ID saxlandı'); renderAdmin(); render(); });
 }
 /* ============ müştərilər ============ */
 function custTag(status){
@@ -4181,11 +4197,25 @@ function renderAdmin(){
       +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
       +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
       +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
+      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"></div>'
       +'</div><div class="act">'
       +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
       +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
       +'<button class="btn sm ghost" onclick="approveListing('+x.id+',false)">Rədd et</button></div></div>';
   }).join('') : '<div class="empty"><h3>Təsdiq gözləyən elan yoxdur</h3><p>Ev sahibləri elan göndərdikcə burada görünəcək.</p></div>';
+  var apprAll=state.custom.filter(function(x){return x.st==='approved';});
+  if(apprAll.length){
+    document.getElementById('modlist').innerHTML += '<h3 style="margin:22px 0 8px">Təsdiqlənmiş elanlar: Epoint ID</h3>'
+      +'<p class="note">ID olmayan elan müştərilərə görünmür və bron edilə bilmir.</p>'
+      +apprAll.map(function(x){
+        var okId=isEpointId(x.epointId);
+        return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
+          +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
+          +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
+          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"></div>'
+          +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button></div></div>';
+      }).join('');
+  }
 
   renderHostsAdmin();
   renderMarketStatsAdmin();
