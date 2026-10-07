@@ -948,14 +948,16 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <div class="modal" id="cmpModal" role="dialog" aria-modal="true" aria-label="Şikayət">
   <div class="box">
     <h3>Şikayət göndər</h3>
-    <p>Geri qaytarma yalnız iki halda mümkündür: ev elandakı evə uyğun gəlmirsə və ya ev sahibi açarı təqdim etməyibsə. İdarəetmə yoxlayır, təsdiq olunarsa məbləğin 100%-i qaytarılır.</p>
+    <p>Geri qaytarma yalnız iki halda mümkündür: ev elandakı evə tamamilə uyğun gəlmirsə və ya ev sahibi açarı təqdim etməyibsə. İdarəetmə yoxlayır, təsdiq olunarsa məbləğin 100%-i qaytarılır.</p>
     <label>Səbəb<select id="c-reason">
-      <option>Ev elandakı evə uyğun gəlmir</option>
+      <option>Ev elandakı evə tamamilə uyğun gəlmir</option>
       <option>Ev sahibi açarı təqdim etmədi</option>
       <option>Evə giriş mümkün olmadı</option>
     </select></label>
-    <label>İzah<textarea id="c-text" rows="4" placeholder="Nə baş verdiyini qısa yaz. Şəkil və yazışma varsa, qeyd et."></textarea></label>
-    <button class="btn" onclick="sendComplaint()">Şikayəti göndər</button>
+    <label>İzah<textarea id="c-text" rows="4" placeholder="Nə baş verdiyini qısa yaz. Yazışma varsa, qeyd et."></textarea></label>
+    <label>Sübut şəkilləri (maksimum 10)<input type="file" id="c-photos" accept="image/*" multiple onchange="cmpPickPhotos(this)"></label>
+    <div id="c-photo-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0"></div>
+    <button class="btn" id="cmpSendBtn" onclick="sendComplaint()">Şikayəti göndər</button>
     <button class="btn ghost" onclick="closeModal('cmpModal')">İmtina</button>
   </div>
 </div>
@@ -1004,7 +1006,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div class="note" style="text-align:left;display:grid;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
       <p><b>1. Şəxsiyyət yoxlaması.</b> Buralar.az-da rezervasiya etmək üçün qeydiyyat zamanı şəxsiyyət təsdiqi tələb olunur. Şübhəli və ya təkrarlanan sənədlər sistem tərəfindən avtomatik aşkarlanır və admin tərəfindən əlavə yoxlanılır.</p>
       <p><b>2. Ödənişin saxlanması.</b> Ödədiyiniz məbləğ dərhal ev sahibinə keçmir — girişdən 24 saat sonra köçürülür. Bu müddət ərzində problem yaranarsa, şikayət göndərə bilərsiniz.</p>
-      <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
+      <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə tamamilə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
       <p><b>4. Fırıldaqçılığa qarşı tədbir.</b> Saxta sənədlə qeydiyyat aşkarlansa, hesab admin tərəfindən bloklanır. Əgər bu, ödəniş edilmiş aktiv bron zamanı baş verərsə və pul hələ ev sahibinə çatmayıbsa, bron ləğv olunur və məbləğ sizə tam qaytarılır.</p>
       <p><b>5. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz isə yalnız bron edən/bron olunan qarşı tərəfə (ev sahibi ↔ qonaq) — rezervasiya edildiyi andan etibarən — açıqlanır, başqa heç bir istifadəçiyə göstərilmir.</p>
     </div>
@@ -1045,7 +1047,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>1. Platformanın rolu.</b> Buralar.az qonaqları və ev sahiblərini bir araya gətirən vasitəçi (marketplace) platformadır. Buralar.az evlərin sahibi, icarədarı, idarəçisi və ya operatoru deyil. İcarə münasibəti yalnız qonaq ilə ev sahibi arasında yaranır. Buralar.az bu münasibətin tərəfi deyil və evin vəziyyətinə, təsvirin dəqiqliyinə, təhlükəsizliyinə və xidmət keyfiyyətinə görə cavabdeh deyil.</p>
       <p><b>2. Hesab və doğrulama.</b> Rezervasiya etmək üçün qeydiyyat və şəxsiyyət doğrulaması (KYC) məcburidir. Admin saxta məlumat, şübhəli sənəd və ya təkrar qeydiyyat aşkar etdikdə hesabı rədd və ya blok edə bilər. Doğrulamanın keçməsi qonağın və ya ev sahibinin etibarlı və ya təhlükəsiz olmasına zəmanət demək deyil.</p>
       <p><b>3. Rezervasiya və ödəniş.</b> Ödəniş Epoint ödəniş sistemi vasitəsilə onlayn həyata keçirilir. Rezervasiya yalnız ödəniş uğurla alındıqdan sonra təsdiqlənir. Ev sahibinin payı və platformanın xidmət haqqı rezervasiya zamanı göstərilən məbləğlərə uyğun bölünür. Ödəniş edilməyən rezervasiya 45 dəqiqədən sonra avtomatik ləğv olunur.</p>
-      <p><b>4. Şikayət və geri qaytarma.</b> Ev təsvirə uyğun gəlmədikdə və ya ev sahibi girişi təmin etmədikdə qonaq şikayət göndərə bilər. Admin araşdırıb ödənişin geri qaytarılması barədə qərar verə bilər. Bu qərar yalnız ödənişin taleyinə aiddir və platformanın başqa heç bir məsuliyyəti yaratmır. Qonaq fikrini dəyişdiyinə görə geri qaytarma tələb edə bilməz.</p>
+      <p><b>4. Şikayət və geri qaytarma.</b> Ev elandakı təsvirə tamamilə uyğun gəlmədikdə və ya ev sahibi girişi təmin etmədikdə qonaq şikayət göndərə bilər. Admin araşdırıb ödənişin geri qaytarılması barədə qərar verə bilər. Bu qərar yalnız ödənişin taleyinə aiddir və platformanın başqa heç bir məsuliyyəti yaratmır. Qonaq fikrini dəyişdiyinə görə geri qaytarma tələb edə bilməz.</p>
       <p><b>5. Davranış qaydaları.</b> Saxta rəy və saxta sənəd təqdim etmək, başqasının hesabına icazəsiz müdaxilə etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın bloklanmasına səbəb ola bilər.</p>
       <p><b>6. Ev sahibinin öhdəlikləri.</b> Ev sahibi: (a) elan məlumatlarının, şəkillərin və qaydaların doğru olduğunu; (b) evi icarəyə vermək üçün qanuni hüququ və lazımi icazələri olduğunu; (c) evin yaşayış üçün təhlükəsiz olduğunu, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz, elektrik, isitmə və yanğın təhlükəsizliyi tələblərinin yerinə yetirildiyini; (d) risk mənbələri barədə (məsələn, hovuzun dərinliyi, hasarsız sahələr) qonaqları qabaqcadan xəbərdar etdiyini; (e) fərdi sığorta və ya mülki məsuliyyət sığortası barədə özü qərar verdiyini və Buralar.az-ın sığorta təmin etmədiyini bəyan və təsdiq edir. Evdə baş verən bütün hadisələr və itkilər üzrə birinci məsuliyyət ev sahibinə aiddir.</p>
       <p><b>7. Qonağın öhdəlikləri.</b> Qonaq evdən ev qaydalarına və təhlükəsizlik tələblərinə uyğun istifadə etməyi, evə vurduğu ziyana görə cavabdeh olmağı öhdəsinə götürür. Uşaqlar, yaşlıların və məhdud imkanlı şəxslərin təhlükəsizliyi, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz və elektrik cihazları ətrafında nəzarət <b>tam olaraq qonağa və onunla gələn yetkin şəxslərə aiddir</b>. Qonaq evə gətirdiyi bütün şəxslərin (qonaq sayı elandakı limitdən çox olmamalıdır) davranışına görə cavabdehdir.</p>
@@ -2672,13 +2674,54 @@ function fastForward(code){
   state.bookings.forEach(function(b){ if(b.code===code){ b.releaseAt=Date.now()-1000; bookingsSync.save(b); } });
   autoRelease(); renderBookings(); renderHost(); if(state.adminAuth) renderAdmin(); toast("Demo: 24 saat ötürüldü, ödəniş bölüşdürüldü");
 }
-function openComplaint(code){ state.cmpCode=code; openModal('cmpModal'); }
+var CMP_MAX_PHOTOS=10, cmpPreviewUrls=[];
+function openComplaint(code){ state.cmpCode=code; state.cmpFiles=[]; renderCmpPhotos(); openModal('cmpModal'); }
+function cmpPickPhotos(inp){
+  var files=Array.prototype.slice.call(inp.files||[]);
+  state.cmpFiles=state.cmpFiles||[];
+  var skipped=false;
+  files.forEach(function(f){
+    if(!/^image\//.test(f.type)){ skipped=true; return; }
+    if(state.cmpFiles.length>=CMP_MAX_PHOTOS){ skipped=true; return; }
+    state.cmpFiles.push(f);
+  });
+  inp.value='';
+  if(skipped) toast('Maksimum '+CMP_MAX_PHOTOS+' şəkil əlavə etmək olar (yalnız şəkil faylları)');
+  renderCmpPhotos();
+}
+function cmpRemovePhoto(i){ (state.cmpFiles||[]).splice(i,1); renderCmpPhotos(); }
+function renderCmpPhotos(){
+  var el=document.getElementById('c-photo-preview'); if(!el) return;
+  cmpPreviewUrls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} }); cmpPreviewUrls=[];
+  var files=state.cmpFiles||[];
+  el.innerHTML = files.map(function(f,i){
+    var u=URL.createObjectURL(f); cmpPreviewUrls.push(u);
+    return '<div style="position:relative;width:64px;height:64px"><img src="'+u+'" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;display:block"><button type="button" onclick="cmpRemovePhoto('+i+')" aria-label="Sil" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:#a4213b;color:#fff;font-size:12px;line-height:20px;cursor:pointer">×</button></div>';
+  }).join('') + (files.length?'<div class="note" style="align-self:center">'+files.length+'/'+CMP_MAX_PHOTOS+'</div>':'');
+}
+function complaintPhotosHtml(c){
+  var ph=(c&&c.photos)||[]; if(!ph.length) return '';
+  return '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">'+ph.map(function(u){
+    return '<a href="'+esc(u)+'" target="_blank" rel="noopener"><img src="'+esc(u)+'" alt="Sübut" style="width:56px;height:56px;object-fit:cover;border-radius:8px;display:block"></a>';
+  }).join('')+'</div>';
+}
 function sendComplaint(){
   var reason=document.getElementById('c-reason').value, txt=document.getElementById('c-text').value.trim();
   if(txt.length<10){ toast("Zəhmət olmasa izahı yaz"); return; }
-  state.bookings.forEach(function(b){ if(b.code===state.cmpCode){ b.complaint={reason:reason,text:txt,st:'pending',date:today()}; b.status='complaint'; bookingsSync.save(b); } });
-  closeModal('cmpModal'); document.getElementById('c-text').value='';
-  renderBookings(); toast("Şikayət göndərildi, idarəetmə yoxlayır");
+  var code=state.cmpCode, files=(state.cmpFiles||[]).slice(0,CMP_MAX_PHOTOS);
+  var btn=document.getElementById('cmpSendBtn');
+  if(files.length && !fbOnline){ toast("Server bağlantısı yoxdur, şəkilləri yükləmək mümkün olmadı"); return; }
+  if(btn){ btn.disabled=true; btn.textContent=files.length?'Şəkillər yüklənir...':'Göndərilir...'; }
+  Promise.all(files.map(function(f){ return uploadImageToStorage(f,'complaints/'+code); })).then(function(urls){
+    state.bookings.forEach(function(b){ if(b.code===code){ b.complaint={reason:reason,text:txt,st:'pending',date:today(),photos:urls}; b.status='complaint'; bookingsSync.save(b); } });
+    closeModal('cmpModal'); document.getElementById('c-text').value=''; state.cmpFiles=[]; renderCmpPhotos();
+    renderBookings(); toast("Şikayət göndərildi, idarəetmə yoxlayır");
+  }).catch(function(err){
+    console.error('Şikayət şəkil yükləmə xətası:', err);
+    toast("Şəkillər yüklənmədi, yenidən cəhd et: "+(err&&err.message?err.message:err));
+  }).then(function(){
+    if(btn){ btn.disabled=false; btn.textContent='Şikayəti göndər'; }
+  });
 }
 function resolveComplaint(code,ok){
   state.bookings.forEach(function(b){
@@ -4258,7 +4301,7 @@ function renderAdmin(){
       +'<h4>'+esc(b.title)+'</h4>'
       +'<div class="m">Kod '+b.code+' · '+esc(b.guest||'—')+' · '+esc(b.phone||'—')+'</div>'
       +'<div class="m" style="color:var(--nar)">'+esc(b.complaint.reason)+'</div>'
-      +'<div class="m" style="font-weight:500;white-space:normal">'+esc(b.complaint.text)+'</div>'
+      +'<div class="m" style="font-weight:500;white-space:normal">'+esc(b.complaint.text)+'</div>'+complaintPhotosHtml(b.complaint)
       +'<div style="margin-top:8px">'+statusTag(b.status,b)+'</div></div>'
       +'<div class="act"><div class="money" style="font-size:18px">'+az2(b.total)+'</div>'
       +(b.complaint.st==='pending'
