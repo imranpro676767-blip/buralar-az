@@ -801,6 +801,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <h4>Epoint ödəniş hesabı</h4>
       <p class="note full" style="text-align:left;margin:0">Müştərinin ödədiyi məbləğin sənə düşən hissəsi (komissiya çıxılmaqla) <b>Epoint vasitəsilə avtomatik hesabına köçürülür</b>. Bunun üçün Epoint-də tacir kimi qeydiyyatdan keçməlisən. <span id="epRegLinkWrap"></span> Qeydiyyatdan sonra aldığın <b>tacir ID-sini</b> aşağıya yaz. ID-ni yazmasan da elan göndərilir, amma ID təsdiqlənmədən elan saytda görünməyəcək.</p>
       <label class="full">Epoint tacir ID-n (məs. i000123456)<input id="h-epoint" placeholder="i000123456" autocomplete="off" maxlength="13"></label>
+      <label class="full" style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;cursor:pointer">
+        <input type="checkbox" id="h-terms" style="margin-top:3px;width:18px;height:18px;flex:none">
+        <span><a href="#" onclick="openModal('tosModal');return false" style="color:var(--nar);font-weight:700">İstifadə Şərtlərini</a> oxudum və qəbul edirəm. Evin təhlükəsiz olmasına (hovuz, balkon, pilləkən, qaz, elektrik və s.), elan məlumatlarının doğruluğuna və qonaqlarla münasibətlərə görə məsuliyyət daşıdığımı, Buralar.az-ın isə yalnız vasitəçi olduğunu təsdiq edirəm.</span>
+      </label>
       <div class="full">
         <button class="btn dark" type="submit" id="listingSubmitBtn">Elanı təsdiqə göndər</button>
         <p class="note" style="margin-top:8px">Elan göndərildikdən sonra idarəetmə yoxlayır. Təsdiqlənənə qədər saytda görünmür.</p>
@@ -1003,8 +1007,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
       <p><b>4. Fırıldaqçılığa qarşı tədbir.</b> Saxta sənədlə qeydiyyat aşkarlansa, hesab admin tərəfindən bloklanır. Əgər bu, ödəniş edilmiş aktiv bron zamanı baş verərsə və pul hələ ev sahibinə çatmayıbsa, bron ləğv olunur və məbləğ sizə tam qaytarılır.</p>
       <p><b>5. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz isə yalnız bron edən/bron olunan qarşı tərəfə (ev sahibi ↔ qonaq) — rezervasiya edildiyi andan etibarən — açıqlanır, başqa heç bir istifadəçiyə göstərilmir.</p>
-      <p style="color:var(--muted)">Qeyd: platforma hazırda test/inkişaf mərhələsindədir, ödəniş simulyasiya oluna bilər.</p>
     </div>
+    <label style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;margin:12px 0;cursor:pointer">
+      <input type="checkbox" id="tosAccept" style="margin-top:3px;width:18px;height:18px;flex:none">
+      <span><a href="#" onclick="openModal('tosModal');return false" style="color:var(--nar);font-weight:700">İstifadə Şərtlərini</a> oxudum və qəbul edirəm. Başa düşürəm ki, Buralar.az vasitəçidir, evdə baş verən hadisələrə görə (o cümlədən uşaqların və hovuzun təhlükəsizliyi) məsuliyyət mənə və ev sahibinə aiddir, Buralar.az-a deyil.</span>
+    </label>
     <button class="btn" onclick="confirmSafetyAndBook()">Oxudum, qəbul edirəm və davam et</button>
     <button class="btn ghost" onclick="closeModal('safetyModal')">İmtina</button>
   </div>
@@ -1031,18 +1038,24 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
 <!-- TERMS OF SERVICE -->
 <div class="modal" id="tosModal" role="dialog" aria-modal="true" aria-label="İstifadə şərtləri">
-  <div class="box" style="width:min(640px,100%)">
+  <div class="box" style="width:min(680px,100%)">
     <h3>İstifadə Şərtləri</h3>
-    <div class="note" style="text-align:left;display:grid;gap:10px;max-height:60vh;overflow:auto;padding-right:4px">
-      <p><b>1. Platformanın rolu.</b> Buralar.az qonaqları və ev sahiblərini bir araya gətirən vasitəçi (marketplace) platformadır — evlərin sahibi Buralar.az deyil, hər elan öz ev sahibinin mülkiyyətidir. Buralar.az tərəflər arasında rezervasiya, ödəniş və əlaqə prosesini asanlaşdırır, lakin ev ilə bağlı vəziyyət, təsvirin dəqiqliyi və qonaqpərvərlik öhdəliyi birbaşa ev sahibinə aiddir.</p>
-      <p><b>2. Hesab və doğrulama.</b> Rezervasiya etmək üçün qeydiyyat və şəxsiyyət doğrulaması (KYC) məcburidir. Admin istənilən hesabı — saxta məlumat, şübhəli sənəd və ya təkrar qeydiyyat aşkar olunduqda — rədd edə və ya bloklaya bilər.</p>
-      <p><b>3. Rezervasiya və ödəniş.</b> Rezervasiya təsdiqləndikdən sonra ödəniş girişə qədər platformada "gözləmə" statusunda saxlanılır və giriş tarixindən sonra ev sahibinə köçürülür (platforma xidmət haqqı çıxılmaqla). Qonaq ödəməni bron zamanı göstərilən bank rekvizitlərinə köçürməlidir; saxta və ya natamam köçürmə rezervasiyanın ləğvinə səbəb ola bilər.</p>
-      <p><b>4. Ləğvetmə və şikayət.</b> Ev sahibinin təqsiri üzündən (ev təsvirə uyğun olmaması, giriş verilməməsi və s.) yaranan problemlər üzrə qonaq admin-ə şikayət təqdim edə bilər; admin araşdırıb ödənişin qismən və ya tam geri qaytarılmasına qərar verə bilər. Şikayət olmadan ləğvetmə qaydaları hər elanın öz səhifəsində göstərilən qaydalara tabedir.</p>
-      <p><b>5. Davranış qaydaları.</b> Saxta rəy yazmaq, saxta sənəd təqdim etmək, başqasının bronunu və ya hesabını icazəsiz dəyişdirməyə cəhd etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın həmişəlik bloklanmasına səbəb ola bilər.</p>
-      <p><b>6. Məsuliyyətin məhdudlaşdırılması.</b> Buralar.az elanların dəqiqliyinə görə mümkün qədər yoxlama aparsa da, ev sahibinin təqdim etdiyi məlumatın tam düzgünlüyünə zəmanət vermir. Platforma qonaq və ev sahibi arasındakı mübahisələrdə vasitəçilik edir, lakin birbaşa hüquqi məsuliyyət daşımır.</p>
-      <p><b>7. Şərtlərin dəyişməsi.</b> Bu şərtlər platforma inkişaf etdikcə yenilənə bilər; əhəmiyyətli dəyişikliklər saytda elan olunur. Platformadan istifadəni davam etdirmək yenilənmiş şərtləri qəbul etmək deməkdir.</p>
-      <p><b>8. Əlaqə.</b> Suallarınız üçün <a href="mailto:salam.buralar.az@gmail.com" style="color:var(--nar);font-weight:700">salam.buralar.az@gmail.com</a> ünvanına yaza bilərsiniz.</p>
-      <p style="color:var(--muted)">Son yenilənmə: 2026. Platforma inkişaf mərhələsində olduğu üçün bu şərtlər zaman-zaman yenilənə bilər.</p>
+    <div class="note" style="text-align:left;display:grid;gap:10px;max-height:62vh;overflow:auto;padding-right:4px">
+      <p style="color:var(--muted)">Versiya: <span id="tosVersionLabel"></span>. Bu şərtlər həm qonaqlara, həm də ev sahiblərinə aiddir. Qəbul etdiyiniz versiya, vaxt və (rezervasiya zamanı) texniki məlumatlar sübut məqsədilə saxlanılır.</p>
+      <p><b>1. Platformanın rolu.</b> Buralar.az qonaqları və ev sahiblərini bir araya gətirən vasitəçi (marketplace) platformadır. Buralar.az evlərin sahibi, icarədarı, idarəçisi və ya operatoru deyil. İcarə münasibəti yalnız qonaq ilə ev sahibi arasında yaranır. Buralar.az bu münasibətin tərəfi deyil və evin vəziyyətinə, təsvirin dəqiqliyinə, təhlükəsizliyinə və xidmət keyfiyyətinə görə cavabdeh deyil.</p>
+      <p><b>2. Hesab və doğrulama.</b> Rezervasiya etmək üçün qeydiyyat və şəxsiyyət doğrulaması (KYC) məcburidir. Admin saxta məlumat, şübhəli sənəd və ya təkrar qeydiyyat aşkar etdikdə hesabı rədd və ya blok edə bilər. Doğrulamanın keçməsi qonağın və ya ev sahibinin etibarlı və ya təhlükəsiz olmasına zəmanət demək deyil.</p>
+      <p><b>3. Rezervasiya və ödəniş.</b> Ödəniş Epoint ödəniş sistemi vasitəsilə onlayn həyata keçirilir. Rezervasiya yalnız ödəniş uğurla alındıqdan sonra təsdiqlənir. Ev sahibinin payı və platformanın xidmət haqqı rezervasiya zamanı göstərilən məbləğlərə uyğun bölünür. Ödəniş edilməyən rezervasiya 45 dəqiqədən sonra avtomatik ləğv olunur.</p>
+      <p><b>4. Şikayət və geri qaytarma.</b> Ev təsvirə uyğun gəlmədikdə və ya ev sahibi girişi təmin etmədikdə qonaq şikayət göndərə bilər. Admin araşdırıb ödənişin geri qaytarılması barədə qərar verə bilər. Bu qərar yalnız ödənişin taleyinə aiddir və platformanın başqa heç bir məsuliyyəti yaratmır. Qonaq fikrini dəyişdiyinə görə geri qaytarma tələb edə bilməz.</p>
+      <p><b>5. Davranış qaydaları.</b> Saxta rəy və saxta sənəd təqdim etmək, başqasının hesabına icazəsiz müdaxilə etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın bloklanmasına səbəb ola bilər.</p>
+      <p><b>6. Ev sahibinin öhdəlikləri.</b> Ev sahibi: (a) elan məlumatlarının, şəkillərin və qaydaların doğru olduğunu; (b) evi icarəyə vermək üçün qanuni hüququ və lazımi icazələri olduğunu; (c) evin yaşayış üçün təhlükəsiz olduğunu, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz, elektrik, isitmə və yanğın təhlükəsizliyi tələblərinin yerinə yetirildiyini; (d) risk mənbələri barədə (məsələn, hovuzun dərinliyi, hasarsız sahələr) qonaqları qabaqcadan xəbərdar etdiyini; (e) fərdi sığorta və ya mülki məsuliyyət sığortası barədə özü qərar verdiyini və Buralar.az-ın sığorta təmin etmədiyini bəyan və təsdiq edir. Evdə baş verən bütün hadisələr və itkilər üzrə birinci məsuliyyət ev sahibinə aiddir.</p>
+      <p><b>7. Qonağın öhdəlikləri.</b> Qonaq evdən ev qaydalarına və təhlükəsizlik tələblərinə uyğun istifadə etməyi, evə vurduğu ziyana görə cavabdeh olmağı öhdəsinə götürür. Uşaqlar, yaşlıların və məhdud imkanlı şəxslərin təhlükəsizliyi, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz və elektrik cihazları ətrafında nəzarət <b>tam olaraq qonağa və onunla gələn yetkin şəxslərə aiddir</b>. Qonaq evə gətirdiyi bütün şəxslərin (qonaq sayı elandakı limitdən çox olmamalıdır) davranışına görə cavabdehdir.</p>
+      <p><b>8. Riskin qəbulu.</b> Qonaq və ev sahibi icarə olunan evdən istifadənin təbiətinə görə yarana bilən risklərin (yaralanma, xəstələnmə, əmlakın zədələnməsi, itməsi və ya oğurluq daxil olmaqla) şəxsən və ya öz yaxınları üçün onlara aid olduğunu başa düşdüklərini və qəbul etdiklərini təsdiq edirlər.</p>
+      <p><b>9. Buralar.az-ın məsuliyyətinin məhdudlaşdırılması.</b> Qüvvədə olan qanunvericiliyin icazə verdiyi maksimum həddə Buralar.az qonaq, ev sahibi və ya üçüncü şəxslərin evdə və ya evlə əlaqədar yaşadığı hər hansı xəsarətə, sağlamlığa zərərə, ölümə, əmlak zərərinə, oğurluğa, itkiyə, gecikməyə, ləğvə və ya mənəvi zərərə görə məsuliyyət daşımır. Qanunla istisna edilə bilməyən məsuliyyət halları istisna olmaqla, Buralar.az-ın hər hansı hadisə ilə əlaqədar öhdəliyi yalnız həmin rezervasiya üzrə platformaya ödənilmiş xidmət haqqının məbləği ilə məhdudlaşır.</p>
+      <p><b>10. Tərəflər arasında mübahisələr.</b> Qonaq ilə ev sahibi arasında yaranan hər hansı anlaşılmazlıq, iddia və ya mübahisə yalnız bu iki tərəf arasında həll olunur. Tərəflər öz tələblərini birbaşa bir-birinə qarşı irəli sürürlər və Buralar.az-ı cavabdeh tərəf kimi mübahisəyə cəlb etməyəcəklər. Buralar.az könüllü vasitəçilik edə bilər, lakin bu, məsuliyyət qəbul etmək demək deyil. Hər tərəf üçüncü şəxslərin (o cümlədən qonağın ailə üzvlərinin və qonaqlarının) Buralar.az-a qarşı irəli sürdüyü tələblərdən Buralar.az-ı qorumağı və yaranan əsaslı xərcləri ödəməyi öhdəsinə götürür, bu, həmin tələbin həmin tərəfin davranışı və ya evin vəziyyəti ilə bağlı olduğu hallara aiddir.</p>
+      <p><b>11. Hüquqi qüvvə.</b> Bu şərtlər Azərbaycan Respublikasının qanunvericiliyinə tabedir. Şərtlərin hər hansı bəndi qanunla etibarsız sayılarsa, qalan bəndlər qüvvədə qalır.</p>
+      <p><b>12. Qəbulun qeydə alınması.</b> Şərtləri qəbul etdiyiniz zaman şərtlərin versiyası, qəbul vaxtı, hesabınızın e-poçtu, elan və rezervasiya kodu, rezervasiya zamanı isə IP ünvanı və brauzer məlumatı sübut məqsədilə yalnız admin üçün əlçatan bazada saxlanılır.</p>
+      <p><b>13. Şərtlərin dəyişməsi.</b> Şərtlər yenilənə bilər. Yeni versiya yarandıqda növbəti rezervasiya və ya elan zamanı yenidən qəbul tələb olunur.</p>
+      <p><b>14. Əlaqə.</b> <a href="mailto:salam.buralar.az@gmail.com" style="color:var(--nar);font-weight:700">salam.buralar.az@gmail.com</a></p>
     </div>
     <button class="btn ghost" onclick="closeModal('tosModal')">Bağla</button>
   </div>
@@ -1724,7 +1737,7 @@ function save(){ try{ localStorage.setItem('buralar_v1',JSON.stringify({user:sta
 function load(){ try{ var raw=localStorage.getItem('buralar_v1'); if(raw){ var o=JSON.parse(raw); state.user=o.user||null; state.notifications=o.notifications||[]; } }catch(e){} }
 function all(){ return SEED.concat(state.custom); }
 function approved(){ return all().filter(function(x){return x.st==='approved' && isEpointId(x.epointId);}); }
-var EPOINT_REG_URL='';
+var EPOINT_REG_URL='https://epoint.az/az/registration?hunter=10438';
 (function(){ var w=document.getElementById('epRegLinkWrap'); if(!w) return;
   w.innerHTML = EPOINT_REG_URL ? '<a href="'+EPOINT_REG_URL+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">Epoint qeydiyyat linki ↗</a>' : '<i>Qeydiyyat linki üçün bizimlə əlaqə saxla.</i>'; })();
 function readEpointRequest(){ var el=document.getElementById('h-epoint'); var val=String(el&&el.value||'').trim().toLowerCase(); if(val && !isEpointId(val)){ toast('Epoint ID düzgün deyil. Nümunə: i000123456'); return false; } return val; }
@@ -2502,11 +2515,16 @@ function calc(){
 }
 
 /* ============ ödənişdən əvvəl təhlükəsizlik siyasəti ============ */
+var TERMS_VERSION='2026-10-v1';
+(function(){ var l=document.getElementById('tosVersionLabel'); if(l) l.textContent=TERMS_VERSION; })();
 function openSafetyModal(id){
   state.safetyBookId=id;
+  var c=document.getElementById('tosAccept'); if(c) c.checked=false;
   openModal('safetyModal');
 }
 function confirmSafetyAndBook(){
+  var c=document.getElementById('tosAccept');
+  if(!c||!c.checked){ toast('Davam etmək üçün İstifadə Şərtlərini qəbul etməlisən'); return; }
   var id=state.safetyBookId;
   closeModal('safetyModal');
   if(id!=null) book(id);
@@ -2545,7 +2563,7 @@ function book(id){
      statusu da eyni funksiyada YENİDƏN, serverdə hesablanır/yoxlanılır — client-in göndərdiyi rəqəmlər
      yalnız "faktiki daxil edilən gecə/qonaq sayı" üçün istifadə olunur. */
   var btn=document.getElementById('bookBtn'); if(btn){ btn.disabled=true; btn.textContent='Göndərilir...'; }
-  fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g}).then(function(res){
+  fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g, termsVersion:TERMS_VERSION}).then(function(res){
     toast("Ödəniş səhifəsinə yönləndirilirsən...");
     return payBooking(res.data.code);
   }).catch(function(err){
@@ -3085,6 +3103,7 @@ function addListing(e){
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
   var epReq=readEpointRequest(); if(epReq===false) return;
+  if(!ck('h-terms')){ toast("Elan göndərmək üçün İstifadə Şərtlərini qəbul etməlisən"); return; }
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
@@ -3142,7 +3161,7 @@ function addListing(e){
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); return gp; })(),
       rt:5,rv:0,sc:(id%6),host:v('h-name'),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null,
+      voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(),
       cover:coverUrl, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra')}
