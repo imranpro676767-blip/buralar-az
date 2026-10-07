@@ -798,6 +798,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="phoneinput"><span>+994</span><input id="h-whatsapp" required inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
       </label>
       <p class="note full" style="text-align:left;margin:-4px 0 0;color:var(--warn);font-weight:700">⚠ Bu nömrəni mütləq düzgün qeyd et — elanın təsdiqi üçün səninlə bu WhatsApp nömrəsi vasitəsilə görüntülü əlaqə saxlanılacaq və şəxsiyyət yoxlanılacaq.</p>
+      <h4>Epoint ödəniş hesabı</h4>
+      <p class="note full" style="text-align:left;margin:0">Müştərinin ödədiyi məbləğin sənə düşən hissəsi (komissiya çıxılmaqla) <b>Epoint vasitəsilə avtomatik hesabına köçürülür</b>. Bunun üçün Epoint-də tacir kimi qeydiyyatdan keçməlisən. <span id="epRegLinkWrap"></span> Qeydiyyatdan sonra aldığın <b>tacir ID-sini</b> aşağıya yaz. ID-ni yazmasan da elan göndərilir, amma ID təsdiqlənmədən elan saytda görünməyəcək.</p>
+      <label class="full">Epoint tacir ID-n (məs. i000123456)<input id="h-epoint" placeholder="i000123456" autocomplete="off" maxlength="13"></label>
       <div class="full">
         <button class="btn dark" type="submit" id="listingSubmitBtn">Elanı təsdiqə göndər</button>
         <p class="note" style="margin-top:8px">Elan göndərildikdən sonra idarəetmə yoxlayır. Təsdiqlənənə qədər saytda görünmür.</p>
@@ -1721,6 +1724,10 @@ function save(){ try{ localStorage.setItem('buralar_v1',JSON.stringify({user:sta
 function load(){ try{ var raw=localStorage.getItem('buralar_v1'); if(raw){ var o=JSON.parse(raw); state.user=o.user||null; state.notifications=o.notifications||[]; } }catch(e){} }
 function all(){ return SEED.concat(state.custom); }
 function approved(){ return all().filter(function(x){return x.st==='approved' && isEpointId(x.epointId);}); }
+var EPOINT_REG_URL='';
+(function(){ var w=document.getElementById('epRegLinkWrap'); if(!w) return;
+  w.innerHTML = EPOINT_REG_URL ? '<a href="'+EPOINT_REG_URL+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">Epoint qeydiyyat linki ↗</a>' : '<i>Qeydiyyat linki üçün bizimlə əlaqə saxla.</i>'; })();
+function readEpointRequest(){ var el=document.getElementById('h-epoint'); var val=String(el&&el.value||'').trim().toLowerCase(); if(val && !isEpointId(val)){ toast('Epoint ID düzgün deyil. Nümunə: i000123456'); return false; } return val; }
 function isEpointId(v){ return /^i\d{6,12}$/.test(String(v||'').trim()); }
 
 /* ============ helpers ============ */
@@ -2376,7 +2383,7 @@ function openAdminDetail(id){
     +'</div>'
     +'<hr class="sep" style="margin:6px 0">'
     +(x.st==='pending'
-      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
+      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
       : '<p class="note">Bu elan artıq baxılıb ('+(x.st==='approved'?'təsdiqlənib':'rədd edilib')+').</p>')
   +'</div></aside>';
   document.getElementById('detailBody').innerHTML = galleryHtmlFor(x) + '<div class="detail">' + leftInfoHtml(x) + adminAside + '</div>';
@@ -3077,6 +3084,7 @@ function addListing(e){
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
+  var epReq=readEpointRequest(); if(epReq===false) return;
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
@@ -3134,7 +3142,7 @@ function addListing(e){
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); return gp; })(),
       rt:5,rv:0,sc:(id%6),host:v('h-name'),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng,
+      voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null,
       cover:coverUrl, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra')}
@@ -3676,6 +3684,7 @@ function openEdit(id){
   var waDigits=(live.whatsapp||'').replace(/\D/g,'').replace(/^994/,'').slice(0,9);
   document.getElementById('h-whatsapp').value=waDigits;
   formatAzPhone(document.getElementById('h-whatsapp'));
+  document.getElementById('h-epoint').value=live.epointId||live.epointIdRequest||'';
 
   if(live.lat!=null && live.lng!=null && !isNaN(live.lat) && !isNaN(live.lng)){
     setPinLatLng(live.lat,live.lng,true,16);
@@ -3708,6 +3717,7 @@ function submitListingEdit(e){
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
+  var epReq=readEpointRequest(); if(epReq===false) return;
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
@@ -3749,6 +3759,7 @@ function submitListingEdit(e){
        duplikat-yoxlama "barmaq izi"/heş sahələri (addrFingerprint, geoBucket, photoHashes) isə
        yalnız ilk yaradılışda hesablanır, redaktədə TOXUNULMUR. */
     x.p=newPrice; x.minNights=minStay; x.maxNights=maxStay;
+    if(epReq && epReq!==x.epointId) x.epointIdRequest=epReq;
     x.pendingEdit = {
       t:v('h-title').slice(0,60), c:v('h-city'), d:v('h-addr').slice(0,50), ty:v('h-type'),
       g:parseInt(v('h-guests'),10)||1, r:parseInt(v('h-rooms'),10)||1, b:1,
@@ -4197,7 +4208,7 @@ function renderAdmin(){
       +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
       +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
       +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
-      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"></div>'
+      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
       +'</div><div class="act">'
       +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
       +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
@@ -4212,7 +4223,7 @@ function renderAdmin(){
         return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
           +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
           +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
-          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"></div>'
+          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
           +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button></div></div>';
       }).join('');
   }
