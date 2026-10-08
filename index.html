@@ -369,6 +369,7 @@ form.frm .phoneinput input,.box .phoneinput input{border:0;background:transparen
 .reviewrow .rs{color:var(--warn);font-weight:800;letter-spacing:1px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#F4EFE4;padding:12px 18px;border-radius:999px;font-weight:700;font-size:14.5px;z-index:95;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .18s;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
+details>summary::-webkit-details-marker{display:none}
 footer{background:var(--ink);color:rgba(244,239,228,.7);padding:26px 0;font-size:14px}
 footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 </style>
@@ -4051,9 +4052,28 @@ function renderCustomers(){
   if(!list.length){ el.innerHTML='<div class="empty"><h3>Axtarışa uyğun müştəri tapılmadı</h3></div>'; return; }
   el.innerHTML=list.map(function(c){
     var theirBookings=state.bookings.filter(function(b){return b.email===c.email || b.phone===c.phone;});
-    var stays=theirBookings.map(function(b){
+    var staysRows=theirBookings.map(function(b){
       return '<div><span>'+esc(b.title)+' · '+fmtDate(b.d1)+'–'+fmtDate(b.d2)+'</span><b>'+statusTag(b.status,b)+'</b></div>';
-    }).join('') || '<div><span>Hələ rezervasiya etməyib</span></div>';
+    }).join('');
+    var stays;
+    if(!theirBookings.length){ stays='<div><span>Hələ rezervasiya etməyib</span></div>'; }
+    else{
+      /* Qısa görünüş: statusların sayı. Basanda tam siyahı açılır. Açıq/bağlı vəziyyət e-poçta görə
+         yadda saxlanılır ki, canlı yenilənmələr (render) siyahını öz-özünə bağlamasın. */
+      var counts={}, order=[];
+      theirBookings.forEach(function(b){
+        var lbl=statusTag(b.status,b).replace(/<[^>]*>/g,'');
+        if(!(lbl in counts)){ counts[lbl]=0; order.push(lbl); }
+        counts[lbl]++;
+      });
+      var summary=order.map(function(l){return counts[l]+' '+l.toLowerCase();}).join(' · ');
+      var isOpen=!!(state.custOpen&&state.custOpen[c.email]);
+      stays='<details'+(isOpen?' open':'')+' ontoggle="toggleCustStays(this,\''+esc(c.email)+'\')" style="width:100%">'
+        +'<summary style="cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center">'
+        +'<span>'+theirBookings.length+' rezervasiya: <span style="font-weight:500;color:var(--muted)">'+summary+'</span></span>'
+        +'<span style="color:var(--nar);white-space:nowrap">Siyahı ▾</span></summary>'
+        +'<div style="display:grid;gap:8px;margin-top:8px;max-height:340px;overflow:auto">'+staysRows+'</div></details>';
+    }
     return '<div class="bk" style="grid-template-columns:84px 1fr auto">'
       +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></a>'
       +'<div><h4>'+esc(c.name)+'</h4>'
@@ -4070,6 +4090,7 @@ function renderCustomers(){
       +'</div></div>';
   }).join('');
 }
+function toggleCustStays(el,email){ state.custOpen=state.custOpen||{}; if(el.open) state.custOpen[email]=true; else delete state.custOpen[email]; }
 function approveCustomer(email){
   var c=state.customers.filter(function(x){return x.email===email;})[0]; if(!c) return;
   c.status='verified'; c.flags=[]; c.rejectionReason=null;
