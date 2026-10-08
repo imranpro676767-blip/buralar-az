@@ -513,7 +513,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
     <h3 style="margin:28px 0 12px">Evlərimdəki rezervasiyalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qalıb getmiş qonaqları qiymətləndirə, lazım gələrsə haqlarında sübutlu şikayət göndərə bilərsən.</p>
-    <button class="btn dark" id="hostBkToggle" onclick="toggleHostBookings()" style="margin-bottom:12px">Rezervasiyalara bax</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+      <select id="hostBkListing" style="display:none" onchange="state.hostBkListingId=(this.value===''?null:parseInt(this.value,10));state.hostBkOpen=true;renderHost()"></select>
+      <button class="btn dark" id="hostBkToggle" onclick="toggleHostBookings()">Rezervasiyalara bax</button>
+    </div>
     <div class="blist" id="hostbookings" style="display:none"></div>
 
     <h3 style="margin:28px 0 12px">Təqvim</h3>
@@ -3387,7 +3390,16 @@ function renderHost(){
   renderHostMessagesList(mine);
 
   var myIds = mine.map(function(x){return x.id;});
-  var hb = state.bookings.filter(function(b){ return myIds.indexOf(b.lid)>=0; });
+  /* Bir neçə evi olan ev sahibi rezervasiyaları ev üzrə süzə bilər (təqvimdəki seçim kimi). */
+  var hsel = document.getElementById('hostBkListing');
+  if(state.hostBkListingId!=null && myIds.indexOf(state.hostBkListingId)<0) state.hostBkListingId=null;
+  if(hsel){
+    if(mine.length>1){
+      hsel.style.display='';
+      hsel.innerHTML='<option value="">Bütün evlər</option>'+mine.map(function(x){ return '<option value="'+x.id+'"'+(x.id===state.hostBkListingId?' selected':'')+'>'+esc(x.t)+'</option>'; }).join('');
+    } else { hsel.style.display='none'; state.hostBkListingId=null; }
+  }
+  var hb = state.bookings.filter(function(b){ return state.hostBkListingId!=null ? b.lid===state.hostBkListingId : myIds.indexOf(b.lid)>=0; });
   var hel = document.getElementById('hostbookings');
   state.hostBkCount = hb.length; applyHostBkToggle();
   if(!hb.length){ hel.innerHTML='<div class="empty"><h3>Hələ rezervasiya yoxdur</h3><p>Elanların təsdiqləndikcə buradakı siyahı dolacaq.</p></div>'; return; }
