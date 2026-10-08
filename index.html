@@ -852,6 +852,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button aria-selected="false" onclick="goSub('hosts')">Ev sahibləri <span id="hostscount"></span></button>
         <button aria-selected="false" onclick="goSub('stats')">Bazar statistikası</button>
         <button aria-selected="false" onclick="goSub('edits')">Elan dəyişiklikləri <span id="editcount"></span></button>
+        <button aria-selected="false" onclick="goSub('dels')">Silinmək üçün müraciət olunan evlər <span id="delcount"></span></button>
         <button aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
         <button aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
         <button aria-selected="false" onclick="goSub('notif')">Bildirişlər <span id="notifcount"></span></button>
@@ -893,6 +894,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="blist" id="statslist"></div>
       </div>
       <div class="sub" id="s-edits"><div class="blist" id="editlist"></div></div>
+      <div class="sub" id="s-dels"><div class="blist" id="dellist"></div></div>
       <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
       <div class="sub" id="s-rep"><div class="blist" id="replist"></div></div>
       <div class="sub" id="s-notif"><div class="blist" id="notiflist"></div></div>
@@ -966,6 +968,21 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div id="c-photo-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0"></div>
     <button class="btn" id="cmpSendBtn" onclick="sendComplaint()">Şikayəti göndər</button>
     <button class="btn ghost" onclick="closeModal('cmpModal')">İmtina</button>
+  </div>
+</div>
+
+<!-- ELANIN SİLİNMƏSİ MÜRACİƏTİ -->
+<div class="modal" id="delListingModal" role="dialog" aria-modal="true" aria-label="Elanın silinməsi">
+  <div class="box">
+    <h3 id="delListingTitle">Elanı silmək istəyirsiniz?</h3>
+    <div id="delListingBlocked" style="display:none"></div>
+    <div id="delListingForm">
+      <p id="delListingAsk"></p>
+      <label>Silmə səbəbi<textarea id="del-reason" rows="4" maxlength="500" placeholder="Elanı niyə silmək istədiyinizi yazın"></textarea></label>
+      <p style="font-size:13px;color:var(--muted)">Elan dərhal silinmir. Müraciət idarəetməyə göndərilir, yalnız admin təsdiq edəndən sonra silinir. Cavab bu paneldə görünəcək.</p>
+      <button class="btn" id="delListingSend" onclick="sendDeleteRequest()">Silmə müraciəti göndər</button>
+    </div>
+    <button class="btn ghost" onclick="closeModal('delListingModal')">Bağla</button>
   </div>
 </div>
 
@@ -2066,7 +2083,7 @@ function adminLogout(){
      qonaq/ev sahibi kimi giriş edibsə, onun ümumi sessiyası (state.user) ayrıca saxlanılır və
      logout() ilə çıxılmalıdır. */
 }
-var SUBTABS=['rezall','cust','mod','hosts','stats','edits','cmp','rep','notif','msg','support','fin'];
+var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','msg','support','fin'];
 function goSub(s){
   state.sub=s;
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
@@ -3240,7 +3257,70 @@ function addListing(e){
     if(submitBtn){ submitBtn.disabled=false; submitBtn.textContent=submitBtnOrigText||'Elanı təsdiqə göndər'; }
   });
 }
-function removeListing(id){ state.custom=state.custom.filter(function(x){return x.id!==id;}); unsyncListing(id); renderHost(); renderAdmin(); render(); toast("Elan silindi"); }
+/* Elanı ev sahibi birbaşa silə bilmir: əvvəl təsdiq sualı + səbəb, sonra admin təsdiqi.
+   Aktiv/gələcək rezervasiyası olan ev üçün müraciət ümumiyyətlə qəbul edilmir. */
+function listingBlockingBookings(id){
+  var t=today();
+  return state.bookings.filter(function(b){
+    if(b.lid!=id) return false;
+    if(b.status==='refunded') return false;
+    if(b.status==='hold') return b.paymentStatus!=='failed';
+    if(b.status==='complaint') return true;
+    if(b.status==='released') return (b.d2||'')>=t;
+    return false;
+  });
+}
+function removeListing(id){
+  var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  state.delListingId=id;
+  var blocked=listingBlockingBookings(id);
+  var bl=document.getElementById('delListingBlocked'), fm=document.getElementById('delListingForm');
+  document.getElementById('del-reason').value='';
+  if(blocked.length){
+    bl.style.display=''; fm.style.display='none';
+    bl.innerHTML='<p style="color:var(--nar);font-weight:700">Bu evdə artıq rezervasiya var. Elan silinə bilməz.</p>'
+      +'<p>Yalnız qonaq gəlib yerləşib çıxdıqdan sonra silmə müraciəti edə bilərsiniz.</p>'
+      +'<p style="font-size:13px;color:var(--muted)">Mövcud rezervasiya: '+blocked.map(function(b){return esc(b.code)+' ('+fmtDate(b.d1)+' – '+fmtDate(b.d2)+')';}).join(', ')+'</p>';
+  } else {
+    bl.style.display='none'; fm.style.display='';
+    document.getElementById('delListingAsk').innerHTML='<b>'+esc(x.c)+' · '+esc(x.t)+'</b> elanını silmək üçün əminsiniz?';
+  }
+  openModal('delListingModal');
+}
+function sendDeleteRequest(){
+  var id=state.delListingId, x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  if(listingBlockingBookings(id).length){ toast('Bu evdə rezervasiya var, silinə bilməz'); return; }
+  var reason=(document.getElementById('del-reason').value||'').trim();
+  if(reason.length<5){ toast('Silmə səbəbini yazın'); return; }
+  if(!fbOnline){ toast('Server bağlantısı yoxdur'); return; }
+  var btn=document.getElementById('delListingSend'); btn.disabled=true;
+  var req={reason:reason, at:Date.now()};
+  db.collection('listings').doc(String(id)).update({deleteRequest:req}).then(function(){
+    x.deleteRequest=req;
+    closeModal('delListingModal'); renderHost(); renderAdmin();
+    toast('Silmə müraciəti admin təsdiqinə göndərildi');
+  }).catch(function(e){
+    console.error('Silmə müraciəti xətası:',e); toast('Müraciət göndərilmədi: '+(e&&e.message?e.message:e));
+  }).then(function(){ btn.disabled=false; });
+}
+function adminDeleteListing(id){
+  var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  if(listingBlockingBookings(id).length){ toast('Bu evdə aktiv rezervasiya var, silmək olmaz. Müraciəti rədd edin.'); return; }
+  if(!confirm('"'+x.t+'" elanı həmişəlik silinsin?')) return;
+  state.custom=state.custom.filter(function(l){return l.id!==id;});
+  unsyncListing(id); renderHost(); renderAdmin(); render(); toast('Elan silindi');
+}
+function adminRejectDelete(id){
+  var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  var inp=document.getElementById('dr-'+id);
+  var reason=(inp&&inp.value||'').trim();
+  if(reason.length<3){ toast('Rədd səbəbini ev sahibi üçün yazın'); return; }
+  var rej={reason:reason, at:Date.now()};
+  db.collection('listings').doc(String(id)).update({deleteRequest:firebase.firestore.FieldValue.delete(), deleteRejected:rej}).then(function(){
+    x.deleteRequest=null; x.deleteRejected=rej;
+    renderAdmin(); renderHost(); toast('Müraciət rədd edildi, cavab ev sahibinə göstəriləcək');
+  }).catch(function(e){ toast('Xəta: '+(e&&e.message?e.message:e)); });
+}
 function listingTag(st){
   if(st==='approved') return '<span class="tag done">Təsdiqlənib</span>';
   if(st==='pending') return '<span class="tag hold">Təsdiq gözləyir</span>';
@@ -3391,11 +3471,13 @@ function renderHost(){
       +'<div class="m">VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban.slice(0,8))+'…</div>'
       +(x.st==='approved'&&!isEpointId(x.epointId)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
       +(x.st==='pending'?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
+      +(x.deleteRequest?'<div class="m" style="color:var(--warn);font-weight:700;white-space:normal">Silmə müraciətiniz admin baxışındadır</div>':'')
+      +(!x.deleteRequest&&x.deleteRejected?'<div class="m" style="color:var(--nar);font-weight:700;white-space:normal">Silmə müraciəti rədd edildi: '+esc(x.deleteRejected.reason)+'</div>':'')
       +'<div style="margin-top:8px">'+listingTag(x.st)+(x.pendingEdit?' <span class="pendingbadge">Dəyişiklik admin təsdiqini gözləyir</span>':'')+'</div></div>'
       +'<div class="act"><div class="money" style="font-size:18px">'+az(x.p)+'</div>'
       +(x.st==='approved'?'<button class="btn sm ghost" onclick="openDetail('+x.id+')">Bax</button>':'')
       +'<button class="btn sm ghost" onclick="openEdit('+x.id+')">Redaktə et</button>'
-      +'<button class="btn sm ghost" onclick="removeListing('+x.id+')">Sil</button></div></div>';
+      +(x.deleteRequest?'':'<button class="btn sm ghost" onclick="removeListing('+x.id+')">Sil</button>')+'</div></div>';
   }).join('');
 
   renderHostCalendar();
@@ -4414,6 +4496,21 @@ function renderAdmin(){
       +'<button class="btn sm ok" onclick="approveEdit('+x.id+',true)">Təsdiqlə</button>'
       +'<button class="btn sm ghost" onclick="approveEdit('+x.id+',false)">Rədd et</button></div></div>';
   }).join('') : '<div class="empty"><h3>Təsdiq gözləyən dəyişiklik yoxdur</h3><p>Ev sahibləri qiymətdən başqa məlumat dəyişəndə burada görünəcək.</p></div>';
+
+  var delReqs=state.custom.filter(function(x){return x.deleteRequest;});
+  document.getElementById('delcount').textContent = delReqs.length?('('+delReqs.length+')'):'';
+  document.getElementById('dellist').innerHTML = delReqs.length ? delReqs.map(function(x){
+    var blocked=listingBlockingBookings(x.id);
+    return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div>'
+      +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ownerEmail||'')+'</div>'
+      +'<div class="m" style="white-space:normal;font-weight:500">Silmə səbəbi: '+esc(x.deleteRequest.reason)+'</div>'
+      +'<div class="m">Müraciət tarixi: '+new Date(x.deleteRequest.at).toLocaleString('az-AZ')+'</div>'
+      +(blocked.length?'<div class="m" style="color:var(--nar);font-weight:700;white-space:normal">Diqqət: bu evdə aktiv/gələcək rezervasiya var ('+blocked.map(function(b){return esc(b.code);}).join(', ')+'). Silmək olmaz.</div>':'')
+      +'<label style="display:block;margin-top:8px">Rədd edərkən ev sahibinə cavab<textarea id="dr-'+x.id+'" rows="2" placeholder="Məs.: Bu ev silinə bilməz, çünki..."></textarea></label>'
+      +'</div><div class="act">'
+      +'<button class="btn sm ok" onclick="adminDeleteListing('+x.id+')"'+(blocked.length?' disabled':'')+'>Təsdiqlə və sil</button>'
+      +'<button class="btn sm ghost" onclick="adminRejectDelete('+x.id+')">Rədd et</button></div></div>';
+  }).join('') : '<div class="empty"><h3>Silmə müraciəti yoxdur</h3><p>Ev sahibləri elanı silmək istəyəndə səbəblə birlikdə burada görünəcək.</p></div>';
 
   var openReports=state.reports.filter(function(r){return r.status==='pending';});
   document.getElementById('repcount').textContent = openReports.length?('('+openReports.length+')'):'';
