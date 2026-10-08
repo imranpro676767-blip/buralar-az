@@ -513,7 +513,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
     <h3 style="margin:28px 0 12px">Evlərimdəki rezervasiyalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qalıb getmiş qonaqları qiymətləndirə, lazım gələrsə haqlarında sübutlu şikayət göndərə bilərsən.</p>
-    <div class="blist" id="hostbookings"></div>
+    <button class="btn dark" id="hostBkToggle" onclick="toggleHostBookings()" style="margin-bottom:12px">Rezervasiyalara bax</button>
+    <div class="blist" id="hostbookings" style="display:none"></div>
 
     <h3 style="margin:28px 0 12px">Təqvim</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Gələn rezervasiyalar bu təqvimə avtomatik düşür. Elanını yerləşdirərkən qoyduğun minimum/maksimum gecə şərtinə görə bəzi tək günlər heç kimə göstərilmir — həmin günlər aşağıda fərqli rənglə işarələnir ki, sən də bilə.</p>
@@ -3388,6 +3389,7 @@ function renderHost(){
   var myIds = mine.map(function(x){return x.id;});
   var hb = state.bookings.filter(function(b){ return myIds.indexOf(b.lid)>=0; });
   var hel = document.getElementById('hostbookings');
+  state.hostBkCount = hb.length; applyHostBkToggle();
   if(!hb.length){ hel.innerHTML='<div class="empty"><h3>Hələ rezervasiya yoxdur</h3><p>Elanların təsdiqləndikcə buradakı siyahı dolacaq.</p></div>'; return; }
   hel.innerHTML = hb.map(function(b){
     b.__viewerIsHost=true;
@@ -3403,6 +3405,16 @@ function renderHost(){
       +'</div></div>';
   }).join('');
 }
+
+function applyHostBkToggle(){
+  var btn=document.getElementById('hostBkToggle'), box=document.getElementById('hostbookings');
+  if(!btn||!box) return;
+  var n=state.hostBkCount||0, open=!!state.hostBkOpen;
+  box.style.display = open ? '' : 'none';
+  btn.textContent = open ? 'Rezervasiyaları gizlət ▴' : 'Rezervasiyalara bax ('+n+') ▾';
+  btn.setAttribute('aria-expanded', open?'true':'false');
+}
+function toggleHostBookings(){ state.hostBkOpen=!state.hostBkOpen; applyHostBkToggle(); }
 
 /* ============ ev sahibi təqvimi ============ */
 function activeBookingsFor(id){
