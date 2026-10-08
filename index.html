@@ -507,7 +507,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </div>
     <div class="stats" id="hoststats"></div>
 
-    <h3 style="margin:0 0 12px">Yazışmalar</h3>
+    <h3 style="margin:0 0 12px">Mənim elanlarım</h3>
+    <button id="tipsBadge" class="btn sm ghost" style="display:none;margin-bottom:12px;width:auto" onclick="openTipsModal()">💡 İpucu</button>
+    <select id="myListingSel" style="display:none;margin-bottom:12px" onchange="state.myListingId=(this.value===''?null:parseInt(this.value,10));renderHost()"></select>
+    <div class="blist" id="mylistings"></div>
+
+    <h3 style="margin:28px 0 12px">Yazışmalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qonaqlar bron etməzdən əvvəl sənə sual verə bilər — bütün yazışma sayt daxilində qalır, telefon nömrəsi paylaşımı bloklanır.</p>
     <div class="blist" id="hostmessages"></div>
 
@@ -815,10 +820,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <p class="note" style="margin-top:8px">Elan göndərildikdən sonra idarəetmə yoxlayır. Təsdiqlənənə qədər saytda görünmür.</p>
       </div>
     </form>
-    <h3 style="margin:26px 0 12px">Mənim elanlarım</h3>
-    <button id="tipsBadge" class="btn sm ghost" style="display:none;margin-bottom:12px;width:auto" onclick="openTipsModal()">💡 İpucu</button>
-    <select id="myListingSel" style="display:none;margin-bottom:12px" onchange="state.myListingId=(this.value===''?null:parseInt(this.value,10));renderHost()"></select>
-    <div class="blist" id="mylistings"></div>
   </div>
 </section>
 
