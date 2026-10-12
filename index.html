@@ -4095,7 +4095,7 @@ function submitReview(){
        bronun eyni tərəfdən İKİ DƏFƏ qiymətləndirilməsinin qarşısını server tərəfdə də bağlayır. */
     id:b.code+'_'+ctx.role, bookingCode:b.code, lid:b.lid,
     from: ctx.role==='guest'?b.guest:b.host, fromRole: ctx.role,
-    about: ctx.role==='guest'?b.host:b.guest, aboutEmail: ctx.role==='guest'?null:b.email,
+    about: ctx.role==='guest'?b.host:b.guest,
     categories: Object.assign({},state.catStars), catLabels: ctx.cats,
     stars: Math.round(avg), starsExact: avg, text:text, date:today(), visible:true, reportStatus:null
   };
