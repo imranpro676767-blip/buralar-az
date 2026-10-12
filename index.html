@@ -3261,7 +3261,8 @@ function addListing(e){
   if(submitBtn){ submitBtn.disabled=true; submitBtn.textContent='Şəkillər yüklənir...'; }
   toast("Şəkillər serverə yüklənir, zəhmət olmasa gözlə...");
 
-  var id=1000+Date.now();
+  /* Təxmin edilməsi mümkün olmayan ID (əvvəl vaxta əsaslanırdı). Tip rəqəm olaraq qalır ki, rezervasiya/qaydalar pozulmasın. */
+  var id; do{ var _r=new Uint32Array(2); (window.crypto||window.msCrypto).getRandomValues(_r); id=(_r[0]&0xFFFFF)*4294967296+_r[1]; }while(id<1e12 || state.custom.some(function(c){return c.id===id;}));
   var pendingRoomsSnapshot=state.pendingRooms.slice();
   var coverUpload = state.coverFile
     ? uploadImageToStorage(state.coverFile,'listings/'+id+'/cover')
