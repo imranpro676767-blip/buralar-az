@@ -50,6 +50,10 @@ nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
 nav.tabs button{background:transparent;border:0;color:rgba(244,239,228,.72);padding:8px 13px;border-radius:999px;font-weight:600;font-size:14.5px;white-space:nowrap}
 nav.tabs button:hover{color:#fff;background:rgba(255,255,255,.08)}
 nav.tabs button[aria-selected="true"]{background:#F4EFE4;color:var(--ink)}
+/* "Ev sahibi" düyməsi digər (qonaq) tablardan ayrılır: boşluq + yaşıl çərçivə və yaşıl mətn */
+nav.tabs button.hostTab{margin-left:14px;border:1.5px solid var(--brand-green);color:var(--brand-green);padding:6.5px 14px}
+nav.tabs button.hostTab:hover{background:rgba(74,222,128,.14);color:var(--brand-green)}
+nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);color:var(--ink);border-color:var(--brand-green)}
 .icon-btn{background:transparent;border:1px solid rgba(255,255,255,.22);color:inherit;border-radius:999px;height:34px;padding:0 12px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;flex:none}
 .icon-btn.sq{width:34px;padding:0;justify-content:center}
 .who{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#F4EFE4;flex:none}
@@ -67,6 +71,7 @@ nav.tabs button[aria-selected="true"]{background:#F4EFE4;color:var(--ink)}
   nav.tabs{order:3;flex-basis:100%;width:100%;margin-left:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none;-ms-overflow-style:none}
   nav.tabs::-webkit-scrollbar{display:none}
   nav.tabs button{flex:none;padding:8px 12px;font-size:13.5px}
+  nav.tabs button.hostTab{margin-left:4px;padding:6.5px 12px}
   .brand .wm{font-size:17px}
   .who span{max-width:64px!important}
   .icon-btn{height:38px;min-height:38px}
@@ -398,7 +403,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <nav class="tabs" role="tablist">
       <button role="tab" aria-selected="true" onclick="go('kesf')">Kəşf et</button>
       <button role="tab" aria-selected="false" onclick="go('rez')">Rezervasiyalarım</button>
-      <button role="tab" aria-selected="false" onclick="go('host')">Ev sahibi</button>
+      <button role="tab" class="hostTab" aria-selected="false" onclick="go('host')">Ev sahibi</button>
     </nav>
     <div class="headerRight">
       <button class="icon-btn sq" id="supportBtn" style="display:none" onclick="openSupportModal()" title="Dəstək" aria-label="Dəstək">
