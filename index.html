@@ -2,6 +2,7 @@
 <html lang="az">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Buralar.az — Azərbaycanda gündəlik kirayə evlər</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -562,7 +563,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p class="note" style="text-align:left;margin:-10px 0 0 0"><span id="h-title-count">0</span>/60 hərf — əsas səhifədə uzun adlar qısaldılıb göstərilir</p>
       <label>Bölgə<select id="h-region" onchange="fillDistricts()"></select></label>
       <label>Şəhər / rayon<select id="h-city"></select></label>
-      <label>Qəsəbə / ünvan<input id="h-addr" required maxlength="50" placeholder="Məs: Sahil, Neftçilər pr. 12"></label>
+      <label>Qəsəbə / ünvan<input id="h-addr" required maxlength="50" placeholder="Məs: Sahil qəsəbəsi (ev nömrəsi yazmayın)"></label>
+      <p class="note" style="text-align:left;margin-top:-4px">Bu yazı saytda hamıya göstərilir. Yalnız qəsəbə və ya küçə adını yazın, ev nömrəsini yazmayın. Dəqiq ünvanı aşağıdakı xəritə nişanı göstərir və yalnız rezervasiya təsdiqlənəndən sonra qonağa açılır.</p>
       <div class="full">
         <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px">Xəritədən dəqiq ünvan seç</div>
         <div class="mappicker">
@@ -576,7 +578,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
       </div>
       <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>A-Frame</option><option>Villa</option><option>Bağ evi</option><option>Otaq</option></select></label>
-      <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required onfocus="this.min=(state.user&&isAdminEmail(state.user.email))?1:15" oninput="renderPriceTiers()"></label>
+      <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required onfocus="this.min=state.isAdminUser?1:15" oninput="renderPriceTiers()"></label>
       <label>Qonaq tutumu<input id="h-guests" type="number" min="1" max="20" value="4" required></label>
       <label>Yataq otağı<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
       <label>Təmizlik haqqı (₼)<input id="h-clean" type="number" min="0" max="300" value="20"></label>
@@ -1226,8 +1228,14 @@ var firebaseConfig = {
 /* Admin panelinə giriş icazəsi olan Google e-poçtları. Bu, yalnız UI-də göstərmə/gizlətmə üçündür —
    əsl təhlükəsizlik Firestore Rules-da eyni siyahı ilə yoxlanılır (aşağıya bax), ona görə kimsə bu
    siyahını brauzer konsolundan dəyişsə belə, serverə admin yazısı edə bilməz. */
-var ADMIN_EMAILS=["imranpro676767@gmail.com"];
-function isAdminEmail(email){ return !!email && ADMIN_EMAILS.indexOf(email.toLowerCase())>=0; }
+/* Admin e-poçtu artıq səhifənin kodunda YAZILMIR. Admin olub-olmamağı serverdən soruşuruq: yalnız admin
+   "admin_ping" sənədini oxuya bilir (Firestore Rules). Real icazə həmişə serverdədir. */
+state.isAdminUser=false;
+function verifyAdminAccess(){
+  if(!fbOnline || !db || !fbAuth || !fbAuth.currentUser){ state.isAdminUser=false; return Promise.resolve(false); }
+  return db.collection('admin_ping').doc('check').get().then(function(){ state.isAdminUser=true; return true; })
+    .catch(function(){ state.isAdminUser=false; return false; });
+}
 var db=null, fbStorage=null, fbAuth=null, fbFunctions=null, fbOnline=false;
 try{
   firebase.initializeApp(firebaseConfig);
@@ -1257,19 +1265,41 @@ try{
 /* Elanlar (state.custom) artıq localStorage-da yox, Firestore-un "listings" kolleksiyasında saxlanılır.
    onSnapshot canlı dinləyicisi sayəsində bir ev sahibi elan əlavə edən/dəyişən kimi, bunu bütün
    açıq brauzer pəncərələri (fərqli şəhər, fərqli cihaz) dərhal görür — heç bir səhifə yeniləməsi lazım deyil. */
+/* "listings" artıq hamıya açıq deyil (IBAN, VÖEN, bank, WhatsApp, e-poçt, dəqiq GPS var). Hamı yalnız
+   serverin təmizlənmiş ictimai nüsxəsini ("listingsPublic") oxuyur; ev sahibi öz elanlarının tam
+   sənədini, admin isə hamısının tam sənədini ayrıca dinləyir. Üçü id üzrə birləşdirilir (tam sənəd üstündür). */
+var _lsParts={pub:[],own:[],admin:[]}, _lsUnsubs={own:null,admin:null};
+function _mergeListings(){
+  var m={};
+  ['pub','own','admin'].forEach(function(k){ _lsParts[k].forEach(function(x){ m[String(x.id)]=x; }); });
+  state.custom=Object.keys(m).map(function(k){return m[k];});
+  render(); renderHost(); if(state.adminAuth) renderAdmin();
+}
 function startListingsSync(){
   if(!fbOnline) return;
-  db.collection('listings').onSnapshot(function(snap){
-    var arr=[];
-    snap.forEach(function(doc){ arr.push(doc.data()); });
-    state.custom=arr;
-    render(); renderHost(); if(state.adminAuth) renderAdmin();
+  db.collection('listingsPublic').onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(doc){ arr.push(doc.data()); });
+    _lsParts.pub=arr; _mergeListings();
   }, function(err){
     console.error('Elanlar sinxronizasiya xətası:', err);
     toast('Server ilə bağlantı xətası — internetini yoxla');
   });
 }
+function _listenListings(kind, query){
+  if(_lsUnsubs[kind]){ _lsUnsubs[kind](); _lsUnsubs[kind]=null; }
+  _lsUnsubs[kind]=query.onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(doc){ arr.push(doc.data()); }); _lsParts[kind]=arr; _mergeListings();
+  }, function(e){ console.error('listings('+kind+') sinxronizasiya xətası:', e); });
+}
+function startUserListingsSync(email){
+  if(!fbOnline || !db || !email) return;
+  _listenListings('own', db.collection('listings').where('ownerEmail','==',email));
+}
+function stopUserListingsSync(){ if(_lsUnsubs.own){ _lsUnsubs.own(); _lsUnsubs.own=null; } _lsParts.own=[]; _mergeListings(); }
+function startAdminListingsSync(){ if(!fbOnline || !db) return; _listenListings('admin', db.collection('listings')); }
+function stopAdminListingsSync(){ if(_lsUnsubs.admin){ _lsUnsubs.admin(); _lsUnsubs.admin=null; } _lsParts.admin=[]; _mergeListings(); }
 function syncListing(x){
+  if(!x || !x.ownerEmail){ toast('Elanın tam məlumatı hələ yüklənməyib, bir az sonra yenidən cəhd et'); return Promise.reject(new Error('elan tam yüklənməyib')); }
   if(!fbOnline){ toast('Server bağlantısı yoxdur, dəyişiklik yalnız bu cihazda qalır'); return Promise.resolve(); }
   return db.collection('listings').doc(String(x.id)).set(x).catch(function(e){
     console.error('Elan yazma xətası:', e); toast('Elan serverə yazıla bilmədi: '+e.message);
@@ -1367,7 +1397,7 @@ function startSharedSync(){
      ona görə brauzer konsolundan bu sətri əl ilə çağırmaq belə server tərəfdə rədd olunur. */
 }
 function startAdminOnlySync(){
-  customersSync.start(); reportsSync.start(); startAdminBookingsSync();
+  customersSync.start(); reportsSync.start(); startAdminBookingsSync(); startAdminListingsSync();
 }
 
 /* ============ Bron öncəsi qonaq–ev sahibi yazışması ============
@@ -1402,13 +1432,6 @@ function hasWordPhonePattern(text){
 }
 function containsPhoneAttempt(text){ return hasDigitPhonePattern(text) || hasWordPhonePattern(text); }
 
-function saveChat(chat){
-  if(!fbOnline){ toast('Server bağlantısı yoxdur'); return Promise.resolve(); }
-  return db.collection('chats').doc(chat.id).set(chat).catch(function(e){
-    console.error('chats yazma xətası:', e); toast('Mesaj göndərilə bilmədi: '+e.message);
-    throw e;
-  });
-}
 var _chatsGuestUnsub=null, _chatsHostUnsub=null, _chatsAdminUnsub=null;
 function _renderChatsSideEffects(){
   renderHost();
@@ -1419,7 +1442,7 @@ function _renderChatsSideEffects(){
 }
 function startUserChatSync(email){
   if(!fbOnline || !db || !email) return;
-  startUserBookingsSync(email);
+  startUserBookingsSync(email); startUserListingsSync(email);
   if(_chatsGuestUnsub){ _chatsGuestUnsub(); _chatsGuestUnsub=null; }
   if(_chatsHostUnsub){ _chatsHostUnsub(); _chatsHostUnsub=null; }
   _chatsGuestUnsub = db.collection('chats').where('guestEmail','==',email).onSnapshot(function(snap){
@@ -1430,7 +1453,7 @@ function startUserChatSync(email){
   }, function(e){ console.error('chats(ev sahibi) sinxronizasiya xətası:', e); });
 }
 function stopUserChatSync(){
-  stopUserBookingsSync();
+  stopUserBookingsSync(); stopUserListingsSync();
   if(_chatsGuestUnsub){ _chatsGuestUnsub(); _chatsGuestUnsub=null; }
   if(_chatsHostUnsub){ _chatsHostUnsub(); _chatsHostUnsub=null; }
   state.chatsGuest=[]; state.chatsHost=[];
@@ -1443,7 +1466,7 @@ function startAdminChatSync(){
   }, function(e){ console.error('chats(admin) sinxronizasiya xətası:', e); });
 }
 function stopAdminChatSync(){
-  stopAdminBookingsSync();
+  stopAdminBookingsSync(); stopAdminListingsSync();
   if(_chatsAdminUnsub){ _chatsAdminUnsub(); _chatsAdminUnsub=null; }
   state.chatsAdmin=[];
 }
@@ -1464,7 +1487,7 @@ function openChat(listingId){
   var existing=findChat(id);
   state.openChatId=id;
   if(!existing){
-    existing={id:id, listingId:listingId, listingTitle:x.t, hostEmail:x.ownerEmail, hostName:x.host,
+    existing={id:id, listingId:listingId, listingTitle:x.t, hostEmail:null, hostName:x.host,
       guestEmail:state.user.email, guestName:state.user.name, messages:[], lastAt:Date.now(), lastFrom:null,
       unreadForGuest:false, unreadForHost:false};
     _draftChats[id]=existing;
@@ -1490,7 +1513,11 @@ function markChatRead(chat, viewerRole){
   var field = 'unreadFor'+(viewerRole==='host'?'Host':'Guest');
   if(chat[field]){
     chat[field]=false;
-    saveChat(chat);
+    /* Yalnız "oxundu" bayrağı yazılır (Rules başqa heç nəyə icazə vermir); hələ serverdə olmayan (mesajsız) qaralama yazılmır. */
+    if(fbOnline && chat.messages && chat.messages.length){
+      var upd={}; upd[field]=false;
+      db.collection('chats').doc(chat.id).update(upd).catch(function(e){ console.error('chats oxundu xətası:', e); });
+    }
   }
 }
 function chatMessagesHtml(chat){
@@ -1513,20 +1540,25 @@ function renderChatModal(id, chatArg){
 function sendChatMessage(){
   var id=state.openChatId; var chat=findChat(id);
   var input=document.getElementById('chatInput'); var text=(input.value||'').trim();
-  if(!text) return;
+  if(!text || !chat) return;
   if(containsPhoneAttempt(text)){ toast('Telefon nömrəsi paylaşmaq olmaz — bütün əlaqə sayt daxilində qalmalıdır'); return; }
   if(!state.user){ needLogin(); return; }
+  if(!fbOnline || !fbFunctions){ toast('Server bağlantısı yoxdur'); return; }
+  /* Mesajı SERVER yazır (sendChatMessage funksiyası): tərəfi təyin edir, telefon filtrini təkrar yoxlayır,
+     mövcud mesajları dəyişməyə imkan vermir. Burada yalnız dərhal görünməsi üçün lokal nüsxə əlavə olunur. */
   var role = (state.user.email===chat.hostEmail) ? 'host' : 'guest';
-  if(role!=='host' && role!=='guest'){ return; }
-  chat = chat || {};
+  var msg={from:role, text:text, ts:Date.now()};
   chat.messages = chat.messages || [];
-  chat.messages.push({from:role, text:text, ts:Date.now()});
-  chat.lastAt=Date.now(); chat.lastFrom=role;
-  /* Qarşı tərəfə oxunmamış bildirişi qoyuruq, göndərənin özünə isə silirik (öz mesajını görüb). */
-  if(role==='guest'){ chat.unreadForHost=true; chat.unreadForGuest=false; }
-  else { chat.unreadForGuest=true; chat.unreadForHost=false; }
+  chat.messages.push(msg);
   input.value='';
-  saveChat(chat).then(function(){ renderChatModal(id, chat); renderInboxBadge(); });
+  renderChatModal(id, chat);
+  fbFunctions.httpsCallable('sendChatMessage')({chatId:id, listingId:chat.listingId, text:text}).then(function(){
+    renderInboxBadge();
+  }).catch(function(err){
+    var k=chat.messages.indexOf(msg); if(k>=0) chat.messages.splice(k,1);
+    input.value=text; renderChatModal(id, chat);
+    toast((err&&err.message)||'Mesaj göndərilə bilmədi');
+  });
 }
 function renderHostMessagesList(mine){
   var el=document.getElementById('hostmessages'); if(!el) return;
@@ -1646,7 +1678,10 @@ function openSupportModal(targetEmail){
     thread = {id:state.user.email, userEmail:state.user.email, userName:state.user.name, messages:[], lastAt:Date.now(), lastFrom:null, userUnread:false, adminUnread:false};
     _draftSupportThread=thread;
   }
-  if(thread.userUnread){ thread.userUnread=false; saveSupportThread(thread); }
+  if(thread.userUnread){
+    thread.userUnread=false;
+    if(fbOnline && state.mySupportThread){ db.collection('support').doc(thread.id).update({userUnread:false}).catch(function(e){ console.error('support oxundu xətası:', e); }); }
+  }
   renderSupportModal();
   openModal('supportModal');
 }
@@ -1658,13 +1693,24 @@ function sendSupportMessage(){
   var thread = adminMode ? (findSupportThreadByEmail(state.openSupportEmail) || _draftSupportThread) : findMySupportThread();
   if(!thread) return;
   thread.messages = thread.messages || [];
-  var from = adminMode ? 'admin' : 'user';
-  thread.messages.push({from:from, text:text, ts:Date.now()});
-  thread.lastAt=Date.now(); thread.lastFrom=from;
-  if(adminMode){ thread.userUnread=true; thread.adminUnread=false; }
-  else { thread.adminUnread=true; thread.userUnread=false; }
-  input.value='';
-  saveSupportThread(thread).then(function(){ renderSupportModal(); renderInboxBadge(); });
+  if(adminMode){
+    /* Admin cavabı: admin hesabı birbaşa yazır (Rules yalnız admin üçün açıqdır). */
+    thread.messages.push({from:'admin', text:text, ts:Date.now()});
+    thread.lastAt=Date.now(); thread.lastFrom='admin'; thread.userUnread=true; thread.adminUnread=false;
+    input.value='';
+    saveSupportThread(thread).then(function(){ renderSupportModal(); renderInboxBadge(); });
+    return;
+  }
+  /* İstifadəçi mesajını SERVER yazır ("from" yalnız serverdə "user" təyin olunur, saxta "admin" mümkün deyil). */
+  if(!fbOnline || !fbFunctions){ toast('Server bağlantısı yoxdur'); return; }
+  var msg={from:'user', text:text, ts:Date.now()};
+  thread.messages.push(msg); thread.lastAt=msg.ts; thread.lastFrom='user'; thread.adminUnread=true; thread.userUnread=false;
+  input.value=''; renderSupportModal();
+  fbFunctions.httpsCallable('sendSupportMessage')({text:text}).then(function(){ renderSupportModal(); renderInboxBadge(); }).catch(function(err){
+    var k=thread.messages.indexOf(msg); if(k>=0) thread.messages.splice(k,1);
+    input.value=text; renderSupportModal();
+    toast((err&&err.message)||'Mesaj göndərilə bilmədi');
+  });
 }
 /* Vahid "mesaj qutusu" — oxunmamış qonaq/ev sahibi yazışmaları VƏ admin dəstək cavabları eyni
    siyahıda görünür. Yalnız cari istifadəçiyə aid olan bildirişlər (server tərəfdə də Rules bunu
@@ -1746,7 +1792,7 @@ function startOwnCustomerListener(email){
     save(); renderAuth();
     if(!first && data.status!==prevStatus){
       if(data.status==='rejected') toast('Qeydiyyatın rədd edildi: '+(data.rejectionReason||'Səbəb qeyd edilməyib'));
-      else if(data.status==='verified') toast('Qeydiyyatın admin tərəfindən təsdiqləndi ✓');
+      else if(data.status==='verified') toast('Hesabın təsdiqləndi ✓ İndi rezervasiya edə bilərsən');
     }
     first=false;
   }, function(err){ console.error('Öz qeydiyyat dinləyici xətası:', err); });
@@ -1919,7 +1965,7 @@ function renderAuth(){
   if(state.user){
     var statusBadge = state.user.status==='rejected'
       ? '<span class="tag hold" title="'+esc(state.user.rejectionReason||'')+'">Rədd edilib</span>'
-      : (state.user.status==='flagged' ? '<span class="tag wait">Yoxlanılır</span>' : '');
+      : ((state.user.status==='flagged'||state.user.status==='pending') ? '<span class="tag wait">Yoxlanılır</span>' : '');
     el.innerHTML='<div class="who"><span class="av">'+esc(state.user.name.slice(0,1).toUpperCase())+'</span>'
       +'<span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(state.user.name)+'</span>'
       +statusBadge
@@ -2002,14 +2048,13 @@ function finishLogin(){
      sənədini görə bilər). Yalnız şəklin keyfiyyəti kimi öz-özünə yoxlanıla bilən şərtlər saxlanıb.
      Real mühitdə tam KYC yoxlaması server tərəfli (Cloud Function + ASAN İmza kimi rəsmi provayder)
      olmalıdır. */
+  /* KYC qərarını artıq SERVER verir (checkDuplicateCustomer funksiyası): client yalnız "pending" yaza bilir.
+     Server şəklin real ölçüsünü, FİN/şəkil təkrarını yoxlayıb statusu "verified" və ya "flagged" edir. */
   var flags=[];
-  if(state.idPhotoData.size<15*1024) flags.push("Yüklənən şəkil çox aşağı keyfiyyətlidir, əl ilə yoxlama tövsiyə olunur");
-  var status = flags.length ? 'flagged' : 'verified';
+  var status = 'pending';
   box.style.display='block';
-  box.style.color = flags.length ? 'var(--warn)' : 'var(--ok)';
-  box.innerHTML = flags.length
-    ? '⚠ Qeydiyyat tamamlandı, lakin admin nəzarəti tələb olunur:<br>'+flags.map(esc).join('<br>')
-    : '✓ Kimlik məlumatları uyğundur, hesab təsdiqləndi.';
+  box.style.color = 'var(--ok)';
+  box.innerHTML = '✓ Qeydiyyat qəbul edildi, məlumatlar yoxlanılır...';
 
   /* Şəxsiyyət vəsiqəsi şəkli Firestore sənədinə deyil, Storage-a yüklənir — yalnız link saxlanılır.
      Bu, həm sənəd ölçüsü limitini keçmə riskini aradan qaldırır, həm də hər sinxronizasiyada bu
@@ -2031,11 +2076,11 @@ function finishLogin(){
     };
     return customersSync.save(rec);
   }).then(function(){
-    state.user={name:n,email:e,phone:p,fin:f,uid:fbAuth.currentUser.uid,verified:true,status:status,rejectionReason:null};
+    state.user={name:n,email:e,phone:p,fin:f,uid:fbAuth.currentUser.uid,verified:false,status:status,rejectionReason:null};
     save(); renderAuth(); renderBookings(); renderHost(); startOwnCustomerListener(e); startUserChatSync(e); startSupportSync(e);
     setTimeout(function(){
       closeModal('loginModal');
-      toast(flags.length?("Xoş gəldin, "+n.split(' ')[0]+" — hesabın admin nəzarətindədir"):("Xoş gəldin, "+n.split(' ')[0]+"! Kimliyin təsdiqləndi"));
+      toast("Xoş gəldin, "+n.split(' ')[0]+"! Qeydiyyatın yoxlanılır, nəticə bir neçə saniyəyə görünəcək");
       if(state.pendingBook){ var pb=state.pendingBook; state.pendingBook=null; openDetail(pb); }
     }, flags.length?1400:700);
   }).catch(function(err){
@@ -2091,19 +2136,21 @@ function adminGoogleLogin(){
   provider.setCustomParameters({prompt:'select_account'});
   fbAuth.signInWithPopup(provider).then(function(result){
     var email = result.user.email||'';
-    if(!isAdminEmail(email)){
-      document.getElementById('adminGateMsg').textContent = "Bu hesab ("+email+") admin siyahısında deyil.";
-      toast("Bu Google hesabının admin icazəsi yoxdur");
-      return;
-    }
-    state.adminAuth=true;
-    document.getElementById('adminGate').style.display='none';
-    document.getElementById('adminContent').style.display='block';
-    startAdminOnlySync();
-    startAdminChatSync();
-    startAdminSupportSync();
-    renderAdmin();
-    toast("Admin panelinə xoş gəldin");
+    return verifyAdminAccess().then(function(ok){
+      if(!ok){
+        document.getElementById('adminGateMsg').textContent = "Bu hesab ("+email+") admin siyahısında deyil.";
+        toast("Bu Google hesabının admin icazəsi yoxdur");
+        return;
+      }
+      state.adminAuth=true;
+      document.getElementById('adminGate').style.display='none';
+      document.getElementById('adminContent').style.display='block';
+      startAdminOnlySync();
+      startAdminChatSync();
+      startAdminSupportSync();
+      renderAdmin();
+      toast("Admin panelinə xoş gəldin");
+    });
   }).catch(function(e){
     console.error('Admin giriş xətası:', e);
     toast('Google girişi alınmadı: '+e.message);
@@ -2927,7 +2974,13 @@ function initPlaceSearch(){
 }
 /* Evin detal səhifəsi: dəqiq yer GİZLİ saxlanılır — təxmini ərazi dairəsi göstərilir. Dairənin mərkəzi
    elan nömrəsindən asılı sabit bir məsafəyə sürüşdürülür ki, dairənin mərkəzi evin dəqiq yeri olmasın. */
+/* Təxmin edilməsi çətin təsadüfi ID (16 hex simvol, brauzerin kriptoqrafik generatoru). */
+function randomId(){
+  var a=new Uint8Array(8); (window.crypto||window.msCrypto).getRandomValues(a);
+  return Array.prototype.map.call(a,function(b){return ('0'+b.toString(16)).slice(-2);}).join('').toUpperCase();
+}
 function approxCenterFor(x){
+  if(x.approx && x.approx.lat!=null) return {lat:x.approx.lat,lng:x.approx.lng}; /* ictimai nüsxədə server artıq təxmini mərkəzi hesablayıb */
   var seed=((Number(x.id)||0)*9301+49297)%233280/233280;
   var seed2=((Number(x.id)||0)*7919+12345)%233280/233280;
   var ang=seed*2*Math.PI, dist=120+seed2*150;
@@ -2935,7 +2988,8 @@ function approxCenterFor(x){
   return {lat:x.lat+dLat,lng:x.lng+dLng};
 }
 function locationSectionHtml(x){
-  if(x.lat==null||x.lng==null||isNaN(x.lat)||isNaN(x.lng)) return '';
+  var hasPos=(x.approx&&x.approx.lat!=null)||(x.lat!=null&&x.lng!=null&&!isNaN(x.lat)&&!isNaN(x.lng));
+  if(!hasPos) return '';
   return '<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Yerləşmə</h3>'
     +'<div id="gmapDetail-'+x.id+'" class="gmap" style="height:260px;border-radius:14px;overflow:hidden;border:1px solid var(--line)"></div>'
     +'<p class="note" style="text-align:left;margin-top:8px">Təxmini ərazi göstərilir. Dəqiq ünvan rezervasiya təsdiqlənəndən və girişə 24 saat qalandan sonra açılır.</p>';
@@ -3609,7 +3663,7 @@ function addManualBlock(){
   var n=nights(a,b);
   if(n<=0){ toast('Tarixləri düzgün seç'); return; }
   if(!isListingFree(x.id,a,b)){ toast('Bu tarixlərdə artıq bron və ya bağlama var'); return; }
-  var newBlock={id:'BLK-'+Math.floor(100000+Math.random()*899999), lid:x.id, d1:a, d2:b};
+  var newBlock={id:'BLK-'+randomId(), lid:x.id, d1:a, d2:b};
   state.blocks.push(newBlock);
   blocksSync.save(newBlock);
   document.getElementById('cal-block-d1').value=''; document.getElementById('cal-block-d2').value='';
@@ -4112,7 +4166,7 @@ function submitReport(){
   if(txt.length<10){ toast("İzahı ətraflı yaz"); return; }
   if(!state.evidenceData.length){ toast("Ən azı 1 şəkil sübutu yüklə"); return; }
   var review=state.reviews.filter(function(r){return r.id===reviewId;})[0];
-  var reportId='RP-'+Math.floor(1e5+Math.random()*9e5);
+  var reportId='RP-'+randomId();
   var photoCount=state.evidenceData.length;
 
   /* Sübut şəkilləri (adətən bir neçə şəkil, hər biri bir neçə MB ola bilər) Storage-a yüklənir —
@@ -4585,15 +4639,19 @@ try{ var th=localStorage.getItem('buralar_theme'); if(th) document.documentEleme
    real icazə hər halda serverdə (Firestore Rules-da) bu eyni e-poçt siyahısı ilə yoxlanılır. */
 if(fbAuth){
   fbAuth.onAuthStateChanged(function(u){
-    if(u && isAdminEmail(u.email) && state.tab==='admin' && !state.adminAuth){
-      state.adminAuth=true;
-      document.getElementById('adminGate').style.display='none';
-      document.getElementById('adminContent').style.display='block';
-      startAdminOnlySync();
-      startAdminChatSync();
-      startAdminSupportSync();
-      renderAdmin();
-    }
+    if(u){
+      verifyAdminAccess().then(function(ok){
+        if(ok && state.tab==='admin' && !state.adminAuth){
+          state.adminAuth=true;
+          document.getElementById('adminGate').style.display='none';
+          document.getElementById('adminContent').style.display='block';
+          startAdminOnlySync();
+          startAdminChatSync();
+          startAdminSupportSync();
+          renderAdmin();
+        }
+      });
+    } else { state.isAdminUser=false; }
     /* localStorage-dan bərpa olunan bir istifadəçi sessiyası varsa, Firebase sessiyası da
        təsdiqlənəndə öz qeydiyyat sənədinin canlı dinləyicisini işə sal ki, admin sonradan
        təsdiq/rədd etsə, istifadəçi bunu dərhal görsün. */
