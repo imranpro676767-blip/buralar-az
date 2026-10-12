@@ -2521,6 +2521,12 @@ function addPriceTier(){
   var p=parseFloat(document.getElementById('tier-p').value);
   if(!n||n<2){ toast("Gecə sayı ən azı 2 olmalıdır (1 gecə baza qiymətdir)"); return; }
   if(!p||p<=0){ toast("Gecəlik qiyməti düzgün yaz"); return; }
+  var baseP=parseFloat(document.getElementById('h-price').value)||0;
+  if(baseP && p>=baseP){ toast("Uzun qalma qiyməti baza qiymətdən ("+baseP+" ₼) aşağı olmalıdır"); return; }
+  var lowerNights=state.pendingTiers.filter(function(t){return t.minNights<n;}).sort(function(x,y){return y.minNights-x.minNights;})[0];
+  if(lowerNights && p>=lowerNights.price){ toast("Qiymət "+lowerNights.minNights+" gecəlik pillədən ("+lowerNights.price+" ₼) aşağı olmalıdır"); return; }
+  var higherNights=state.pendingTiers.filter(function(t){return t.minNights>n;}).sort(function(x,y){return x.minNights-y.minNights;})[0];
+  if(higherNights && p<=higherNights.price){ toast("Qiymət "+higherNights.minNights+" gecəlik pillədən ("+higherNights.price+" ₼) yuxarı olmalıdır"); return; }
   if(state.pendingTiers.some(function(t){return t.minNights===n;})){ toast(n+" gecə üçün artıq pillə var"); return; }
   state.pendingTiers.push({minNights:n,price:p});
   state.pendingTiers.sort(function(a,b){return a.minNights-b.minNights;});
@@ -2711,14 +2717,6 @@ function waLinkFor(booking){
     +(mapsUrl?(" Xəritədə bax: "+mapsUrl):"")+" Giriş saatı: "+((booking.rules&&booking.rules.cin)||"14:00")+".";
   var digits=(booking.phone||'').replace(/\D/g,'');
   return { text:msg, addrText:addrText, mapsUrl:mapsUrl, url:"https://wa.me/"+digits+"?text="+encodeURIComponent(msg) };
-}
-function forceNotify(code){
-  state.bookings.forEach(function(b){ if(b.code===code){ b.checkinAt=Date.now()-1000; bookingsSync.save(b); } });
-  autoRelease(); renderBookings(); renderHost(); if(state.adminAuth) renderAdmin(); toast("Demo: giriş 24 saat yaxınlaşdı, ev sahibinə bildiriş göndərildi");
-}
-function fastForward(code){
-  state.bookings.forEach(function(b){ if(b.code===code){ b.releaseAt=Date.now()-1000; bookingsSync.save(b); } });
-  autoRelease(); renderBookings(); renderHost(); if(state.adminAuth) renderAdmin(); toast("Demo: 24 saat ötürüldü, ödəniş bölüşdürüldü");
 }
 var CMP_MAX_PHOTOS=10, cmpPreviewUrls=[];
 function openComplaint(code){ state.cmpCode=code; state.cmpFiles=[]; renderCmpPhotos(); openModal('cmpModal'); }
@@ -4489,10 +4487,7 @@ function renderAdmin(){
   var rt=document.getElementById('rezalltable');
   var rezRows=state.bookings.slice(0,adminRezShown);
   rt.innerHTML = (state.bookings.length ? rezRows.map(function(b){
-    var ops = b.status==='hold'
-      ? ((!b.notified24?'<button class="btn sm ghost" style="width:auto;padding:6px 10px;font-size:12.5px" onclick="forceNotify(\''+b.code+'\')">Demo: 24s bildirişi göndər</button>':'<span class="m">Bildiriş göndərilib</span>')
-        +' <button class="btn sm dark" style="width:auto;padding:6px 10px;font-size:12.5px" onclick="fastForward(\''+b.code+'\')">Demo: ödənişi köçür</button>')
-      : '<span class="m">—</span>';
+    var ops = '<span class="m">—</span>';
     return '<tr><td>'+b.code+'</td><td>'+esc(b.title.slice(0,26))+'</td><td>'+esc(b.guest||'—')+'</td><td>'+esc(b.phone||'—')+'</td>'
       +'<td>'+esc(b.host)+'</td><td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td>'
       +'<td class="money">'+az2(b.total)+'</td><td>'+esc(b.bank)+'</td><td>'+statusTag(b.status,b)+'</td><td style="white-space:nowrap">'+ops+'</td></tr>';
