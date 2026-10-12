@@ -1319,21 +1319,55 @@ function makeCollectionSync(stateKey, collectionName, idField){
     }
   };
 }
-var bookingsSync = makeCollectionSync('bookings','bookings','code');
+var bookingsSync = makeCollectionSync('bookings','bookings','code'); /* save/remove yalnız admin üçün (Rules) */
+/* Bronlar artıq hamıya açıq deyil: qonaq yalnız öz bronlarını (email), ev sahibi yalnız öz evlərinin
+   bronlarını (hostEmail), admin hamısını oxuyur. Təqvimin boş/dolu görünməsi üçün şəxsi məlumatsız
+   ictimai "busy" kolleksiyası dinlənilir (serverdəki mirrorBusy funksiyası yazır). */
+state.busy=[];
+var _bkUnsubs={guest:null,host:null,admin:null}, _bkParts={guest:[],host:[],admin:[]};
+function _mergeBookings(){
+  var m={}; ['guest','host','admin'].forEach(function(k){ _bkParts[k].forEach(function(b){ m[b.code]=b; }); });
+  state.bookings=Object.keys(m).map(function(k){return m[k];});
+  renderAllShared();
+}
+function _listenBookings(kind, query){
+  if(_bkUnsubs[kind]){ _bkUnsubs[kind](); _bkUnsubs[kind]=null; }
+  _bkUnsubs[kind]=query.onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){ arr.push(d.data()); }); _bkParts[kind]=arr; _mergeBookings();
+  }, function(e){ console.error('bookings('+kind+') sinxronizasiya xətası:', e); });
+}
+function _stopBookings(kind){
+  if(_bkUnsubs[kind]){ _bkUnsubs[kind](); _bkUnsubs[kind]=null; }
+  _bkParts[kind]=[];
+}
+function startBusySync(){
+  if(!fbOnline || !db) return;
+  db.collection('busy').onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){ arr.push(d.data()); }); state.busy=arr; renderAllShared();
+  }, function(e){ console.error('busy sinxronizasiya xətası:', e); toast('Server ilə bağlantı xətası (təqvim)'); });
+}
+function startUserBookingsSync(email){
+  if(!fbOnline || !db || !email) return;
+  _listenBookings('guest', db.collection('bookings').where('email','==',email));
+  _listenBookings('host', db.collection('bookings').where('hostEmail','==',email));
+}
+function stopUserBookingsSync(){ _stopBookings('guest'); _stopBookings('host'); _mergeBookings(); }
+function startAdminBookingsSync(){ if(!fbOnline || !db) return; _listenBookings('admin', db.collection('bookings')); }
+function stopAdminBookingsSync(){ _stopBookings('admin'); _mergeBookings(); }
 var blocksSync = makeCollectionSync('blocks','blocks','id');
 var reviewsSync = makeCollectionSync('reviews','reviews','id');
 var reportsSync = makeCollectionSync('reports','reports','id');
 var customersSync = makeCollectionSync('customers','customers','email');
 function startSharedSync(){
   startListingsSync();
-  bookingsSync.start(); blocksSync.start(); reviewsSync.start(); handlePayReturn();
+  startBusySync(); blocksSync.start(); reviewsSync.start(); handlePayReturn();
   /* customers və reports kolleksiyaları HAMI üçün sinxronlaşdırılmır — bunlar şəxsi məlumat
      (şəxsiyyət vəsiqəsi şəkli, telefon, FİN) və şikayət mətnləri saxlayır. Yalnız admin daxil
      olanda startAdminOnlySync() ilə açılır; Firestore Rules də eyni şəkildə bunu tələb edir,
      ona görə brauzer konsolundan bu sətri əl ilə çağırmaq belə server tərəfdə rədd olunur. */
 }
 function startAdminOnlySync(){
-  customersSync.start(); reportsSync.start();
+  customersSync.start(); reportsSync.start(); startAdminBookingsSync();
 }
 
 /* ============ Bron öncəsi qonaq–ev sahibi yazışması ============
@@ -1385,6 +1419,7 @@ function _renderChatsSideEffects(){
 }
 function startUserChatSync(email){
   if(!fbOnline || !db || !email) return;
+  startUserBookingsSync(email);
   if(_chatsGuestUnsub){ _chatsGuestUnsub(); _chatsGuestUnsub=null; }
   if(_chatsHostUnsub){ _chatsHostUnsub(); _chatsHostUnsub=null; }
   _chatsGuestUnsub = db.collection('chats').where('guestEmail','==',email).onSnapshot(function(snap){
@@ -1395,6 +1430,7 @@ function startUserChatSync(email){
   }, function(e){ console.error('chats(ev sahibi) sinxronizasiya xətası:', e); });
 }
 function stopUserChatSync(){
+  stopUserBookingsSync();
   if(_chatsGuestUnsub){ _chatsGuestUnsub(); _chatsGuestUnsub=null; }
   if(_chatsHostUnsub){ _chatsHostUnsub(); _chatsHostUnsub=null; }
   state.chatsGuest=[]; state.chatsHost=[];
@@ -1407,6 +1443,7 @@ function startAdminChatSync(){
   }, function(e){ console.error('chats(admin) sinxronizasiya xətası:', e); });
 }
 function stopAdminChatSync(){
+  stopAdminBookingsSync();
   if(_chatsAdminUnsub){ _chatsAdminUnsub(); _chatsAdminUnsub=null; }
   state.chatsAdmin=[];
 }
@@ -2126,10 +2163,8 @@ function setPool(p){ state.pool=p; render(); }
 function listingHasPool(x){ return !!(x.rooms && x.rooms.some(function(r){return r.kind==='pool';})); }
 
 function isListingFree(id,a,b){
-  var bookingConflict = state.bookings.some(function(bk){
-    if(bk.lid!=id || bk.status==='refunded') return false;
-    if(bk.status!=='hold' && bk.status!=='complaint' && bk.status!=='released') return false;
-    return (a < bk.d2) && (b > bk.d1);
+  var bookingConflict = (state.busy||[]).some(function(bk){
+    return bk.lid==id && (a < bk.d2) && (b > bk.d1);
   });
   if(bookingConflict) return false;
   return !state.blocks.some(function(bl){
@@ -2636,20 +2671,7 @@ function canWriteBooking(b){
    HEÇ KİMİN ekranı açıq olmasa belə, server öz işini görəcək. Admin-in "bildirişlər" siyahısı da artıq
    lokal state.notifications-dan deyil, birbaşa (bütün cihazlar arası sinxron olan) "bookings"
    sənədlərindəki notified24/waLink sahələrindən qurulur (bax renderAdmin). */
-function autoRelease(){
-  var now=Date.now();
-  state.bookings.forEach(function(b){
-    var changed=false;
-    if(b.paymentStatus==='pending'||b.paymentStatus==='failed'||b.paymentStatus==='expired') return;
-    if(b.status==='hold' && !b.complaint && now>=b.releaseAt){ b.status='released'; changed=true; }
-    if((b.status==='hold'||b.status==='complaint') && !b.notified24 && now>=(b.checkinAt-24*3600000)){
-      b.notified24=true; changed=true;
-      var wa=waLinkFor(b);
-      b.waLink=wa.url; b.waText=wa.text; b.mapsUrl=wa.mapsUrl; b.exactAddress=wa.addrText;
-    }
-    if(changed && canWriteBooking(b)) bookingsSync.save(b);
-  });
-}
+function autoRelease(){ /* Status və 24 saatlıq bildiriş YALNIZ serverdə (autoReleaseBookings) dəyişir; client artıq yazmır. */ }
 /* Admin "Qonağa WhatsApp göndər" düyməsinə klikləyən kimi (WhatsApp yeni tabda açılan andan) həmin
    bronun "waSent" sahəsini Firestore-da dərhal true edir — real göndərilməni yoxlaya bilmirik (bu,
    sadə wa.me linkidir, API deyil), amma ən azı admin klikləyib bildiyimiz andan düymə deaktiv olur
@@ -2737,12 +2759,13 @@ function sendComplaint(){
   if(files.length && !fbOnline){ toast("Server bağlantısı yoxdur, şəkilləri yükləmək mümkün olmadı"); return; }
   if(btn){ btn.disabled=true; btn.textContent=files.length?'Şəkillər yüklənir...':'Göndərilir...'; }
   Promise.all(files.map(function(f){ return uploadImageToStorage(f,'complaints/'+code); })).then(function(urls){
-    state.bookings.forEach(function(b){ if(b.code===code){ b.complaint={reason:reason,text:txt,st:'pending',date:today(),photos:urls}; b.status='complaint'; bookingsSync.save(b); } });
+    return fbFunctions.httpsCallable('fileComplaint')({code:code, reason:reason, text:txt, photos:urls});
+  }).then(function(){
     closeModal('cmpModal'); document.getElementById('c-text').value=''; state.cmpFiles=[]; renderCmpPhotos();
     renderBookings(); toast("Şikayət göndərildi, idarəetmə yoxlayır");
   }).catch(function(err){
-    console.error('Şikayət şəkil yükləmə xətası:', err);
-    toast("Şəkillər yüklənmədi, yenidən cəhd et: "+(err&&err.message?err.message:err));
+    console.error('Şikayət göndərmə xətası:', err);
+    toast("Şikayət göndərilmədi: "+(err&&err.message?err.message:err));
   }).then(function(){
     if(btn){ btn.disabled=false; btn.textContent='Şikayəti göndər'; }
   });
@@ -3330,7 +3353,7 @@ function reviewsFor(role,code){ return state.reviews.filter(function(r){return r
 /* ============ ev üçün ictimai rəylər (əsas səhifə/detal) ============ */
 function reviewsForListing(id){
   var codes = state.bookings.filter(function(b){return b.lid==id;}).map(function(b){return b.code;});
-  return state.reviews.filter(function(r){ return r.fromRole==='guest' && r.visible && codes.indexOf(r.bookingCode)>=0; });
+  return state.reviews.filter(function(r){ return r.fromRole==='guest' && r.visible && (r.lid==id || codes.indexOf(r.bookingCode)>=0); });
 }
 function openListingReviews(id){
   var x=byId(id); if(!x) return;
@@ -3364,7 +3387,7 @@ function reviewBlock(b){
    real rezervasiya statistikasına əsaslanan ipucu göstərir. Yalnız TƏSDİQLƏNMİŞ elanlar
    "bazar" sayılır (gözləyən/rədd edilmiş elanlar real rəqib deyil). */
 function bookingCountFor(listingId){
-  return state.bookings.filter(function(b){ return b.lid==listingId && b.status!=='refunded'; }).length;
+  return (state.busy||[]).filter(function(b){ return b.lid==listingId; }).length;
 }
 /* x ilə "bənzər" (eyni region, eyni ev tipi, yaxın qonaq/otaq sayı) digər ev sahiblərinin
    TƏSDİQLƏNMİŞ elanlarını qaytarır. Nümunə sayı azdırsa (<3), şərtləri tədricən yumşaldır:
@@ -4018,7 +4041,7 @@ function submitReview(){
   var newReview={
     /* ID məcburi "BRON_KODU_rol" formatındadır (firestore.rules-da tələb olunur) — bu, eyni
        bronun eyni tərəfdən İKİ DƏFƏ qiymətləndirilməsinin qarşısını server tərəfdə də bağlayır. */
-    id:b.code+'_'+ctx.role, bookingCode:b.code,
+    id:b.code+'_'+ctx.role, bookingCode:b.code, lid:b.lid,
     from: ctx.role==='guest'?b.guest:b.host, fromRole: ctx.role,
     about: ctx.role==='guest'?b.host:b.guest, aboutEmail: ctx.role==='guest'?null:b.email,
     categories: Object.assign({},state.catStars), catLabels: ctx.cats,
