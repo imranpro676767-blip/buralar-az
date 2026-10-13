@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E2F2A'/%3E%3Cpath d='M32 12c-8.8 0-15 6.3-15 14.4C17 37 32 52 32 52s15-15 15-25.6C47 18.3 40.8 12 32 12z' fill='%23A4213B'/%3E%3Ccircle cx='32' cy='27' r='6' fill='%23F4EFE4'/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Buralar.az — Azərbaycanda gündəlik kirayə evlər</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -868,6 +869,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button aria-selected="false" onclick="goSub('notif')">Bildirişlər <span id="notifcount"></span></button>
         <button aria-selected="false" onclick="goSub('msg')">Yazışmalar <span id="msgcount"></span></button>
         <button aria-selected="false" onclick="goSub('support')">Dəstək mesajları <span id="supportcount"></span></button>
+        <button aria-selected="false" onclick="goSub('sanc')">Nəzarət <span id="sanccount"></span></button>
         <button aria-selected="false" onclick="goSub('fin')">Maliyyə</button>
         <button class="icon-btn" style="margin-left:auto" onclick="adminLogout()">Admindən çıx</button>
       </div>
@@ -910,6 +912,23 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="sub" id="s-notif"><div class="blist" id="notiflist"></div></div>
       <div class="sub" id="s-msg"><div class="blist" id="msglist"></div></div>
       <div class="sub" id="s-support"><div class="blist" id="supportlist"></div></div>
+      <div class="sub" id="s-sanc">
+        <p class="note" style="text-align:left;margin:0 0 10px"><b>Nəzarət və bloklama.</b> "Nəzarətə al" son xəbərdarlıqdır: istifadəçi davam edə bilər, təkrar pozsa sizə xəbər gəlir. "Blokla" həmişəlik bloklayır: hesab, elanlar və giriş bağlanır, FİN, şəxsiyyət şəkli, IBAN və VÖEN yadda saxlanır ki, yeni Gmail ilə qayıda bilməsin (yeni hesab açsa avtomatik bloklanır).</p>
+        <div class="split" style="margin-bottom:14px;padding:12px">
+          <div style="display:grid;gap:8px">
+            <input type="email" id="sancEmail" placeholder="İstifadəçinin e-poçtu (məs. ali@gmail.com)" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;font-size:15px">
+            <input type="text" id="sancReason" maxlength="300" placeholder="Səbəb (istifadəçiyə e-poçtla göndəriləcək)" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;font-size:15px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sm" style="background:var(--warn);color:#fff;width:auto" onclick="sancFromForm('watch')">Nəzarətə al (son xəbərdarlıq)</button>
+              <button class="btn sm" style="background:var(--nar);color:#fff;width:auto" onclick="sancFromForm('ban')">Həmişəlik blokla</button>
+            </div>
+          </div>
+        </div>
+        <div id="sanclist"></div>
+        <h3 style="margin:22px 0 8px">Son bloklanmış mesaj cəhdləri</h3>
+        <p class="note" style="text-align:left;margin:0 0 8px">Telefon, link, sosial şəbəkə və ya e-poçt göndərməyə çalışıb sistemin dayandırdığı mesajlar (son 100).</p>
+        <div id="violist"></div>
+      </div>
 
       <div class="sub" id="s-fin">
         <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn sm ghost" onclick="exportBookingsCsv()">⬇ Mühasibatlıq üçün CSV ixrac et</button></div>
@@ -1082,7 +1101,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>2. Hesab və doğrulama.</b> Rezervasiya etmək üçün qeydiyyat və şəxsiyyət doğrulaması (KYC) məcburidir. Admin saxta məlumat, şübhəli sənəd və ya təkrar qeydiyyat aşkar etdikdə hesabı rədd və ya blok edə bilər. Doğrulamanın keçməsi qonağın və ya ev sahibinin etibarlı və ya təhlükəsiz olmasına zəmanət demək deyil.</p>
       <p><b>3. Rezervasiya və ödəniş.</b> Ödəniş Epoint ödəniş sistemi vasitəsilə onlayn həyata keçirilir. Rezervasiya yalnız ödəniş uğurla alındıqdan sonra təsdiqlənir. Ev sahibinin payı və platformanın xidmət haqqı rezervasiya zamanı göstərilən məbləğlərə uyğun bölünür. Ödəniş edilməyən rezervasiya 45 dəqiqədən sonra avtomatik ləğv olunur.</p>
       <p><b>4. Şikayət və geri qaytarma.</b> Ev elandakı təsvirə tamamilə uyğun gəlmədikdə və ya ev sahibi girişi təmin etmədikdə qonaq şikayət göndərə bilər. Admin araşdırıb ödənişin geri qaytarılması barədə qərar verə bilər. Bu qərar yalnız ödənişin taleyinə aiddir və platformanın başqa heç bir məsuliyyəti yaratmır. Qonaq fikrini dəyişdiyinə görə geri qaytarma tələb edə bilməz.</p>
-      <p><b>5. Davranış qaydaları.</b> Saxta rəy və saxta sənəd təqdim etmək, başqasının hesabına icazəsiz müdaxilə etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın bloklanmasına səbəb ola bilər.</p>
+      <p><b>5. Davranış qaydaları.</b> Saxta rəy və saxta sənəd təqdim etmək, başqasının hesabına icazəsiz müdaxilə etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın bloklanmasına səbəb ola bilər. Yazışmalarda telefon nömrəsi, e-poçt, sosial şəbəkə (məs. Instagram, TikTok, Facebook), mesajlaşma tətbiqi (məs. WhatsApp, Telegram) və ya hər hansı xarici link paylaşmaq qadağandır: bu cür mesajlar sistem tərəfindən avtomatik dayandırılır və cəhd qeydə alınır. Qaydanı pozan istifadəçiyə son xəbərdarlıq verilə və hesabı nəzarətə götürülə bilər; təkrar pozuntu halında hesab həmişəlik bloklanır. Bloklanmış şəxs FİN, şəxsiyyət sənədi, bank (IBAN) və vergi (VÖEN) məlumatları əsasında tanınır və yeni hesab açmaq cəhdi avtomatik rədd edilir.</p>
       <p><b>6. Ev sahibinin öhdəlikləri.</b> Ev sahibi: (a) elan məlumatlarının, şəkillərin və qaydaların doğru olduğunu; (b) evi icarəyə vermək üçün qanuni hüququ və lazımi icazələri olduğunu; (c) evin yaşayış üçün təhlükəsiz olduğunu, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz, elektrik, isitmə və yanğın təhlükəsizliyi tələblərinin yerinə yetirildiyini; (d) risk mənbələri barədə (məsələn, hovuzun dərinliyi, hasarsız sahələr) qonaqları qabaqcadan xəbərdar etdiyini; (e) fərdi sığorta və ya mülki məsuliyyət sığortası barədə özü qərar verdiyini və Buralar.az-ın sığorta təmin etmədiyini bəyan və təsdiq edir. Evdə baş verən bütün hadisələr və itkilər üzrə birinci məsuliyyət ev sahibinə aiddir.</p>
       <p><b>7. Qonağın öhdəlikləri.</b> Qonaq evdən ev qaydalarına və təhlükəsizlik tələblərinə uyğun istifadə etməyi, evə vurduğu ziyana görə cavabdeh olmağı öhdəsinə götürür. Uşaqlar, yaşlıların və məhdud imkanlı şəxslərin təhlükəsizliyi, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz və elektrik cihazları ətrafında nəzarət <b>tam olaraq qonağa və onunla gələn yetkin şəxslərə aiddir</b>. Qonaq evə gətirdiyi bütün şəxslərin (qonaq sayı elandakı limitdən çox olmamalıdır) davranışına görə cavabdehdir.</p>
       <p><b>8. Riskin qəbulu.</b> Qonaq və ev sahibi icarə olunan evdən istifadənin təbiətinə görə yarana bilən risklərin (yaralanma, xəstələnmə, əmlakın zədələnməsi, itməsi və ya oğurluq daxil olmaqla) şəxsən və ya öz yaxınları üçün onlara aid olduğunu başa düşdüklərini və qəbul etdiklərini təsdiq edirlər.</p>
@@ -1217,7 +1236,7 @@ var DEFAULT_RULES = {kids:true,pets:false,smoke:false,party:false,quiet:true,nos
 var SEED=[]; /* nümunə evlər silindi — yalnız real elanlar (Firestore) göstərilir */
 
 var state={tab:'kesf',sub:'rezall',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
-  notifications:[],reviews:[],reports:[],customers:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,editingListingId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
+  notifications:[],reviews:[],reports:[],customers:[],sanctions:[],violations:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,editingListingId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
   coverData:null,coverFile:null,pendingRooms:[],currentRoomPhotos:[],currentRoomPhotoFiles:[],galleryList:[],galleryIdx:0,
   calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null,guestType:null,pool:'Hamısı',
   chatsGuest:[],chatsHost:[],chatsAdmin:[],openChatId:null,
@@ -1405,7 +1424,7 @@ function startSharedSync(){
      ona görə brauzer konsolundan bu sətri əl ilə çağırmaq belə server tərəfdə rədd olunur. */
 }
 function startAdminOnlySync(){
-  customersSync.start(); reportsSync.start(); startAdminBookingsSync(); startAdminListingsSync();
+  customersSync.start(); reportsSync.start(); startAdminBookingsSync(); startAdminListingsSync(); startAdminSanctionsSync();
 }
 
 /* ============ Bron öncəsi qonaq–ev sahibi yazışması ============
@@ -1439,6 +1458,16 @@ function hasWordPhonePattern(text){
   return false;
 }
 function containsPhoneAttempt(text){ return hasDigitPhonePattern(text) || hasWordPhonePattern(text); }
+/* Link, sosial şəbəkə, mesajlaşma tətbiqi və e-poçt (server eyni qaydanı təkrar yoxlayır). */
+var SOCIAL_RE=/(tik\s*tok|\binsta\b|instagr|face\s*book|\bfb\b|whats\s*app|wats?ap+|vats?ap+|votsap|\bwp\b|telegram|\btg\b|viber|vayber|snap\s*chat|youtube|linkedin|twitter|wechat|skype|discord|messenger)/i;
+var SOCIAL_NOSPACE_RE=/(tiktok|instagram|facebook|whatsapp|telegram|snapchat|youtube|linkedin|messenger|vatsap|watsap)/;
+var LINK_RE=/(https?:\/\/|www\.|\b(?:wa|t)\.me\b|bit\.ly|\b[a-z0-9-]{2,}\.(?:com|az|net|org|ru|tr|info|me|io|co|ly|gl|be|link|app|site|xyz|gg|tv|ee|biz|us|uk|de)\b)/i;
+var EMAIL_RE=/([a-z0-9._%+\-]+\s*(?:@|\(at\)|\[at\])\s*[a-z0-9\-]+|(?:^|\s)@[a-z0-9_.]{3,}|\b(?:gmail|mail\.ru|yahoo|outlook|hotmail|yandex|icloud)\b|(?:nöqtə|nokta|dot)\s*(?:com|az|net|org|ru)\b)/i;
+function containsLinkAttempt(text){
+  var t=String(text||'');
+  if(SOCIAL_RE.test(t)||LINK_RE.test(t)||EMAIL_RE.test(t)) return true;
+  return SOCIAL_NOSPACE_RE.test(t.toLowerCase().replace(/[^a-zçəğıöşü0-9]+/g,''));
+}
 
 var _chatsGuestUnsub=null, _chatsHostUnsub=null, _chatsAdminUnsub=null;
 function _renderChatsSideEffects(){
@@ -1550,6 +1579,7 @@ function sendChatMessage(){
   var input=document.getElementById('chatInput'); var text=(input.value||'').trim();
   if(!text || !chat) return;
   if(containsPhoneAttempt(text)){ toast('Telefon nömrəsi paylaşmaq olmaz — bütün əlaqə sayt daxilində qalmalıdır'); return; }
+  if(containsLinkAttempt(text)){ toast('Link, sosial şəbəkə, mesajlaşma tətbiqi və ya e-poçt paylaşmaq olmaz — bütün əlaqə sayt daxilində qalmalıdır'); return; }
   if(!state.user){ needLogin(); return; }
   if(!fbOnline || !fbFunctions){ toast('Server bağlantısı yoxdur'); return; }
   /* Mesajı SERVER yazır (sendChatMessage funksiyası): tərəfi təyin edir, telefon filtrini təkrar yoxlayır,
@@ -1582,6 +1612,132 @@ function renderHostMessagesList(mine){
       +'</div><div class="act"><button class="btn sm dark" onclick="openChatById(\''+c.id+'\')">Aç</button></div></div>';
   }).join('');
 }
+/* ============ Nəzarət / bloklama (admin) ============ */
+var _sancUnsubs={sanc:null,viol:null};
+function startAdminSanctionsSync(){
+  if(!fbOnline || !db) return;
+  stopAdminSanctionsSync();
+  _sancUnsubs.sanc=db.collection('sanctions').onSnapshot(function(snap){
+    var a=[]; snap.forEach(function(d){ a.push(d.data()); }); state.sanctions=a; renderSanctions(); if(state.adminAuth){ renderCustomers(); renderHostsAdmin(); renderAdminMessages(); }
+  }, function(e){ console.error('sanctions sinxronizasiya xətası:', e); });
+  _sancUnsubs.viol=db.collection('violations').orderBy('ts','desc').limit(100).onSnapshot(function(snap){
+    var a=[]; snap.forEach(function(d){ var x=d.data(); x.id=d.id; a.push(x); }); state.violations=a; renderSanctions();
+  }, function(e){ console.error('violations sinxronizasiya xətası:', e); });
+}
+function stopAdminSanctionsSync(){
+  ['sanc','viol'].forEach(function(k){ if(_sancUnsubs[k]){ _sancUnsubs[k](); _sancUnsubs[k]=null; } });
+  state.sanctions=[]; state.violations=[];
+}
+function sanctionOf(email){
+  email=String(email||'').toLowerCase();
+  return state.sanctions.filter(function(x){return x.email===email;})[0]||null;
+}
+function sancTagHtml(email){
+  var x=sanctionOf(email); if(!x) return '';
+  if(x.status==='banned') return '<span class="tag hold" style="background:#111;color:#fff">Bloklanıb</span>';
+  if(x.status==='watch') return '<span class="tag hold" style="background:var(--warn);color:#fff">Nəzarətdə (son xəbərdarlıq)</span>'+(x.repeatViolation?' <span class="tag hold" style="background:var(--nar);color:#fff">Təkrar pozuntu!</span>':'');
+  return '<span class="tag wait">Nəzarət götürülüb</span>';
+}
+function sancButtonsHtml(email){
+  if(!email) return '';
+  var x=sanctionOf(email), e=esc(email);
+  var b='';
+  if(!x || x.status==='cleared'){
+    b+='<button class="btn sm" style="background:var(--warn);color:#fff;width:auto" onclick="adminSanction(\''+e+'\',\'watch\')">Nəzarətə al</button>';
+    b+='<button class="btn sm" style="background:var(--nar);color:#fff;width:auto" onclick="adminSanction(\''+e+'\',\'ban\')">Blokla</button>';
+  } else if(x.status==='watch'){
+    b+='<button class="btn sm" style="background:var(--nar);color:#fff;width:auto" onclick="adminSanction(\''+e+'\',\'ban\')">Blokla</button>';
+    b+='<button class="btn sm ghost" style="width:auto" onclick="adminSanction(\''+e+'\',\'clear\')">Nəzarətdən çıxar</button>';
+  } else if(x.status==='banned'){
+    b+='<button class="btn sm ghost" style="width:auto" onclick="adminSanction(\''+e+'\',\'unban\')">Bloku qaldır</button>';
+  }
+  return b;
+}
+function adminSanction(email, action, preReason, skipPrompt){
+  if(!state.adminAuth){ toast('Yalnız admin'); return; }
+  if(!fbFunctions){ toast('Server bağlantısı yoxdur'); return; }
+  email=String(email||'').trim().toLowerCase();
+  var reason='';
+  if(action==='watch'||action==='ban'){
+    reason = skipPrompt ? String(preReason||'') : prompt((action==='ban'?'HƏMİŞƏLİK BLOK. ':'SON XƏBƏRDARLIQ. ')+email+' üçün səbəbi yaz (istifadəçiyə e-poçtla göndəriləcək):', preReason||'');
+    if(reason===null) return;
+    reason=reason.trim();
+    if(reason.length<5){ toast('Səbəb yazılmalıdır (ən azı 5 simvol)'); return; }
+  }
+  var extra='';
+  if(action==='ban'){
+    var act=state.bookings.filter(function(b){
+      return (b.status==='hold'||b.status==='complaint') && (b.email===email || b.hostEmail===email);
+    }).length;
+    if(act) extra='\n\nDİQQƏT: bu şəxslə bağlı '+act+' aktiv rezervasiya var. Blokdan sonra onları əl ilə həll etməlisən (məs. qonağa geri ödəniş).';
+  }
+  var msgs={
+    watch:email+' nəzarətə (son xəbərdarlıq) alınsın? İstifadəçiyə xəbərdarlıq e-poçtu gedəcək.',
+    ban:email+' HƏMİŞƏLİK bloklansın?\n\nHesab, bütün elanlar və giriş bağlanacaq. FİN, şəxsiyyət şəkli, IBAN və VÖEN yadda saxlanacaq ki, yeni hesabla qayıda bilməsin.',
+    clear:email+' nəzarətdən çıxarılsın?',
+    unban:email+' üçün blok qaldırılsın?\n\nHesab yenidən admin yoxlamasına düşəcək, elanları moderasiyaya qayıdacaq.'
+  };
+  if(!confirm(msgs[action]+extra)) return;
+  fbFunctions.httpsCallable('adminSanctionUser')({email:email, action:action, reason:reason}).then(function(res){
+    var n=(res&&res.data&&res.data.listingsAffected)||0;
+    toast(action==='ban'?('Bloklandı'+(n?(' ('+n+' elan gizlədildi)'):'')):(action==='watch'?'Nəzarətə alındı, xəbərdarlıq göndərildi':(action==='clear'?'Nəzarət götürüldü':'Blok qaldırıldı')));
+  }).catch(function(err){
+    toast((err&&err.message)||'Əməliyyat alınmadı');
+  });
+}
+function sancFromForm(action){
+  var e=document.getElementById('sancEmail'), r=document.getElementById('sancReason');
+  var email=(e.value||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast('E-poçtu düzgün yaz'); return; }
+  var reason=(r.value||'').trim();
+  if(reason.length<5){ toast('Səbəb yazılmalıdır (ən azı 5 simvol)'); return; }
+  /* səbəb artıq formdadır: prompt-a hazır mətn kimi ötürülür */
+  adminSanction(email, action, reason, true);
+  e.value=''; r.value='';
+}
+var VIOL_LABELS={'phone':'telefon nömrəsi','link':'link / sosial şəbəkə / e-poçt','split-phone':'bölünmüş telefon nömrəsi','split-link':'bölünmüş link / sosial şəbəkə'};
+function renderSanctions(){
+  var el=document.getElementById('sanclist'); if(!el) return;
+  var active=state.sanctions.filter(function(x){return x.status==='watch'||x.status==='banned';});
+  var repeat=active.filter(function(x){return x.status==='watch'&&x.repeatViolation;}).length;
+  var cEl=document.getElementById('sanccount');
+  if(cEl) cEl.textContent = active.length?('('+active.length+(repeat?(', ⚠'+repeat):'')+')'):'';
+  var order={watch:0,banned:1,cleared:2};
+  var list=state.sanctions.slice().sort(function(a,b){
+    var ra=(a.status==='watch'&&a.repeatViolation)?-1:order[a.status]; var rb=(b.status==='watch'&&b.repeatViolation)?-1:order[b.status];
+    if(ra!==rb) return ra-rb; return (b.updatedAt||0)-(a.updatedAt||0);
+  });
+  if(!list.length){
+    el.innerHTML='<div class="empty"><h3>Nəzarətdə və ya bloklu istifadəçi yoxdur</h3><p>Mesajlar, müştərilər və ev sahibləri bölmələrindəki düymələrlə və ya yuxarıdakı formla əlavə edə bilərsən.</p></div>';
+  } else {
+    el.innerHTML=list.map(function(x){
+      var ids=x.ids||{};
+      var hist=(x.history||[]).slice().reverse().slice(0,6).map(function(h){
+        return '<div><span>'+new Date(h.ts).toLocaleString('az-AZ')+' · '+esc(h.by||'')+' · '+({watch:'nəzarətə alındı',ban:'bloklandı',clear:'nəzarət götürüldü',unban:'blok qaldırıldı'}[h.action]||esc(h.action))+'</span><b>'+esc(h.reason||'')+'</b></div>';
+      }).join('');
+      return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
+        +'<h4>'+esc(x.name||x.email)+'</h4>'
+        +'<div class="m">'+esc(x.email)+(ids.phone?(' · '+esc(ids.phone)):'')+(ids.fin?(' · FİN '+esc(ids.fin)):'')+'</div>'
+        +'<div class="m">'+x.listingCount+' elan'+((ids.ibans&&ids.ibans.length)?(' · IBAN '+esc(ids.ibans[0].slice(0,8))+'…'):'')+((ids.voens&&ids.voens.length)?(' · VÖEN '+esc(ids.voens[0])):'')+'</div>'
+        +'<div style="margin-top:6px">'+sancTagHtml(x.email)+'</div>'
+        +(x.status==='watch'&&x.repeatViolation?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)"><div><span style="color:var(--nar);font-weight:800">⚠ Nəzarətdə olduğu halda yenə qadağan olunmuş məzmun göndərməyə çalışdı ('+new Date(x.lastViolationAt||0).toLocaleString('az-AZ')+'). Qərar verin.</span></div></div>':'')
+        +(x.linkedTo?'<div class="m" style="color:var(--nar)">Əlaqəli əvvəlki hesab: '+esc(x.linkedTo)+'</div>':'')
+        +'<div class="m"><b>Səbəb:</b> '+esc(x.reason||'—')+'</div>'
+        +(hist?'<details style="margin-top:6px"><summary style="cursor:pointer;font-weight:700">Tarixçə</summary><div class="split" style="margin-top:6px">'+hist+'</div></details>':'')
+        +'</div><div class="act" style="display:grid;gap:8px;align-content:start">'+sancButtonsHtml(x.email)+'</div></div>';
+    }).join('');
+  }
+  var vEl=document.getElementById('violist'); if(!vEl) return;
+  if(!state.violations.length){ vEl.innerHTML='<div class="empty"><h3>Bloklanmış cəhd yoxdur</h3></div>'; return; }
+  vEl.innerHTML=state.violations.map(function(v){
+    return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
+      +'<div class="m"><b>'+esc(v.email)+'</b> · '+new Date(v.ts).toLocaleString('az-AZ')+' · '+esc(VIOL_LABELS[v.type]||v.type)+'</div>'
+      +'<div class="m" style="word-break:break-word">«'+esc(v.text||'')+'»</div>'
+      +'<div style="margin-top:6px">'+sancTagHtml(v.email)+'</div>'
+      +'</div><div class="act" style="display:grid;gap:8px;align-content:start">'+sancButtonsHtml(v.email)+'</div></div>';
+  }).join('');
+}
+
 function renderAdminMessages(){
   var el=document.getElementById('msglist'); if(!el) return;
   document.getElementById('msgcount').textContent = state.chatsAdmin.length?('('+state.chatsAdmin.length+')'):'';
@@ -1592,7 +1748,11 @@ function renderAdminMessages(){
       +'<h4>'+esc(c.listingTitle||'')+'</h4>'
       +'<div class="m">Qonaq: '+esc(c.guestName||'')+' ('+esc(c.guestEmail)+') · Ev sahibi: '+esc(c.hostName||'')+' ('+esc(c.hostEmail)+')</div>'
       +'<div class="m">'+(c.messages?c.messages.length:0)+' mesaj · son fəaliyyət: '+(c.lastAt?new Date(c.lastAt).toLocaleString('az-AZ'):'—')+'</div>'
-      +'</div><div class="act"><button class="btn sm ghost" onclick="openChatById(\''+c.id+'\')">Bax</button></div></div>';
+      +'<div style="margin-top:6px">'+(sancTagHtml(c.hostEmail)?('Ev sahibi: '+sancTagHtml(c.hostEmail)+' '):'')+(sancTagHtml(c.guestEmail)?('Qonaq: '+sancTagHtml(c.guestEmail)):'')+'</div>'
+      +'</div><div class="act" style="display:grid;gap:8px;align-content:start"><button class="btn sm ghost" onclick="openChatById(\''+c.id+'\')">Bax</button>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="m" style="margin:0">Ev sahibi:</span>'+sancButtonsHtml(c.hostEmail)+'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="m" style="margin:0">Qonaq:</span>'+sancButtonsHtml(c.guestEmail)+'</div>'
+      +'</div></div>';
   }).join('');
 }
 
@@ -1794,6 +1954,11 @@ function startOwnCustomerListener(email){
   _ownCustomerUnsub = db.collection('customers').doc(email).onSnapshot(function(snap){
     if(!snap.exists || !state.user){ first=false; return; }
     var data=snap.data();
+    if(data.status==='banned'){
+      toast('Hesabın qaydaların pozulmasına görə bloklanıb. Etiraz üçün salam.buralar.az@gmail.com ünvanına yaz.');
+      logout();
+      return;
+    }
     var prevStatus=state.user.status;
     state.user.status=data.status; state.user.rejectionReason=data.rejectionReason||null;
     state.user.verified=(data.status==='verified');
@@ -2012,6 +2177,11 @@ function googleSignIn(){
     db.collection('customers').doc(u.email).get().then(function(snap){
       if(snap.exists){
         var existing=snap.data();
+        if(existing.status==='banned'){
+          toast('Bu hesab bloklanıb. Etiraz üçün salam.buralar.az@gmail.com ünvanına yaz.');
+          if(fbAuth) fbAuth.signOut().catch(function(){});
+          return;
+        }
         state.user={name:existing.name, email:existing.email, phone:existing.phone, fin:existing.fin, uid:u.uid, verified:existing.status==='verified', status:existing.status, rejectionReason:existing.rejectionReason||null};
         save(); renderAuth(); renderBookings(); renderHost(); closeModal('loginModal'); startOwnCustomerListener(u.email); startUserChatSync(u.email); startSupportSync(u.email);
         if(existing.status==='rejected'){
@@ -2024,7 +2194,8 @@ function googleSignIn(){
     }).catch(function(e){ console.error('Qeydiyyat yoxlanışı xətası:', e); });
   }).catch(function(e){
     console.error('Google giriş xətası:', e);
-    toast('Google girişi alınmadı: '+e.message);
+    if(e && e.code==='auth/user-disabled') toast('Bu hesab bloklanıb. Etiraz üçün salam.buralar.az@gmail.com ünvanına yaz.');
+    else toast('Google girişi alınmadı: '+e.message);
   });
 }
 function previewIdPhoto(input){
@@ -2166,6 +2337,7 @@ function adminGoogleLogin(){
 }
 function adminLogout(){
   state.adminAuth=false;
+  stopAdminSanctionsSync();
   stopAdminChatSync();
   stopAdminSupportSync();
   document.getElementById('adminGate').style.display='flex';
@@ -2175,7 +2347,7 @@ function adminLogout(){
      qonaq/ev sahibi kimi giriş edibsə, onun ümumi sessiyası (state.user) ayrıca saxlanılır və
      logout() ilə çıxılmalıdır. */
 }
-var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','msg','support','fin'];
+var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','msg','support','sanc','fin'];
 function goSub(s){
   state.sub=s;
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
@@ -4239,6 +4411,7 @@ function custTag(status){
   if(status==='verified') return '<span class="tag done">Təsdiqlənib</span>';
   if(status==='flagged') return '<span class="tag hold">Admin nəzarətində</span>';
   if(status==='rejected') return '<span class="tag hold" style="background:var(--nar);color:#fff">Rədd edilib</span>';
+  if(status==='banned') return '<span class="tag hold" style="background:#111;color:#fff">Bloklanıb</span>';
   return '<span class="tag wait">Yoxlanılmayıb</span>';
 }
 function renderCustomers(){
@@ -4286,8 +4459,9 @@ function renderCustomers(){
       +(c.status==='rejected'&&c.rejectionReason?'<div class="split" style="border-color:var(--nar)"><div><span style="color:var(--nar)">✕ İmtina səbəbi: '+esc(c.rejectionReason)+'</span></div></div>':'')
       +'<div class="split" style="margin-top:8px">'+stays+'</div>'
       +'</div><div class="act">'
-      +(c.status!=='verified'?'<button class="btn sm ok" onclick="approveCustomer(\''+c.email+'\')">Təsdiqlə</button>':'')
-      +(c.status!=='rejected'?'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="rejectCustomer(\''+c.email+'\')">İmtina et</button>':'')
+      +(c.status!=='verified'&&c.status!=='banned'?'<button class="btn sm ok" onclick="approveCustomer(\''+c.email+'\')">Təsdiqlə</button>':'')
+      +(c.status!=='rejected'&&c.status!=='banned'?'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="rejectCustomer(\''+c.email+'\')">İmtina et</button>':'')
+      +'<div style="margin-top:8px;display:grid;gap:6px">'+(sancTagHtml(c.email)?('<div>'+sancTagHtml(c.email)+'</div>'):'')+sancButtonsHtml(c.email)+'</div>'
       +'</div></div>';
   }).join('');
 }
@@ -4381,6 +4555,7 @@ function renderHostsAdmin(){
       +'<div class="m">'+(g.whatsapp?('WhatsApp: <a href="https://wa.me/'+esc(g.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(g.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
       +'<div class="m"><b>'+g.listings.length+'</b> elan · '+breakdown+'</div>'
       +'<div class="split" style="margin-top:8px">'+rows+'</div>'
+      +(g.email?('<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+(sancTagHtml(g.email)||'')+sancButtonsHtml(g.email)+'</div>'):'')
       +'</div></div>';
   }).join('');
 }
