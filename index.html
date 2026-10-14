@@ -3047,7 +3047,9 @@ function leftText(b){
   var h=Math.floor(ms/3600000), d=Math.floor(h/24);
   return d>0 ? ("Köçürməyə "+d+" gün qalıb") : ("Köçürməyə "+h+" saat qalıb");
 }
-function hostContactHtml(lid){
+function hostContactHtml(lid,b){
+  /* Ödəniş alınmayınca (gözləyir/vaxtı bitib/uğursuz/ləğv) ev sahibinin əlaqəsi göstərilmir */
+  if(b && !(['hold','complaint','released'].indexOf(b.status)>=0 && b.paymentStatus==='paid')) return '<span class="m">Ödənişdən sonra göstəriləcək</span>';
   var x=byId(lid);
   if(!x || !x.whatsapp) return '<span style="color:var(--nar)">Qeyd edilməyib</span>';
   return '<a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+' →</a>';
@@ -3066,7 +3068,7 @@ function renderBookings(){
       +'<h4>'+esc(b.title)+'</h4>'
       +'<div class="m">'+esc(b.city)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
       +'<div class="m">Kod: '+b.code+' · '+esc(b.bank)+' · giriş '+esc(R.cin)+'</div>'
-      +(b.status!=='refunded'?'<div class="m">Ev sahibi ('+esc(b.host)+') ilə əlaqə: '+hostContactHtml(b.lid)+'</div>':'')
+      +(b.status!=='refunded'?'<div class="m">Ev sahibi ('+esc(b.host)+') ilə əlaqə: '+hostContactHtml(b.lid,b)+'</div>':'')
       +'<div style="margin-top:8px">'+statusTag(b.status,b)+(b.status==='hold'&&!(b.paymentStatus==='pending'||b.paymentStatus==='failed')?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
       +(b.complaint?'<div class="split"><div><span>Şikayət: '+esc(b.complaint.reason)+'</span><b>'+(b.complaint.st==='pending'?'yoxlanılır':(b.complaint.st==='approved'?'təsdiqləndi':'rədd edildi'))+'</b></div></div>':'')
       +(b.status==='hold'?'<div class="split"><div><span>Ev sahibinə çatacaq</span><b>'+az2(b.hostGets)+'</b></div><div><span>Platforma komissiyası</span><b>'+az2(b.platform)+'</b></div></div>':'')
