@@ -1930,7 +1930,7 @@ function renderSupportAdmin(){
   var el=document.getElementById('supportlist'); if(!el) return;
   var unreadCount = state.supportAdmin.filter(function(t){return t.adminUnread;}).length;
   var countEl=document.getElementById('supportcount');
-  if(countEl) countEl.textContent = unreadCount?('('+unreadCount+')'):(state.supportAdmin.length?('('+state.supportAdmin.length+')'):'');
+  if(countEl) countEl.textContent = unreadCount?('('+unreadCount+')'):'';
   if(!state.supportAdmin.length){ el.innerHTML='<div class="empty"><h3>Hələ dəstək mesajı yoxdur</h3><p>İstifadəçilərin admin komandasına birbaşa yazdığı mesajlar burada görünəcək.</p></div>'; return; }
   var list = state.supportAdmin.slice().sort(function(a,b){return (b.lastAt||0)-(a.lastAt||0);});
   el.innerHTML = list.map(function(t){
@@ -2849,7 +2849,7 @@ function book(id){
     }
     toast(state.user.status==='rejected'
       ? "Qeydiyyatın rədd edilib, bron edə bilməzsən"
-      : "Hesabın hələ admin təsdiqini gözləyir, təsdiqləndikdən sonra bron edə bilərsən");
+      : "Hesabın hələ admin təsdiqini gözləyir, təsdiqləndikdən sonra bron edə bilərsən [status: "+state.user.status+" | "+state.user.email+"]");
     return;
   }
   var x=byId(id);
