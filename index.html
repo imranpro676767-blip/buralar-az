@@ -2831,6 +2831,22 @@ function book(id){
      şübhəli işarələnmiş) istifadəçi rahatlıqla bron edib ödəyə bilirdi. Server tərəfdə də eyni şərt
      firestore.rules-da təkrarlanır ki, brauzer konsolundan bu yoxlamanı keçmək mümkün olmasın. */
   if(state.user && state.user.status!=='verified'){
+    /* Yerli status köhnə ola bilər (avto-təsdiq serverdə sonradan baş verir) — bloklamazdan əvvəl
+       Firestore-dan təzə statusu oxuyub yenidən cəhd edirik. */
+    if(!state._statusRechecking && fbOnline && db){
+      state._statusRechecking=true;
+      toast('Hesab statusu yoxlanılır…');
+      db.collection('customers').doc(state.user.email).get({source:'server'}).then(function(snap){
+        state._statusRechecking=false;
+        if(snap.exists && state.user){
+          var d=snap.data();
+          state.user.status=d.status; state.user.verified=(d.status==='verified'); state.user.rejectionReason=d.rejectionReason||null;
+          save(); renderAuth();
+        }
+        book(id);
+      }).catch(function(){ state._statusRechecking=false; toast('Status yoxlanıla bilmədi, səhifəni yeniləyib yenidən cəhd et'); });
+      return;
+    }
     toast(state.user.status==='rejected'
       ? "Qeydiyyatın rədd edilib, bron edə bilməzsən"
       : "Hesabın hələ admin təsdiqini gözləyir, təsdiqləndikdən sonra bron edə bilərsən");
@@ -4631,15 +4647,22 @@ function exportCustomersCsv(){
   downloadCsv('buralar-musteriler-'+today()+'.csv', headers, rows);
   toast('CSV yükləndi ('+rows.length+' müştəri)');
 }
+/* Pulu real ödənilmiş bron: status hold/complaint/released və ödəniş hələ gözlənilmir, uğursuz olmayıb,
+   vaxtı bitməyib, məbləğ uyğunsuzluğu yoxdur. Ödənilməmiş ("Ödəniş gözlənilir", "vaxtı bitib",
+   "alınmadı") bronlar dövriyyəyə daxil edilmir. */
+function isPaidBooking(b){
+  if(['hold','complaint','released'].indexOf(b.status)<0) return false;
+  return ['pending','failed','expired','amount_mismatch'].indexOf(b.paymentStatus)<0;
+}
 function renderAdmin(){
   autoRelease();
-  var bs=state.bookings.filter(function(b){return b.status!=='refunded';});
-  var gmv=state.bookings.reduce(function(s,b){return s+(b.status==='refunded'?0:b.total);},0);
-  var held=state.bookings.filter(function(b){return b.status==='hold'||b.status==='complaint';}).reduce(function(s,b){return s+b.total;},0);
-  var paid=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
-  var com=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.platform;},0);
-  var pendCom=state.bookings.filter(function(b){return b.status==='hold';}).reduce(function(s,b){return s+b.platform;},0);
-  var refunded=state.bookings.filter(function(b){return b.status==='refunded';}).reduce(function(s,b){return s+b.total;},0);
+  var paidB=state.bookings.filter(isPaidBooking);
+  var gmv=paidB.reduce(function(s,b){return s+b.total;},0);
+  var held=paidB.filter(function(b){return b.status==='hold'||b.status==='complaint';}).reduce(function(s,b){return s+b.total;},0);
+  var paid=paidB.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
+  var com=paidB.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.platform;},0);
+  var pendCom=paidB.filter(function(b){return b.status==='hold';}).reduce(function(s,b){return s+b.platform;},0);
+  var refunded=state.bookings.filter(function(b){return b.status==='refunded' && b.paymentStatus==='paid';}).reduce(function(s,b){return s+b.total;},0);
   document.getElementById('adminstats').innerHTML=
      '<div class="stat"><div class="k">Ümumi dövriyyə</div><div class="v money">'+az2(gmv)+'</div></div>'
     +'<div class="stat"><div class="k">Saxlanılan vəsait</div><div class="v money">'+az2(held)+'</div></div>'
