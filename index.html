@@ -382,7 +382,9 @@ form.frm .phoneinput input,.box .phoneinput input{border:0;background:transparen
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));background:var(--ink);color:#F4EFE4;padding:12px 18px;border-radius:999px;font-weight:700;font-size:14.5px;z-index:95;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .18s;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
 details>summary::-webkit-details-marker{display:none}
-footer{background:var(--ink);color:rgba(244,239,228,.7);padding:26px 0;font-size:14px}
+footer{background:var(--ink);color:rgba(244,239,228,.7);padding:14px 0;font-size:13.5px;position:sticky;bottom:0;z-index:35;margin-top:auto;border-top:1px solid rgba(255,255,255,.08)}
+body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+body>footer{flex:none}
 footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 </style>
 </head>
@@ -1224,7 +1226,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 </div>
 
 <footer><div class="wrap">
-  <div>buralar.az — Azərbaycanda gündəlik kirayə platforması</div>
+  <div>buralar.az — Azərbaycanda gündəlik ev kirayəsi platforması</div>
   <div>Dəstək: salam.buralar.az@gmail.com · +994 50 331 92 99 · <a href="#" onclick="openModal('privacyModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">Məxfilik siyasəti</a> · <a href="#" onclick="openModal('tosModal');return false" style="color:inherit;text-decoration:underline;font-weight:700">İstifadə şərtləri</a></div>
 </div></footer>
 <div class="toast" id="toast"></div>
