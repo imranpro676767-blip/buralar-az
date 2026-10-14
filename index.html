@@ -643,6 +643,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <option value="game">Oyun zalı</option>
             <option value="bathroom">Ümumi sanuzel</option>
             <option value="pool">Hovuz</option>
+            <option value="kitchen">Mətbəx</option>
             <option value="hamam">Hamam</option>
             <option value="yardsit">Həyət oturma yeri</option>
             <option value="yard">Həyət</option>
@@ -720,6 +721,27 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <label class="full">Hovuz növü
             <select id="rm-p-type"><option>Daşma (overflow) tipli hovuz</option><option>Konstruktor (hazır çərçivəli) hovuz</option><option>Beton, tikinti hovuz</option><option>Jakkuzi</option></select>
           </label>
+        </div>
+
+        <div id="rm-kitchen" class="rm-block full" style="display:none">
+          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Mətbəxdə olanlar</div>
+          <div class="togs full">
+            <div class="tog"><input type="checkbox" id="rm-k-stove" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-stove" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Ocaq / plitə</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-oven" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-oven" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Soba (duxovka)</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-micro" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-micro" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Mikrodalğalı soba</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-fridge" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-fridge" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Soyuducu</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-freezer" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-freezer" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Dondurucu</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-dish" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-dish" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qabyuyan</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-kettle" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-kettle" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Çaydan / elektrik çaydan</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-coffee" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-coffee" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qəhvə maşını</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-toaster" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-toaster" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Toster</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-blender" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-blender" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Blender</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-pots" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-pots" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qazan-qab</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-plates" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-plates" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Boşqab, stəkan, çəngəl-bıçaq</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-hood" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-hood" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Havalandırma (aspirator)</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-table" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-table" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Yemək masası</label></div>
+            <div class="tog"><input type="checkbox" id="rm-k-water" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-k-water" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Su qabı / içməli su</label></div>
+          </div>
         </div>
 
         <div id="rm-hamam" class="rm-block full" style="display:none">
@@ -2005,7 +2027,7 @@ function compressImageFile(file, maxDim, quality){
     img.src = url;
   });
 }
-function uploadImageToStorage(file, pathPrefix){
+function _uploadImageOnce(file, pathPrefix){
   if(!fbOnline) return Promise.reject(new Error('Server bağlantısı yoxdur'));
   return compressImageFile(file).then(function(out){
     var isJpeg = out.type==='image/jpeg';
@@ -2550,6 +2572,8 @@ function roomsHtmlFor(x){
       checklist = roomAmenChecklistHtml(BATHROOM_TOILETRY_OPTIONS, r.toiletries);
     } else if(r.kind==='gym'){
       checklist = roomAmenChecklistHtml(GYM_EQUIPMENT_OPTIONS, r.equipment);
+    } else if(r.kind==='kitchen'){
+      checklist = roomAmenChecklistHtml(KITCHEN_OPTIONS, r.kitchenItems);
     } else if(r.kind==='hamam'){
       lines.push(r.hamamType);
       checklist = roomAmenChecklistHtml(HAMAM_AMENITY_OPTIONS, r.hamamAmenities);
@@ -3238,6 +3262,7 @@ function updateRoomKindUI(){
   document.getElementById('rm-game').style.display = k==='game'?'grid':'none';
   document.getElementById('rm-bathroom').style.display = k==='bathroom'?'grid':'none';
   document.getElementById('rm-gym').style.display = k==='gym'?'grid':'none';
+  document.getElementById('rm-kitchen').style.display = k==='kitchen'?'grid':'none';
   document.getElementById('rm-hamam').style.display = k==='hamam'?'grid':'none';
   document.getElementById('rm-yardsit').style.display = k==='yardsit'?'grid':'none';
   document.getElementById('rm-yard').style.display = k==='yard'?'grid':'none';
@@ -3273,7 +3298,9 @@ function renderRoomPhotoGrid(){
   if(el) el.textContent = "Bu ev üçün qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
 }
 function removeCurrentRoomPhoto(i){ state.currentRoomPhotos.splice(i,1); state.currentRoomPhotoFiles.splice(i,1); renderRoomPhotoGrid(); }
-var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
+var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',kitchen:'Mətbəx',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
+var KITCHEN_OPTIONS=["Ocaq / plitə","Soba (duxovka)","Mikrodalğalı soba","Soyuducu","Dondurucu","Qabyuyan","Çaydan / elektrik çaydan","Qəhvə maşını","Toster","Blender","Qazan-qab","Boşqab, stəkan, çəngəl-bıçaq","Havalandırma (aspirator)","Yemək masası","Su qabı / içməli su"];
+var KITCHEN_MAP=[["stove", "Ocaq / plitə"], ["oven", "Soba (duxovka)"], ["micro", "Mikrodalğalı soba"], ["fridge", "Soyuducu"], ["freezer", "Dondurucu"], ["dish", "Qabyuyan"], ["kettle", "Çaydan / elektrik çaydan"], ["coffee", "Qəhvə maşını"], ["toaster", "Toster"], ["blender", "Blender"], ["pots", "Qazan-qab"], ["plates", "Boşqab, stəkan, çəngəl-bıçaq"], ["hood", "Havalandırma (aspirator)"], ["table", "Yemək masası"], ["water", "Su qabı / içməli su"]];
 var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
 function addRoomToPending(){
   var kind=document.getElementById('rm-kind').value;
@@ -3320,6 +3347,9 @@ function addRoomToPending(){
     if(ck('rm-gy-punchbag')) room.equipment.push('Boks kisəsi');
     if(ck('rm-gy-mirror')) room.equipment.push('Güzgülü divar');
     if(ck('rm-gy-ac')) room.equipment.push('Kondisioner');
+  } else if(kind==='kitchen'){
+    room.kitchenItems=[];
+    KITCHEN_MAP.forEach(function(m){ if(ck('rm-k-'+m[0])) room.kitchenItems.push(m[1]); });
   } else if(kind==='hamam'){
     room.hamamType=v('rm-h-type'); room.hamamAmenities=[];
     if(ck('rm-h-towel')) room.hamamAmenities.push('Dəsmal');
@@ -3369,6 +3399,7 @@ function addRoomToPending(){
   document.getElementById('rm-gy-bench').checked=false; document.getElementById('rm-gy-yogamat').checked=false;
   document.getElementById('rm-gy-punchbag').checked=false; document.getElementById('rm-gy-mirror').checked=false;
   document.getElementById('rm-gy-ac').checked=false;
+  KITCHEN_MAP.forEach(function(m){ var e=document.getElementById('rm-k-'+m[0]); if(e) e.checked=['stove','fridge','pots','plates','kettle'].indexOf(m[0])>=0; });
   document.getElementById('rm-h-towel').checked=true; document.getElementById('rm-h-slippers').checked=false;
   document.getElementById('rm-h-robe').checked=false; document.getElementById('rm-h-shower').checked=true;
   document.getElementById('rm-h-seating').checked=true;
@@ -3389,6 +3420,7 @@ function roomSummary(r){
   if(r.kind==='game') return [r.domino?'Domino':null,r.nard?'Nərd':null,r.billiard?'Bilyard':null,r.tennis?'Stolüstü tennis':null,r.foosball?'Stolüstü futbol':null,r.dart?'Dartqın':null,r.airhockey?'Hava hokkeyi':null,r.ps?('PlayStation'+(r.psGen?' ('+r.psGen+')':'')):null].filter(Boolean).join(', ')||'Oyun ləvazimatı qeyd edilməyib';
   if(r.kind==='bathroom') return r.showerType+(r.toiletries&&r.toiletries.length?' · '+r.toiletries.join(', '):'');
   if(r.kind==='gym') return (r.equipment&&r.equipment.length)?r.equipment.join(', '):'Avadanlıq qeyd edilməyib';
+  if(r.kind==='kitchen') return (r.kitchenItems&&r.kitchenItems.length)?r.kitchenItems.join(', '):'Ləvazimat qeyd edilməyib';
   if(r.kind==='hamam') return r.hamamType+(r.hamamAmenities&&r.hamamAmenities.length?' · '+r.hamamAmenities.join(', '):'');
   if(r.kind==='yardsit') return (r.yardSitFeatures&&r.yardSitFeatures.length)?r.yardSitFeatures.join(', '):'Xüsusiyyət qeyd edilməyib';
   if(r.kind==='yard') return (r.yardFeatures&&r.yardFeatures.length)?r.yardFeatures.join(', '):'Xüsusiyyət qeyd edilməyib';
@@ -3438,6 +3470,57 @@ function lightboxNav(d){
   renderLightbox();
 }
 
+/* Şəkil yükləmə: 60 san. vaxt aşımı + 2 təkrar cəhd (telefonda zəif şəbəkədə "sonsuz yüklənir" vəziyyətinin qarşısı) */
+function uploadImageToStorage(file, pathPrefix){
+  var attempt=0;
+  function once(){
+    attempt++;
+    return new Promise(function(resolve,reject){
+      var done=false;
+      var timer=setTimeout(function(){ if(!done){ done=true; reject(new Error('Şəkil yükləmə vaxtı bitdi')); } }, 60000);
+      _uploadImageOnce(file, pathPrefix).then(function(u){ if(!done){ done=true; clearTimeout(timer); resolve(u); } },
+        function(er){ if(!done){ done=true; clearTimeout(timer); reject(er); } });
+    }).catch(function(er){
+      if(attempt<3) return once();
+      throw er;
+    });
+  }
+  return once();
+}
+/* Tapşırıqları eyni anda yalnız "limit" qədər icra edir (25+ şəklin hamısını eyni anda sıxıb yükləmək telefonu donduruurdu) */
+function runPool(tasks, limit){
+  var res=new Array(tasks.length), i=0;
+  function worker(){
+    if(i>=tasks.length) return Promise.resolve();
+    var idx=i++;
+    return tasks[idx]().then(function(r){ res[idx]=r; }).then(worker);
+  }
+  var ws=[]; for(var k=0;k<Math.min(limit,tasks.length);k++) ws.push(worker());
+  return Promise.all(ws).then(function(){ return res; });
+}
+/* Elanın üz və otaq şəkillərini növbə ilə yükləyir, düymədə irəliləyişi göstərir. */
+function uploadListingMedia(id, rooms, btn){
+  var tasks=[], total=0, done=0;
+  function track(p){ total++; return function(){ return p().then(function(r){ done++; if(btn) btn.textContent='Şəkillər yüklənir ('+done+'/'+total+')...'; return r; }); }; }
+  var coverIdx=-1;
+  tasks.push(track(function(){ return state.coverFile ? uploadImageToStorage(state.coverFile,'listings/'+id+'/cover') : Promise.resolve(state.coverData); })); coverIdx=0;
+  var map=[];
+  rooms.forEach(function(r,ri){
+    var files=r.photoFiles||[];
+    r.photos.forEach(function(ph,pi){
+      map.push([ri,pi]);
+      tasks.push(track(function(){ return files[pi] ? uploadImageToStorage(files[pi],'listings/'+id+'/rooms/'+r.id) : Promise.resolve(ph); }));
+    });
+  });
+  /* total əvvəlcədən məlum olsun deyə sayğacı hesablayırıq (track artıq total-ı artırıb) */
+  if(btn) btn.textContent='Şəkillər yüklənir (0/'+total+')...';
+  return runPool(tasks,3).then(function(urls){
+    var arrays=rooms.map(function(){ return []; });
+    map.forEach(function(m,i){ arrays[m[0]][m[1]]=urls[i+1]; });
+    return [urls[0], arrays];
+  });
+}
+
 function addListing(e){
   e.preventDefault();
   if(needLogin()) return;
@@ -3471,15 +3554,7 @@ function addListing(e){
   /* Təxmin edilməsi mümkün olmayan ID (əvvəl vaxta əsaslanırdı). Tip rəqəm olaraq qalır ki, rezervasiya/qaydalar pozulmasın. */
   var id; do{ var _r=new Uint32Array(2); (window.crypto||window.msCrypto).getRandomValues(_r); id=(_r[0]&0xFFFFF)*4294967296+_r[1]; }while(id<1e12 || state.custom.some(function(c){return c.id===id;}));
   var pendingRoomsSnapshot=state.pendingRooms.slice();
-  var coverUpload = state.coverFile
-    ? uploadImageToStorage(state.coverFile,'listings/'+id+'/cover')
-    : Promise.resolve(state.coverData);
-  var roomUploads = pendingRoomsSnapshot.map(function(r){
-    var files=r.photoFiles||[];
-    return Promise.all(r.photos.map(function(ph,i){
-      return files[i] ? uploadImageToStorage(files[i],'listings/'+id+'/rooms/'+r.id) : Promise.resolve(ph);
-    }));
-  });
+  var mediaUpload = uploadListingMedia(id, pendingRoomsSnapshot, submitBtn);
   /* Eyni evin pis rəylərdən sonra silinib başqa (və ya eyni) Gmail hesabından yenidən
      yerləşdirilməsinin qarşısını almaq üçün "barmaq izi" çıxarırıq: ünvan, xəritə mövqeyi
      və bütün şəkillərin heş kodları. Bunlar serverdəki Cloud Function tərəfindən gizli
@@ -3489,11 +3564,12 @@ function addListing(e){
   var geoBucket = geoBucketOf(lat,lng);
   var allPhotoFiles = ([]).concat(state.coverFile?[state.coverFile]:[]);
   pendingRoomsSnapshot.forEach(function(r){ (r.photoFiles||[]).forEach(function(f){ if(f) allPhotoFiles.push(f); }); });
-  var photoHashesPromise = Promise.all(allPhotoFiles.map(function(f){ return sha256Hex(f); })).then(function(hashes){
+  var photoHashesPromise = runPool(allPhotoFiles.map(function(f){ return function(){ return sha256Hex(f); }; }),3).then(function(hashes){
     return hashes.filter(Boolean);
   });
 
-  Promise.all([coverUpload, Promise.all(roomUploads), addrFingerprintPromise, photoHashesPromise]).then(function(results){
+  Promise.all([mediaUpload, addrFingerprintPromise, photoHashesPromise]).then(function(r3){
+    var results=[r3[0][0], r3[0][1], r3[1], r3[2]];
     var coverUrl=results[0];
     var roomPhotoArrays=results[1];
     var addrFingerprint=results[2];
@@ -4199,17 +4275,9 @@ function submitListingEdit(e){
   var newPrice=parseInt(v('h-price'),10)||x.p;
 
   var pendingRoomsSnapshot=state.pendingRooms.slice();
-  var coverUpload = state.coverFile
-    ? uploadImageToStorage(state.coverFile,'listings/'+id+'/cover')
-    : Promise.resolve(state.coverData);
-  var roomUploads = pendingRoomsSnapshot.map(function(r){
-    var files=r.photoFiles||[];
-    return Promise.all(r.photos.map(function(ph,i){
-      return files[i] ? uploadImageToStorage(files[i],'listings/'+id+'/rooms/'+r.id) : Promise.resolve(ph);
-    }));
-  });
+  var mediaUpload = uploadListingMedia(id, pendingRoomsSnapshot, submitBtn);
 
-  Promise.all([coverUpload, Promise.all(roomUploads)]).then(function(results){
+  mediaUpload.then(function(results){
     var coverUrl=results[0];
     var roomPhotoArrays=results[1];
     var roomsClean = pendingRoomsSnapshot.map(function(r,i){
