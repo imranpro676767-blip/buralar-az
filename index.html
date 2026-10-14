@@ -1099,7 +1099,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p style="color:var(--muted)">Versiya: <span id="tosVersionLabel"></span>. Bu şərtlər həm qonaqlara, həm də ev sahiblərinə aiddir. Qəbul etdiyiniz versiya, vaxt və (rezervasiya zamanı) texniki məlumatlar sübut məqsədilə saxlanılır.</p>
       <p><b>1. Platformanın rolu.</b> Buralar.az qonaqları və ev sahiblərini bir araya gətirən vasitəçi (marketplace) platformadır. Buralar.az evlərin sahibi, icarədarı, idarəçisi və ya operatoru deyil. İcarə münasibəti yalnız qonaq ilə ev sahibi arasında yaranır. Buralar.az bu münasibətin tərəfi deyil və evin vəziyyətinə, təsvirin dəqiqliyinə, təhlükəsizliyinə və xidmət keyfiyyətinə görə cavabdeh deyil.</p>
       <p><b>2. Hesab və doğrulama.</b> Rezervasiya etmək üçün qeydiyyat və şəxsiyyət doğrulaması (KYC) məcburidir. Admin saxta məlumat, şübhəli sənəd və ya təkrar qeydiyyat aşkar etdikdə hesabı rədd və ya blok edə bilər. Doğrulamanın keçməsi qonağın və ya ev sahibinin etibarlı və ya təhlükəsiz olmasına zəmanət demək deyil.</p>
-      <p><b>3. Rezervasiya və ödəniş.</b> Ödəniş Epoint ödəniş sistemi vasitəsilə onlayn həyata keçirilir. Rezervasiya yalnız ödəniş uğurla alındıqdan sonra təsdiqlənir. Ev sahibinin payı və platformanın xidmət haqqı rezervasiya zamanı göstərilən məbləğlərə uyğun bölünür. Ödəniş edilməyən rezervasiya 45 dəqiqədən sonra avtomatik ləğv olunur.</p>
+      <p><b>3. Rezervasiya və ödəniş.</b> Ödəniş Epoint ödəniş sistemi vasitəsilə onlayn həyata keçirilir. Rezervasiya yalnız ödəniş uğurla alındıqdan sonra təsdiqlənir. Ev sahibinin payı və platformanın xidmət haqqı rezervasiya zamanı göstərilən məbləğlərə uyğun bölünür. Ödəniş edilməyən rezervasiya 10 dəqiqədən sonra avtomatik ləğv olunur.</p>
       <p><b>4. Şikayət və geri qaytarma.</b> Ev elandakı təsvirə tamamilə uyğun gəlmədikdə və ya ev sahibi girişi təmin etmədikdə qonaq şikayət göndərə bilər. Admin araşdırıb ödənişin geri qaytarılması barədə qərar verə bilər. Bu qərar yalnız ödənişin taleyinə aiddir və platformanın başqa heç bir məsuliyyəti yaratmır. Qonaq fikrini dəyişdiyinə görə geri qaytarma tələb edə bilməz.</p>
       <p><b>5. Davranış qaydaları.</b> Saxta rəy və saxta sənəd təqdim etmək, başqasının hesabına icazəsiz müdaxilə etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın bloklanmasına səbəb ola bilər. Yazışmalarda telefon nömrəsi, e-poçt, sosial şəbəkə (məs. Instagram, TikTok, Facebook), mesajlaşma tətbiqi (məs. WhatsApp, Telegram) və ya hər hansı xarici link paylaşmaq qadağandır: bu cür mesajlar sistem tərəfindən avtomatik dayandırılır və cəhd qeydə alınır. Qaydanı pozan istifadəçiyə son xəbərdarlıq verilə və hesabı nəzarətə götürülə bilər; təkrar pozuntu halında hesab həmişəlik bloklanır. Bloklanmış şəxs FİN, şəxsiyyət sənədi, bank (IBAN) və vergi (VÖEN) məlumatları əsasında tanınır və yeni hesab açmaq cəhdi avtomatik rədd edilir.</p>
       <p><b>6. Ev sahibinin öhdəlikləri.</b> Ev sahibi: (a) elan məlumatlarının, şəkillərin və qaydaların doğru olduğunu; (b) evi icarəyə vermək üçün qanuni hüququ və lazımi icazələri olduğunu; (c) evin yaşayış üçün təhlükəsiz olduğunu, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz, elektrik, isitmə və yanğın təhlükəsizliyi tələblərinin yerinə yetirildiyini; (d) risk mənbələri barədə (məsələn, hovuzun dərinliyi, hasarsız sahələr) qonaqları qabaqcadan xəbərdar etdiyini; (e) fərdi sığorta və ya mülki məsuliyyət sığortası barədə özü qərar verdiyini və Buralar.az-ın sığorta təmin etmədiyini bəyan və təsdiq edir. Evdə baş verən bütün hadisələr və itkilər üzrə birinci məsuliyyət ev sahibinə aiddir.</p>
@@ -2885,6 +2885,13 @@ function book(id){
   });
 }
 /* Epoint ödəniş səhifəsinə yönləndirmə. Məbləği server bron sənədindən götürür. */
+/* Ödənilməmiş bronu dərhal ləğv edir (tarixlər azad olur, yeni bron yaratmaq olar). */
+function cancelUnpaid(code){
+  if(!confirm('Bu bronu ləğv edib tarixləri azad edirsən?')) return;
+  fbFunctions.httpsCallable('cancelUnpaidBooking')({code:code}).then(function(){
+    toast('Bron ləğv edildi, tarixlər azad olundu');
+  }).catch(function(err){ toast((err&&err.message)||'Ləğv etmək alınmadı, yenidən cəhd et'); });
+}
 function payBooking(code){
   return fbFunctions.httpsCallable('createEpointPayment')({code:code}).then(function(r){
     window.location.href=r.data.url;
@@ -2900,7 +2907,7 @@ function handlePayReturn(){
     if(!p) return;
     history.replaceState(null,'',location.pathname);
     go('rez');
-    toast(p==='success'?"Ödəniş qəbul edildi, rezervasiya təsdiqlənir...":"Ödəniş alınmadı. Rezervasiyalarım bölməsindən yenidən cəhd edə bilərsən (45 dəqiqə ərzində)");
+    toast(p==='success'?"Ödəniş qəbul edildi, rezervasiya təsdiqlənir...":"Ödəniş alınmadı. Rezervasiyalarım bölməsindən yenidən cəhd edə bilərsən (10 dəqiqə ərzində)");
   }catch(e){}
 }
 /* Bron sənədini YALNIZ bunlardan biri Firestore-a yaza bilər (bax firestore.rules): admin, bronun
@@ -3065,7 +3072,7 @@ function renderBookings(){
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.total)+'</div>'
       +((b.status==='hold'&&(b.paymentStatus==='pending'||b.paymentStatus==='failed'))
-        ? '<button class="btn sm dark" onclick="payBooking(\''+b.code+'\')">Ödə</button>'
+        ? '<button class="btn sm dark" onclick="payBooking(\''+b.code+'\')">Ödə</button><button class="btn sm ghost" title="Bu bronu ləğv et və tarixləri azad et" onclick="cancelUnpaid(\''+b.code+'\')">✕ Ləğv et</button>'
         : b.status==='expired' ? '<span class="m">Tarixlər azad edilib</span>'
         : b.status==='hold'
         ? '<button class="btn sm ghost" onclick="openDetail('+b.lid+',\''+b.code+'\')">Evə bax</button>'
