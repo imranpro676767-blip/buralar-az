@@ -647,6 +647,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <option value="hamam">Hamam</option>
             <option value="yardsit">Həyət oturma yeri</option>
             <option value="yard">Həyət</option>
+            <option value="other">Digər şəkillər (ev / həyət)</option>
           </select>
         </label>
         <div></div>
@@ -721,6 +722,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <label class="full">Hovuz növü
             <select id="rm-p-type"><option>Daşma (overflow) tipli hovuz</option><option>Konstruktor (hazır çərçivəli) hovuz</option><option>Beton, tikinti hovuz</option><option>Jakkuzi</option></select>
           </label>
+        </div>
+
+        <div id="rm-other" class="rm-block full" style="display:none">
+          <label class="full">Bu sahənin adı (istəyə bağlı, məs. Giriş, Teras, Eyvan, Qarajın yanı)
+            <input id="rm-other-name" maxlength="40" placeholder="Digər şəkillər">
+          </label>
+          <div class="full" style="font-size:13px;color:var(--muted)">Yuxarıdakı siyahıda olmayan, evə və ya həyətə aid istənilən şəkli bura əlavə edə bilərsən. Bütün şəkillər birlikdə ev üçün maksimum 50 ola bilər.</div>
         </div>
 
         <div id="rm-kitchen" class="rm-block full" style="display:none">
@@ -2583,8 +2591,8 @@ function roomsHtmlFor(x){
       checklist = roomAmenChecklistHtml(YARD_FEATURE_OPTIONS, r.yardFeatures);
     }
     return '<div class="roomcard">'
-      +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img src="'+r.photos[0]+'" alt="'+ROOM_KIND_LABELS[r.kind]+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
-      +'<div><h4 style="font-size:15px">'+ROOM_KIND_LABELS[r.kind]+'</h4>'
+      +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img src="'+r.photos[0]+'" alt="'+esc(roomLabel(r))+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
+      +'<div><h4 style="font-size:15px">'+esc(roomLabel(r))+'</h4>'
       +(lines.length?'<div class="m" style="color:var(--muted);font-size:13.5px;font-weight:600">'+lines.map(esc).join(' · ')+'</div>':'')
       +checklist
       +'</div>'
@@ -3262,6 +3270,7 @@ function updateRoomKindUI(){
   document.getElementById('rm-game').style.display = k==='game'?'grid':'none';
   document.getElementById('rm-bathroom').style.display = k==='bathroom'?'grid':'none';
   document.getElementById('rm-gym').style.display = k==='gym'?'grid':'none';
+  document.getElementById('rm-other').style.display = k==='other'?'grid':'none';
   document.getElementById('rm-kitchen').style.display = k==='kitchen'?'grid':'none';
   document.getElementById('rm-hamam').style.display = k==='hamam'?'grid':'none';
   document.getElementById('rm-yardsit').style.display = k==='yardsit'?'grid':'none';
@@ -3298,7 +3307,8 @@ function renderRoomPhotoGrid(){
   if(el) el.textContent = "Bu ev üçün qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
 }
 function removeCurrentRoomPhoto(i){ state.currentRoomPhotos.splice(i,1); state.currentRoomPhotoFiles.splice(i,1); renderRoomPhotoGrid(); }
-var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',kitchen:'Mətbəx',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
+function roomLabel(r){ return (r.kind==='other' && r.otherName) ? r.otherName : (ROOM_KIND_LABELS[r.kind]||'Sahə'); }
+var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',other:'Digər şəkillər',kitchen:'Mətbəx',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
 var KITCHEN_OPTIONS=["Ocaq / plitə","Soba (duxovka)","Mikrodalğalı soba","Soyuducu","Dondurucu","Qabyuyan","Çaydan / elektrik çaydan","Qəhvə maşını","Toster","Blender","Qazan-qab","Boşqab, stəkan, çəngəl-bıçaq","Havalandırma (aspirator)","Yemək masası","Su qabı / içməli su"];
 var KITCHEN_MAP=[["stove", "Ocaq / plitə"], ["oven", "Soba (duxovka)"], ["micro", "Mikrodalğalı soba"], ["fridge", "Soyuducu"], ["freezer", "Dondurucu"], ["dish", "Qabyuyan"], ["kettle", "Çaydan / elektrik çaydan"], ["coffee", "Qəhvə maşını"], ["toaster", "Toster"], ["blender", "Blender"], ["pots", "Qazan-qab"], ["plates", "Boşqab, stəkan, çəngəl-bıçaq"], ["hood", "Havalandırma (aspirator)"], ["table", "Yemək masası"], ["water", "Su qabı / içməli su"]];
 var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
@@ -3347,6 +3357,8 @@ function addRoomToPending(){
     if(ck('rm-gy-punchbag')) room.equipment.push('Boks kisəsi');
     if(ck('rm-gy-mirror')) room.equipment.push('Güzgülü divar');
     if(ck('rm-gy-ac')) room.equipment.push('Kondisioner');
+  } else if(kind==='other'){
+    room.otherName=(document.getElementById('rm-other-name').value||'').trim().slice(0,40);
   } else if(kind==='kitchen'){
     room.kitchenItems=[];
     KITCHEN_MAP.forEach(function(m){ if(ck('rm-k-'+m[0])) room.kitchenItems.push(m[1]); });
@@ -3399,6 +3411,7 @@ function addRoomToPending(){
   document.getElementById('rm-gy-bench').checked=false; document.getElementById('rm-gy-yogamat').checked=false;
   document.getElementById('rm-gy-punchbag').checked=false; document.getElementById('rm-gy-mirror').checked=false;
   document.getElementById('rm-gy-ac').checked=false;
+  var _on=document.getElementById('rm-other-name'); if(_on) _on.value='';
   KITCHEN_MAP.forEach(function(m){ var e=document.getElementById('rm-k-'+m[0]); if(e) e.checked=['stove','fridge','pots','plates','kettle'].indexOf(m[0])>=0; });
   document.getElementById('rm-h-towel').checked=true; document.getElementById('rm-h-slippers').checked=false;
   document.getElementById('rm-h-robe').checked=false; document.getElementById('rm-h-shower').checked=true;
@@ -3411,7 +3424,7 @@ function addRoomToPending(){
   document.getElementById('rm-y-flowers').checked=false; document.getElementById('rm-y-bigtrees').checked=false;
   document.getElementById('rm-y-fruittrees').checked=false; document.getElementById('rm-y-decotrees').checked=false;
   renderPendingRooms();
-  toast(ROOM_KIND_LABELS[kind]+" əlavə edildi — indi növbəti sahəni yığa bilərsən");
+  toast(roomLabel(room)+" əlavə edildi — indi növbəti sahəni yığa bilərsən");
 }
 function removeRoomFromPending(id){ state.pendingRooms=state.pendingRooms.filter(function(r){return r.id!==id;}); renderPendingRooms(); renderRoomPhotoGrid(); }
 function roomSummary(r){
@@ -3420,6 +3433,7 @@ function roomSummary(r){
   if(r.kind==='game') return [r.domino?'Domino':null,r.nard?'Nərd':null,r.billiard?'Bilyard':null,r.tennis?'Stolüstü tennis':null,r.foosball?'Stolüstü futbol':null,r.dart?'Dartqın':null,r.airhockey?'Hava hokkeyi':null,r.ps?('PlayStation'+(r.psGen?' ('+r.psGen+')':'')):null].filter(Boolean).join(', ')||'Oyun ləvazimatı qeyd edilməyib';
   if(r.kind==='bathroom') return r.showerType+(r.toiletries&&r.toiletries.length?' · '+r.toiletries.join(', '):'');
   if(r.kind==='gym') return (r.equipment&&r.equipment.length)?r.equipment.join(', '):'Avadanlıq qeyd edilməyib';
+  if(r.kind==='other') return 'Əlavə şəkillər';
   if(r.kind==='kitchen') return (r.kitchenItems&&r.kitchenItems.length)?r.kitchenItems.join(', '):'Ləvazimat qeyd edilməyib';
   if(r.kind==='hamam') return r.hamamType+(r.hamamAmenities&&r.hamamAmenities.length?' · '+r.hamamAmenities.join(', '):'');
   if(r.kind==='yardsit') return (r.yardSitFeatures&&r.yardSitFeatures.length)?r.yardSitFeatures.join(', '):'Xüsusiyyət qeyd edilməyib';
@@ -3431,7 +3445,7 @@ function renderPendingRooms(){
   if(!state.pendingRooms.length){ box.innerHTML='<p class="note" style="text-align:left">Hələ heç bir otaq/sahə əlavə edilməyib.</p>'; return; }
   box.innerHTML=state.pendingRooms.map(function(r){
     return '<div class="bk"><div class="th" style="border-radius:10px;overflow:hidden"><img src="'+r.photos[0]+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>'
-      +'<div><h4>'+ROOM_KIND_LABELS[r.kind]+'</h4><div class="m">'+esc(roomSummary(r))+'</div><div class="m">'+r.photos.length+' şəkil yükləndi</div></div>'
+      +'<div><h4>'+esc(roomLabel(r))+'</h4><div class="m">'+esc(roomSummary(r))+'</div><div class="m">'+r.photos.length+' şəkil yükləndi</div></div>'
       +'<div class="act"><button type="button" class="btn sm ghost" onclick="removeRoomFromPending(\''+r.id+'\')">Sil</button></div></div>';
   }).join('');
 }
