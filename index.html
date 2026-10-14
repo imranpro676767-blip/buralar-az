@@ -575,7 +575,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <label class="full">Elanın başlığı<input id="h-title" required maxlength="60" placeholder="Dəniz mənzərəli mənzil, Bakı bulvarı" oninput="document.getElementById('h-title-count').textContent=this.value.length"></label>
       <p class="note" style="text-align:left;margin:-10px 0 0 0"><span id="h-title-count">0</span>/60 hərf — əsas səhifədə uzun adlar qısaldılıb göstərilir</p>
       <label>Bölgə<select id="h-region" onchange="fillDistricts()"></select></label>
-      <label>Şəhər / rayon<select id="h-city"></select></label>
+      <label>Şəhər / rayon<select id="h-city" onchange="centerPinOnRegion()"></select></label>
       <label>Qəsəbə / ünvan<input id="h-addr" required maxlength="50" placeholder="Məs: Sahil qəsəbəsi (ev nömrəsi yazmayın)"></label>
       <p class="note" style="text-align:left;margin-top:-4px">Bu yazı saytda hamıya göstərilir. Yalnız qəsəbə və ya küçə adını yazın, ev nömrəsini yazmayın. Dəqiq ünvanı aşağıdakı xəritə nişanı göstərir və yalnız rezervasiya təsdiqlənəndən sonra qonağa açılır.</p>
       <div class="full">
@@ -1263,6 +1263,19 @@ var REGION_CENTERS = {
  "Gəncə-Qazax":[40.6828,46.3606], "Dağlıq Şirvan":[40.6308,48.6367], "Aran":[40.7702,47.0500],
  "Masallı-Lənkəran":[38.7529,48.8514], "Qarabağ":[39.7573,46.7495], "Şərqi Zəngəzur":[39.6423,46.1258],
  "Naxçıvan":[39.2089,45.4122]
+};
+
+var CITY_CENTERS = {
+ "Bakı":[40.4093,49.8671],"Sumqayıt":[40.5855,49.6317],"Abşeron":[40.4486,49.7536],"Xızı":[40.9108,49.0750],
+ "Quba":[41.3611,48.5133],"Qusar":[41.4278,48.4311],"Xaçmaz":[41.4591,48.8021],"Şabran":[41.2150,48.9920],"Siyəzən":[41.0786,49.1117],
+ "Şəki":[41.1919,47.1706],"Qəbələ":[40.9814,47.8458],"Zaqatala":[41.6319,46.6436],"Qax":[41.4181,46.9206],"Balakən":[41.7036,46.4044],"Oğuz":[41.0722,47.4653],
+ "Gəncə":[40.6828,46.3606],"Naftalan":[40.5060,46.8240],"Şəmkir":[40.8297,46.0186],"Tovuz":[40.9925,45.6286],"Qazax":[41.0969,45.3656],"Ağstafa":[41.1192,45.4531],"Göygöl":[40.5844,46.3150],"Daşkəsən":[40.5203,46.0803],"Gədəbəy":[40.5703,45.8128],"Goranboy":[40.6103,46.7886],"Samux":[40.7608,46.4094],
+ "Şamaxı":[40.6314,48.6364],"İsmayıllı":[40.7869,48.1519],"Ağsu":[40.5703,48.3919],"Qobustan":[40.5342,48.9275],
+ "Mingəçevir":[40.7703,47.0489],"Yevlax":[40.6197,47.1500],"Şirvan":[39.9317,48.9211],"Bərdə":[40.3744,47.1264],"Ağcabədi":[40.0500,47.4600],"Ağdaş":[40.6500,47.4667],"Beyləqan":[39.7747,47.6178],"Biləsuvar":[39.4586,48.5464],"Göyçay":[40.6531,47.7406],"Hacıqabul":[40.0386,48.9358],"İmişli":[39.8697,48.0589],"Kürdəmir":[40.3453,48.1581],"Neftçala":[39.3589,49.2508],"Saatlı":[39.9300,48.3600],"Sabirabad":[40.0097,48.4781],"Salyan":[39.5978,48.9708],"Ucar":[40.5186,47.6531],"Zərdab":[40.2128,47.7133],
+ "Lənkəran":[38.7539,48.8475],"Astara":[38.4561,48.8744],"Masallı":[39.0344,48.6586],"Lerik":[38.7736,48.4150],"Cəlilabad":[39.2072,48.5106],"Yardımlı":[38.9064,48.2397],
+ "Xankəndi":[39.8153,46.7519],"Şuşa":[39.7600,46.7519],"Ağdam":[39.9914,46.9306],"Füzuli":[39.6003,47.1433],"Tərtər":[40.3444,46.9319],"Xocalı":[39.9122,46.7931],"Xocavənd":[39.7942,47.1128],"Cəbrayıl":[39.3994,47.0286],
+ "Laçın":[39.6383,46.5461],"Kəlbəcər":[40.1022,46.0364],"Qubadlı":[39.3439,46.5786],"Zəngilan":[39.0856,46.6525],
+ "Naxçıvan":[39.2089,45.4122],"Ordubad":[38.9061,46.0219],"Culfa":[38.9544,45.6297],"Şahbuz":[39.4064,45.5733],"Şərur":[39.5547,44.9828],"Babək":[39.1500,45.4500],"Kəngərli":[39.3900,45.1600],"Sədərək":[39.7100,44.8800]
 };
 
 var DEFAULT_RULES = {kids:true,pets:false,smoke:false,party:false,quiet:true,noshoes:false,novisitors:false,camera:false,cin:"14:00",cout:"12:00",extra:""};
@@ -3171,7 +3184,11 @@ function setPinLatLng(lat,lng,pan,zoom){
   }
 }
 function centerPinOnRegion(){
-  var c=regionCenter();
+  /* Seçilmiş şəhər/rayon üzrə mərkəz (yoxdursa bölgə mərkəzi) */
+  var city=(document.getElementById('h-city')||{}).value;
+  var c=CITY_CENTERS[city];
+  if(c){ setPinLatLng(c[0],c[1],true,12); return; }
+  c=regionCenter();
   setPinLatLng(c[0],c[1],true,11);
 }
 function ensureHostMap(){
