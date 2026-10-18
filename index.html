@@ -385,6 +385,8 @@ details>summary::-webkit-details-marker{display:none}
 footer{background:var(--ink);color:rgba(244,239,228,.7);padding:14px 0;font-size:13.5px;position:sticky;bottom:0;z-index:35;margin-top:auto;border-top:1px solid rgba(255,255,255,.08)}
 body{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
 body>footer{flex:none}
+@media (max-width:760px){footer{position:static;padding:18px 0}}
+.sortrow{scroll-margin-top:84px}
 footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 </style>
 </head>
@@ -2543,7 +2545,7 @@ function render(scroll,keepPage){
       +'<div class="price">'+cardPriceHtml(x)+'</div></div>';
   }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Bu filtrlərlə ev tapılmadı</h3><p>Bölgəni dəyiş və ya filtrləri sıfırla.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>')
     + (full.length>gridShown ? '<div style="grid-column:1/-1;text-align:center;padding:12px 0"><button class="btn ghost" onclick="loadMoreListings()">Daha çox göstər ('+(full.length-gridShown)+' qalır)</button></div>' : '');
-  if(scroll) document.getElementById('chipsRegion').scrollIntoView({behavior:'smooth',block:'start'});
+  if(scroll){ setTimeout(function(){ var tgt=document.querySelector('.sortrow')||document.getElementById('grid'); if(tgt) tgt.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
 }
 function resetFilters(){ state.region='Hamısı'; state.type='Hamısı'; state.pool='Hamısı'; document.getElementById('q').value=''; render(); }
 
