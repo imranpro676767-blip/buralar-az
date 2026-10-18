@@ -482,6 +482,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <option value="men">Kişi qrupu</option>
             <option value="women">Qadın qrupu</option>
             <option value="mixed">Qarışıq qrup (iş/tələbə yoldaşları)</option>
+            <option value="drivers">Sürücülər</option>
           </select>
         </div>
         <button class="btn-search" onclick="render(true)">
@@ -630,6 +631,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <div class="tog"><input type="checkbox" id="h-gp-women" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-women" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qadın qrupuna</label></div>
           <div class="tog"><input type="checkbox" id="h-gp-couple" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-couple" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Cütlüklərə</label></div>
           <div class="tog"><input type="checkbox" id="h-gp-mixed" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-mixed" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qarışıq qrupa (iş/tələbə yoldaşları və s.)</label></div>
+          <div class="tog"><input type="checkbox" id="h-gp-drivers" onchange="driversToggle()" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-drivers" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Sürücülərə (hər sürücü ayrıca bron edir)</label></div>
+        </div>
+        <div id="h-drvcap-wrap" style="display:none;margin-top:10px">
+          <label>Ev neçə sürücü tutur?<input id="h-drvcap" type="number" min="2" max="50" placeholder="məs. 7"></label>
+          <p class="note" style="text-align:left;margin:6px 0 0">Hər sürücü ayrıca bron edir və 1 yer tutur, qiymət hər sürücü üçün gecəlikdir. Bütün yerlər dolana qədər elan aktiv qalır, qalan yer sayı həm sənə, həm qonaqlara görünür. "Sürücülər" seçiləndə digər qrup seçimləri söndürülür.</p>
         </div>
       </div>
 
@@ -2468,7 +2474,8 @@ function setPool(p){ state.pool=p; render(); }
 function listingHasPool(x){ return !!(x.rooms && x.rooms.some(function(r){return r.kind==='pool';})); }
 
 function isListingFree(id,a,b){
-  var bookingConflict = (state.busy||[]).some(function(bk){
+  var lx=byId(id);
+  var bookingConflict = !isDriverListing(lx) && (state.busy||[]).some(function(bk){
     return bk.lid==id && (a < bk.d2) && (b > bk.d1);
   });
   if(bookingConflict) return false;
@@ -2477,8 +2484,61 @@ function isListingFree(id,a,b){
     return (a < bl.d2) && (b > bl.d1);
   });
 }
-var GUEST_POLICY_LABELS={family:'Ailələrə',men:'Kişi qrupuna',women:'Qadın qrupuna',couple:'Cütlüklərə',mixed:'Qarışıq qrupa'};
-var GUEST_TYPE_LABELS={family:'Ailə',men:'Kişi qrupu',women:'Qadın qrupu',couple:'Cütlük',mixed:'Qarışıq qrup'};
+var GUEST_POLICY_LABELS={family:'Ailələrə',men:'Kişi qrupuna',women:'Qadın qrupuna',couple:'Cütlüklərə',mixed:'Qarışıq qrupa',drivers:'Sürücülərə'};
+var GUEST_TYPE_LABELS={family:'Ailə',men:'Kişi qrupu',women:'Qadın qrupu',couple:'Cütlük',mixed:'Qarışıq qrup',drivers:'Sürücülər'};
+function isDriverListing(x){ return !!(x && x.guestPolicy && x.guestPolicy.indexOf('drivers')>=0 && Number(x.driverCap)>0); }
+function driversToggle(src){
+  var d=document.getElementById('h-gp-drivers'); if(!d) return;
+  var others=['family','men','women','couple','mixed'];
+  if(src==='other'){ /* digər qrup seçilərsə sürücü seçimi söndürülür */ }
+  if(d.checked){ others.forEach(function(k){ var c=document.getElementById('h-gp-'+k); if(c){ c.checked=false; c.disabled=true; } }); }
+  else { others.forEach(function(k){ var c=document.getElementById('h-gp-'+k); if(c) c.disabled=false; }); }
+  var w=document.getElementById('h-drvcap-wrap'); if(w) w.style.display=d.checked?'':'none';
+}
+/* Sürücü evlərində boş yer sayı: server hesablayır (bronlar şəxsi olduğu üçün client görə bilmir) */
+state.spots={};
+function spotsColor(left){ return left<=2 ? '#d93025' : (left<=4 ? '#c98a00' : '#1e8e3e'); }
+function spotsLabel(sp){
+  if(!sp) return '';
+  if(sp.left<=0) return 'Bütün yerlər dolub';
+  return sp.left+' yer qalıb';
+}
+function spotsHtml(x){
+  if(!isDriverListing(x)) return '';
+  var sp=state.spots[x.id+'|'+(document.getElementById('d1')&&document.getElementById('d1').value||'')+'|'+(document.getElementById('d2')&&document.getElementById('d2').value||'')];
+  if(!sp) return '<div class="drvspot" data-lid="'+x.id+'" style="font-weight:800;font-size:13px;margin-top:4px;color:var(--muted)">Cəmi '+x.driverCap+' yer</div>';
+  return '<div class="drvspot" data-lid="'+x.id+'" style="font-weight:800;font-size:13px;margin-top:4px;color:'+spotsColor(sp.left)+'">'+spotsLabel(sp)+' <span style="font-weight:600;color:var(--muted)">(cəmi '+sp.cap+')</span></div>';
+}
+var _spotsBusy=false;
+function loadSpots(list){
+  if(!fbOnline || !fbFunctions) return;
+  var a=document.getElementById('d1').value, b=document.getElementById('d2').value;
+  var datesOk=a&&b&&nights(a,b)>0;
+  var d1=datesOk?a:'', d2=datesOk?b:'';
+  var lids=list.filter(isDriverListing).map(function(x){return x.id;});
+  if(!lids.length || _spotsBusy) return;
+  var key=function(id){return id+'|'+d1+'|'+d2;};
+  var now=Date.now();
+  var need=lids.filter(function(id){ var sp=state.spots[key(id)]; return !sp || now-sp.t>60000; });
+  if(!need.length){ paintSpots(); return; }
+  _spotsBusy=true;
+  var payload={lids:need.slice(0,40)}; if(datesOk){ payload.d1=d1; payload.d2=d2; }
+  fbFunctions.httpsCallable('getDriverSpots')(payload).then(function(res){
+    var data=(res&&res.data)||{};
+    Object.keys(data).forEach(function(id){ state.spots[key(id)]={cap:data[id].cap,left:data[id].left,t:Date.now()}; });
+    paintSpots();
+  }).catch(function(e){ console.error('Boş yer sayı alınmadı:',e); }).finally(function(){ _spotsBusy=false; });
+}
+function paintSpots(){
+  var a=document.getElementById('d1').value, b=document.getElementById('d2').value;
+  var datesOk=a&&b&&nights(a,b)>0, d1=datesOk?a:'', d2=datesOk?b:'';
+  Array.prototype.forEach.call(document.querySelectorAll('.drvspot[data-lid]'),function(el){
+    var id=el.getAttribute('data-lid'), sp=state.spots[id+'|'+d1+'|'+d2];
+    if(!sp) return;
+    el.style.color=spotsColor(sp.left);
+    el.innerHTML=esc(spotsLabel(sp))+' <span style="font-weight:600;color:var(--muted)">(cəmi '+sp.cap+')</span>';
+  });
+}
 function guestPolicyText(x){
   if(!(x.guestPolicy && x.guestPolicy.length)) return '';
   return x.guestPolicy.map(function(k){return GUEST_POLICY_LABELS[k]||k;}).join(', ');
@@ -2499,7 +2559,7 @@ function filtered(){
     if(state.type!=='Hamısı' && x.ty!==state.type) return false;
     if(state.pool==='var' && !listingHasPool(x)) return false;
     if(state.pool==='yox' && listingHasPool(x)) return false;
-    if(x.g<g) return false;
+    if(x.g<g && !isDriverListing(x)) return false;
     if(q && (x.t+' '+x.c+' '+x.d+' '+x.ty).toLowerCase().indexOf(q)<0) return false;
     if(!listingAcceptsGuestType(x,state.guestType)) return false;
     if(x.minGuestRating && state.user){
@@ -2556,9 +2616,10 @@ function render(scroll,keepPage){
       +'<div class="row"><h3 title="'+esc(x.t)+'">'+esc(x.t)+'</h3><span class="rate"'+(x.rv?' onclick="event.stopPropagation();openListingReviews('+x.id+')" style="cursor:pointer;text-decoration:underline" title="Rəylərə bax"':'')+'>★ '+(x.rv?x.rt.toFixed(2):'Yeni')+'</span></div>'
       +'<div class="loc">'+esc(x.c)+', '+esc(x.d)+' · '+esc(x.ty)+'</div>'
       +'<div class="meta">'+x.g+' qonaq · '+x.r+' otaq · '+x.b+' sanitar qovşaq</div>'
-      +'<div class="price">'+cardPriceHtml(x)+'</div></div>';
+      +'<div class="price">'+cardPriceHtml(x)+(isDriverListing(x)?' <span>/ sürücü</span>':'')+'</div>'+spotsHtml(x)+'</div>';
   }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Bu filtrlərlə ev tapılmadı</h3><p>Bölgəni dəyiş və ya filtrləri sıfırla.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>')
     + (full.length>gridShown ? '<div style="grid-column:1/-1;text-align:center;padding:12px 0"><button class="btn ghost" onclick="loadMoreListings()">Daha çox göstər ('+(full.length-gridShown)+' qalır)</button></div>' : '');
+  loadSpots(list);
   if(scroll){ setTimeout(function(){ var tgt=document.querySelector('.sortrow')||document.getElementById('grid'); if(tgt) tgt.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
 }
 function resetFilters(){ state.region='Hamısı'; state.type='Hamısı'; state.pool='Hamısı'; document.getElementById('q').value=''; render(); }
@@ -2720,7 +2781,7 @@ function openDetail(id,bookingCode){
     galleryHtmlFor(x)
   + '<div class="detail">' + leftInfoHtml(x)
   +'<aside><div class="booker">'
-    +'<div class="p">'+(lowestNightlyRate(x)<x.p?(az(lowestNightlyRate(x))+'-dan'):az(x.p))+' <span>gecə</span></div>'
+    +'<div class="p">'+(lowestNightlyRate(x)<x.p?(az(lowestNightlyRate(x))+'-dan'):az(x.p))+' <span>gecə'+(isDriverListing(x)?' / sürücü':'')+'</span></div>'
     +(((x.minNights&&x.minNights>1)||x.maxNights)?'<div class="hint" style="margin:-4px 0 2px">'+(x.minNights>1?('Minimum '+x.minNights+' gecə'):'')+(x.minNights>1&&x.maxNights?' · ':'')+(x.maxNights?('Maksimum '+x.maxNights+' gecə'):'')+'</div>':'')
     +(x.minGuestRating?'<div class="hint" style="margin:-2px 0 2px;color:var(--warn)">Yalnız '+x.minGuestRating+'+ ulduz reytinqli qonaqlar bron edə bilər</div>':'')
     +(guestPolicyText(x)?'<div class="hint" style="margin:-2px 0 2px;color:var(--warn)">Yalnız bunlara icarəyə verilir: '+esc(guestPolicyText(x))+'</div>':'')
@@ -2728,8 +2789,10 @@ function openDetail(id,bookingCode){
     +priceTiersTableHtml(x)
     +'<div class="fieldgrid"><div class="f"><label for="b1">Giriş</label><input type="hidden" id="b1" value="'+d1+'" onchange="calc()"><button type="button" class="dateBtn" id="b1-btn" onclick="toggleDatePicker(\'b1\',\''+today()+'\')">'+fmtAzDate(d1)+'</button></div>'
     +'<div class="f"><label for="b2">Çıxış</label><input type="hidden" id="b2" value="'+d2+'" onchange="calc()"><button type="button" class="dateBtn" id="b2-btn" onclick="toggleDatePicker(\'b2\',checkoutMinIso(\'b1\'))">'+fmtAzDate(d2)+'</button></div></div>'
-    +'<div class="fieldgrid one"><div class="f"><label for="bg">Qonaq sayı</label><select id="bg" onchange="calc()">'
-      +Array.apply(null,Array(x.g)).map(function(_,i){return '<option value="'+(i+1)+'"'+((i+1)==g?' selected':'')+'>'+(i+1)+' nəfər</option>';}).join('')+'</select></div></div>'
+    +(isDriverListing(x)
+      ? '<input type="hidden" id="bg" value="1"><div class="hint" style="margin:0 0 4px">Hər sürücü ayrıca bron edir (1 sürücü = 1 yer). Qiymət hər sürücü üçündür.</div><div class="drvspot" id="drvdetail" data-lid="'+x.id+'" style="font-weight:800;font-size:14px;margin-bottom:4px"></div>'
+      : '<div class="fieldgrid one"><div class="f"><label for="bg">Qonaq sayı</label><select id="bg" onchange="calc()">'
+        +Array.apply(null,Array(x.g)).map(function(_,i){return '<option value="'+(i+1)+'"'+((i+1)==g?' selected':'')+'>'+(i+1)+' nəfər</option>';}).join('')+'</select></div></div>')
     +'<div class="calc" id="calcbox"></div>'
     +'<div><div style="font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px">Ödəniş üsulu</div><div class="payrow" id="banks" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>'
     +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;document.getElementById(\'bookBtn\').disabled=!this.checked">'
@@ -2880,6 +2943,20 @@ function calc(){
   if(x.maxNights && n>x.maxNights){ box.innerHTML='<div class="hint" style="color:var(--nar);font-weight:700">Bu ev maksimum '+x.maxNights+' gecəyə qədər verilir. Tarixləri qısalt.</div>'; if(bookBtn) bookBtn.disabled=true; return; }
   if(!isListingFree(x.id,a,b)){ box.innerHTML='<div class="hint" style="color:var(--nar);font-weight:700">Bu tarixlər üçün ev artıq bron olunub. Başqa tarix seç.</div>'; if(bookBtn) bookBtn.disabled=true; return; }
   if(bookBtn) bookBtn.disabled=!state.accepted;
+  if(isDriverListing(x) && fbOnline && fbFunctions){
+    var _k=x.id+'|'+a+'|'+b, _sp=state.spots[_k];
+    var _apply=function(sp){
+      var el=document.getElementById('drvdetail'); if(!el||state.openId!==x.id) return;
+      el.style.color=spotsColor(sp.left);
+      el.textContent=sp.left<=0 ? 'Bu tarixlər üçün bütün yerlər dolub' : (sp.left+' yer qalıb (cəmi '+sp.cap+')');
+      var bb=document.getElementById('bookBtn'); if(bb && sp.left<=0) bb.disabled=true;
+    };
+    if(_sp && Date.now()-_sp.t<30000) _apply(_sp);
+    else fbFunctions.httpsCallable('getDriverSpots')({lids:[x.id],d1:a,d2:b}).then(function(res){
+      var r=res&&res.data&&res.data[String(x.id)]; if(!r) return;
+      state.spots[_k]={cap:r.cap,left:r.left,t:Date.now()}; _apply(state.spots[_k]);
+    }).catch(function(){});
+  }
   var c=priceOf(x,n);
   box.innerHTML='<div><span>'+az(c.rate)+(c.rate!==x.p?' (endirimli qiymət)':'')+' × '+n+' gecə</span><b class="money">'+az2(c.rent)+'</b></div>'
     +(c.clean?'<div><span>Təmizlik haqqı</span><b class="money">'+az2(c.clean)+'</b></div>':'')
@@ -3608,6 +3685,11 @@ function addListing(e){
   var maxStayRaw=v('h-maxstay').trim();
   var maxStay=maxStayRaw?parseInt(maxStayRaw,10):null;
   if(maxStay && maxStay<minStay){ toast("Maksimum gecə minimum gecədən az ola bilməz"); return; }
+  if(ck('h-gp-drivers')){
+    var dcap=parseInt(v('h-drvcap'),10);
+    if(!dcap || dcap<2 || dcap>50){ toast("Evin neçə sürücü tutduğunu yaz (2-dən 50-yə qədər)"); return; }
+    document.getElementById('h-guests').value=Math.min(dcap,20);
+  }
   if(!fbOnline){ toast("Server bağlantısı yoxdur, elan hələlik yerləşdirilə bilmir"); return; }
 
   var submitBtn = e.target.querySelector('button[type="submit"]');
@@ -3648,7 +3730,8 @@ function addListing(e){
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
       r:parseInt(v('h-rooms'),10)||1,b:1,cl:parseInt(v('h-clean'),10)||0,
       minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.slice(),
-      guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); return gp; })(),
+      guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
+      driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       rt:5,rv:0,sc:(id%6),host:v('h-name'),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(),
@@ -3662,7 +3745,7 @@ function addListing(e){
     document.getElementById('h-price').value=90; document.getElementById('h-guests').value=4;
     document.getElementById('h-rooms').value=2; document.getElementById('h-clean').value=20;
     document.getElementById('h-minstay').value=1; document.getElementById('h-maxstay').value=''; document.getElementById('h-minguest').value='';
-    document.getElementById('h-gp-family').checked=false; document.getElementById('h-gp-men').checked=false; document.getElementById('h-gp-women').checked=false; document.getElementById('h-gp-couple').checked=false; document.getElementById('h-gp-mixed').checked=false;
+    document.getElementById('h-gp-family').checked=false; document.getElementById('h-gp-men').checked=false; document.getElementById('h-gp-women').checked=false; document.getElementById('h-gp-couple').checked=false; document.getElementById('h-gp-mixed').checked=false; document.getElementById('h-gp-drivers').checked=false; document.getElementById('h-drvcap').value=''; driversToggle();
     document.getElementById('r-in').value="14:00"; document.getElementById('r-out').value="12:00";
     document.getElementById('r-kids').checked=true;
     document.getElementById('r-quiet').checked=true;
@@ -3863,6 +3946,7 @@ function openTipsModal(){
   }).join('') : '';
   openModal('tipsModal');
 }
+function spotsHtmlHost(x){ return spotsHtml(x); }
 function renderHost(){
   var mine = state.custom.filter(function(x){ return state.user && x.ownerEmail===state.user.email; });
   var earn=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
@@ -3891,6 +3975,7 @@ function renderHost(){
   else el.innerHTML=shownListings.map(function(x){
     return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ty)+' · '+x.g+' qonaq · '+az(x.p)+'/gecə</div>'
+      +(isDriverListing(x)?spotsHtmlHost(x):'')
       +'<div class="m">VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban.slice(0,8))+'…</div>'
       +(x.st==='approved'&&!isEpointId(x.epointId)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
       +(x.st==='pending'?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
@@ -3902,6 +3987,7 @@ function renderHost(){
       +'<button class="btn sm ghost" onclick="openEdit('+x.id+')">Redaktə et</button>'
       +(x.deleteRequest?'':'<button class="btn sm ghost" onclick="removeListing('+x.id+')">Sil</button>')+'</div></div>';
   }).join('');
+  loadSpots(shownListings);
 
   renderHostCalendar();
   renderHostMessagesList(mine);
@@ -4198,7 +4284,7 @@ function resetListingFormToCreateMode(){
   document.getElementById('h-rooms').value=2; document.getElementById('h-clean').value=20;
   document.getElementById('h-minstay').value=1; document.getElementById('h-maxstay').value=''; document.getElementById('h-minguest').value='';
   document.getElementById('h-title-count').textContent='0';
-  document.getElementById('h-gp-family').checked=false; document.getElementById('h-gp-men').checked=false; document.getElementById('h-gp-women').checked=false; document.getElementById('h-gp-couple').checked=false; document.getElementById('h-gp-mixed').checked=false;
+  document.getElementById('h-gp-family').checked=false; document.getElementById('h-gp-men').checked=false; document.getElementById('h-gp-women').checked=false; document.getElementById('h-gp-couple').checked=false; document.getElementById('h-gp-mixed').checked=false; document.getElementById('h-gp-drivers').checked=false; document.getElementById('h-drvcap').value=''; driversToggle();
   document.getElementById('r-in').value="14:00"; document.getElementById('r-out').value="12:00";
   document.getElementById('r-kids').checked=true;
   document.getElementById('r-pets').checked=false; document.getElementById('r-smoke').checked=false; document.getElementById('r-party').checked=false;
@@ -4248,6 +4334,9 @@ function openEdit(id){
   document.getElementById('h-gp-women').checked=gp.indexOf('women')>=0;
   document.getElementById('h-gp-couple').checked=gp.indexOf('couple')>=0;
   document.getElementById('h-gp-mixed').checked=gp.indexOf('mixed')>=0;
+  document.getElementById('h-gp-drivers').checked=gp.indexOf('drivers')>=0;
+  document.getElementById('h-drvcap').value=live.driverCap||'';
+  driversToggle();
 
   state.pendingTiers = live.priceTiers.map(function(t){ return {minNights:t.minNights,price:t.price}; });
   renderPriceTiers();
@@ -4329,6 +4418,11 @@ function submitListingEdit(e){
   var maxStayRaw=v('h-maxstay').trim();
   var maxStay=maxStayRaw?parseInt(maxStayRaw,10):null;
   if(maxStay && maxStay<minStay){ toast("Maksimum gecə minimum gecədən az ola bilməz"); return; }
+  if(ck('h-gp-drivers')){
+    var dcap=parseInt(v('h-drvcap'),10);
+    if(!dcap || dcap<2 || dcap>50){ toast("Evin neçə sürücü tutduğunu yaz (2-dən 50-yə qədər)"); return; }
+    document.getElementById('h-guests').value=Math.min(dcap,20);
+  }
   if(!fbOnline){ toast("Server bağlantısı yoxdur, dəyişiklik hələlik göndərilə bilmir"); return; }
 
   var submitBtn = e.target.querySelector('button[type="submit"]');
@@ -4361,7 +4455,8 @@ function submitListingEdit(e){
       cl:parseInt(v('h-clean'),10)||0,
       minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),
       priceTiers:state.pendingTiers.slice(),
-      guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); return gp; })(),
+      guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
+      driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen, iban:iban, bank:v('h-bank'), whatsapp:whatsapp, lat:lat, lng:lng,
       cover:coverUrl, rooms:roomsClean,
