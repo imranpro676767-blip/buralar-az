@@ -37,6 +37,7 @@ body{margin:0;background:var(--paper);color:var(--text);font-family:'Manrope',-a
 h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.022em;line-height:1.15}
 button{font:inherit;color:inherit;cursor:pointer}
 input,select,textarea{font:inherit;color:inherit}
+input:focus::placeholder,textarea:focus::placeholder{color:transparent}
 .wrap{width:min(1180px,100% - 32px);margin-inline:auto}
 :focus-visible{outline:2.5px solid var(--nar-soft);outline-offset:2px;border-radius:6px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
@@ -648,7 +649,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
         <div id="tierList" style="display:grid;gap:6px;margin-top:8px"></div>
       </div>
-      <label class="full">Ev haqqında təsvir<textarea id="h-desc" placeholder="Evin yeri, yaxınlıqdakı yerlər, nə var..."></textarea></label>
+      <label class="full">Ev haqqında təsvir<textarea id="h-desc" maxlength="400" placeholder="Evin yeri, yaxınlıqdakı yerlər, nə var..."></textarea></label>
 
       <h4>Evin üz şəkli</h4>
       <div class="full">
@@ -862,15 +863,20 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="tog"><input type="checkbox" id="r-novisitors" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-novisitors" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Kənar (rezervasiyada olmayan) qonaq qəbulu qadağandır</label></div>
         <div class="tog"><input type="checkbox" id="r-camera" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-camera" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Evin bayır tərəfində müşahidə kamerası var</label></div>
       </div>
-      <label>Girişdən sonra saat<input id="r-in" value="14:00"></label>
-      <label>Çıxış saatı<input id="r-out" value="12:00"></label>
-      <label class="full">Digər qaydalar<textarea id="r-extra" placeholder="Məs: Saat 23:00-dan sonra səs-küy olmaz. Ayaqqabı ilə girilmir. Qonşulara hörmətlə yanaşın."></textarea></label>
+      <label>Girişdən sonra saat<input id="r-in" value="14:00" maxlength="5"></label>
+      <label>Çıxış saatı<input id="r-out" value="12:00" maxlength="5"></label>
+      <label class="full">Digər qaydalar<textarea id="r-extra" maxlength="100" placeholder="Məs: Saat 23:00-dan sonra səs-küy olmaz. Ayaqqabı ilə girilmir. Qonşulara hörmətlə yanaşın."></textarea></label>
 
       <h4>Rəsmi və ödəniş məlumatları</h4>
-      <label>VÖEN<input id="h-voen" required pattern="[0-9]{10}" placeholder="10 rəqəm" title="VÖEN 10 rəqəmdən ibarət olmalıdır"></label>
-      <label>Ad, Soyad / Şirkət adı<input id="h-name" required placeholder="Elnur Məmmədov"></label>
+      <label>VÖEN<input id="h-voen" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" placeholder="10 rəqəm" title="VÖEN 10 rəqəmdən ibarət olmalıdır"></label>
+      <label>Ad, Soyad / Şirkət adı<input id="h-name" required maxlength="60" placeholder="Elnur Məmmədov"></label>
       <label>Bank<select id="h-bank"><option>Kapital Bank</option><option>ABB</option><option>PAŞA Bank</option><option>Bank Respublika</option><option>Unibank</option><option>Rabitəbank</option><option>AccessBank</option></select></label>
-      <label>Hesab nömrəsi (IBAN)<input id="h-iban" required placeholder="AZ00XXXX00000000000000000000"></label>
+      <label>Hesab nömrəsi (IBAN)<input id="h-iban" required maxlength="28" autocomplete="off" oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,28)" placeholder="AZ00XXXX00000000000000000000"></label>
+      <div class="full" style="border-top:1px solid var(--line,#e5e5e5);padding-top:12px">
+        <div style="font-size:15px;font-weight:800;margin-bottom:8px">Biznes kartınız</div>
+        <label>Biznes kartınızın üzərindəki 16 rəqəmli kod<input id="h-bizcard" required pattern="[0-9]{16}" maxlength="16" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,16)" placeholder="16 rəqəm" title="Kart kodu 16 rəqəmdən ibarət olmalıdır"></label>
+        <p class="note" style="text-align:left;margin:6px 0 0">Yalnız 16 rəqəmli kodu yaz. Kartın bitmə tarixini və arxasındakı 3 rəqəmli CVV kodunu heç vaxt yazma.</p>
+      </div>
       <label>WhatsApp əlaqə nömrəsi
         <div class="phoneinput"><span>+994</span><input id="h-whatsapp" required inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
       </label>
@@ -1023,7 +1029,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       Google ilə davam et
     </button>
     <div id="loginStep2" style="display:none;gap:12px">
-      <label>Ad, Soyad (şəxsiyyət vəsiqəsindəki kimi)<input id="u-name"></label>
+      <label>Ad, Soyad (şəxsiyyət vəsiqəsindəki kimi)<input id="u-name" maxlength="60" autocomplete="off"></label>
       <label>E-poçt (Google-dan)<input id="u-email" readonly style="opacity:.7"></label>
       <label>Telefon nömrəsi
         <div class="phoneinput"><span>+994</span><input id="u-phone" inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
@@ -1052,7 +1058,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <option>Ev sahibi açarı təqdim etmədi</option>
       <option>Evə giriş mümkün olmadı</option>
     </select></label>
-    <label>İzah<textarea id="c-text" rows="4" placeholder="Nə baş verdiyini qısa yaz. Yazışma varsa, qeyd et."></textarea></label>
+    <label>İzah<textarea id="c-text" rows="4" maxlength="1000" placeholder="Nə baş verdiyini qısa yaz. Yazışma varsa, qeyd et."></textarea></label>
     <label>Sübut şəkilləri (maksimum 10)<input type="file" id="c-photos" accept="image/*" multiple onchange="cmpPickPhotos(this)"></label>
     <div id="c-photo-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0"></div>
     <button class="btn" id="cmpSendBtn" onclick="sendComplaint()">Şikayəti göndər</button>
@@ -1082,7 +1088,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <p class="note" style="text-align:left;margin:0">Bütün əlaqə sayt daxilində qalmalıdır — telefon nömrəsi (rəqəmlə və ya hərflə) paylaşımı avtomatik bloklanır.</p>
     <div id="chatMessages" style="max-height:44vh;overflow:auto;padding:4px 2px"></div>
     <div id="chatInputRow" style="display:grid;grid-template-columns:1fr auto;gap:8px">
-      <textarea id="chatInput" rows="2" placeholder="Mesajını yaz..." style="resize:vertical"></textarea>
+      <textarea id="chatInput" rows="2" maxlength="1000" placeholder="Mesajını yaz..." style="resize:vertical"></textarea>
       <button class="btn sm" style="width:auto;align-self:end" onclick="sendChatMessage()">Göndər</button>
     </div>
     <button class="btn ghost" onclick="closeModal('chatModal')">Bağla</button>
@@ -1096,7 +1102,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <p class="note" style="text-align:left;margin:0">Sual və ya probleminizi admin komandasına birbaşa buradan yaza bilərsiniz.</p>
     <div id="supportMessages" style="max-height:44vh;overflow:auto;padding:4px 2px"></div>
     <div id="supportInputRow" style="display:grid;grid-template-columns:1fr auto;gap:8px">
-      <textarea id="supportInput" rows="2" placeholder="Mesajını yaz..." style="resize:vertical"></textarea>
+      <textarea id="supportInput" rows="2" maxlength="1500" placeholder="Mesajını yaz..." style="resize:vertical"></textarea>
       <button class="btn sm" style="width:auto;align-self:end" onclick="sendSupportMessage()">Göndər</button>
     </div>
     <button class="btn ghost" onclick="closeModal('supportModal')">Bağla</button>
@@ -1239,7 +1245,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <option>Təhqir və ya söyüş</option>
       <option>Digər</option>
     </select></label>
-    <label>İzah<textarea id="rep-text" rows="3" placeholder="Nə üçün bu rəyi qərəzli hesab edirsən"></textarea></label>
+    <label>İzah<textarea id="rep-text" rows="3" maxlength="500" placeholder="Nə üçün bu rəyi qərəzli hesab edirsən"></textarea></label>
     <div class="evidence">
       <label class="filebtn" for="rep-photo">Şəkil sübutu yüklə</label>
       <input type="file" id="rep-photo" accept="image/*" multiple style="display:none" onchange="previewEvidence(this)">
@@ -3670,7 +3676,9 @@ function addListing(e){
   var voen=v('h-voen').replace(/\D/g,'');
   if(voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
   var iban=v('h-iban').replace(/\s/g,'').toUpperCase();
-  if(iban.length<20 || iban.slice(0,2)!=='AZ'){ toast("IBAN AZ ilə başlamalı və tam olmalıdır"); return; }
+  var bizCard=v('h-bizcard').replace(/\D/g,'');
+  if(bizCard.length!==16){ toast("Biznes kartının üzərindəki kod 16 rəqəmdən ibarət olmalıdır"); return; }
+  if(iban.length!==28 || iban.slice(0,2)!=='AZ'){ toast("IBAN AZ ilə başlamalı və tam 28 simvoldan ibarət olmalıdır"); return; }
   var lat=parseFloat(v('h-lat')), lng=parseFloat(v('h-lng'));
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
@@ -3733,11 +3741,11 @@ function addListing(e){
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       rt:5,rv:0,sc:(id%6),host:v('h-name'),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
-      desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen,iban:iban,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(),
+      desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
+      voen:voen,iban:iban,bizCard:bizCard,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(),
       cover:coverUrl, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
-      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra')}
+      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
     return syncListing(listing);
   }).then(function(){
@@ -4373,6 +4381,7 @@ function openEdit(id){
   document.getElementById('h-name').value=live.host||'';
   document.getElementById('h-bank').value=live.bank||'Kapital Bank';
   document.getElementById('h-iban').value=live.iban||'';
+  document.getElementById('h-bizcard').value=live.bizCard||'';
   var waDigits=(live.whatsapp||'').replace(/\D/g,'').replace(/^994/,'').slice(0,9);
   document.getElementById('h-whatsapp').value=waDigits;
   formatAzPhone(document.getElementById('h-whatsapp'));
@@ -4404,7 +4413,9 @@ function submitListingEdit(e){
   var voen=v('h-voen').replace(/\D/g,'');
   if(voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
   var iban=v('h-iban').replace(/\s/g,'').toUpperCase();
-  if(iban.length<20 || iban.slice(0,2)!=='AZ'){ toast("IBAN AZ ilə başlamalı və tam olmalıdır"); return; }
+  var bizCard=v('h-bizcard').replace(/\D/g,'');
+  if(bizCard.length!==16){ toast("Biznes kartının üzərindəki kod 16 rəqəmdən ibarət olmalıdır"); return; }
+  if(iban.length!==28 || iban.slice(0,2)!=='AZ'){ toast("IBAN AZ ilə başlamalı və tam 28 simvoldan ibarət olmalıdır"); return; }
   var lat=parseFloat(v('h-lat')), lng=parseFloat(v('h-lng'));
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
@@ -4457,10 +4468,10 @@ function submitListingEdit(e){
       priceTiers:state.pendingTiers.slice(),
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
-      desc:v('h-desc')||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen, iban:iban, bank:v('h-bank'), whatsapp:whatsapp, lat:lat, lng:lng,
+      desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
+      voen:voen, iban:iban, bizCard:bizCard, bank:v('h-bank'), whatsapp:whatsapp, lat:lat, lng:lng,
       cover:coverUrl, rooms:roomsClean,
-      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra')}
+      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
     return syncListing(x);
   }).then(function(){
@@ -4597,7 +4608,7 @@ function previewEvidence(input){
 }
 function submitReport(){
   var reviewId=state.reportCtx; if(!reviewId) return;
-  var reason=document.getElementById('rep-reason').value, txt=document.getElementById('rep-text').value.trim();
+  var reason=document.getElementById('rep-reason').value, txt=document.getElementById('rep-text').value.trim().slice(0,500);
   if(txt.length<10){ toast("İzahı ətraflı yaz"); return; }
   if(!state.evidenceData.length){ toast("Ən azı 1 şəkil sübutu yüklə"); return; }
   var review=state.reviews.filter(function(r){return r.id===reviewId;})[0];
