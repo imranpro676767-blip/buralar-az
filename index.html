@@ -545,6 +545,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <select id="myListingSel" style="display:none;margin-bottom:12px" onchange="state.myListingId=(this.value===''?null:parseInt(this.value,10));renderHost()"></select>
     <div class="blist" id="mylistings"></div>
 
+    <h3 style="margin:28px 0 12px">Gəlir və hesabatlar</h3>
+    <p class="note" style="text-align:left;margin:-8px 0 12px">Hər ev üçün gəlir ayrıca göstərilir. Dövrü seçib hər evin hesabatına baxa və CSV kimi yükləyə bilərsən.</p>
+    <select id="hostRepPeriod" style="margin-bottom:12px" onchange="state.hostRepPeriod=this.value;renderHostReports()">
+      <option value="all">Bütün dövr</option><option value="month">Bu ay</option><option value="30">Son 30 gün</option><option value="year">Bu il</option>
+    </select>
+    <div id="hostReports"></div>
+
     <h3 style="margin:28px 0 12px">Yazışmalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qonaqlar bron etməzdən əvvəl sənə sual verə bilər — bütün yazışma sayt daxilində qalır, telefon nömrəsi paylaşımı bloklanır.</p>
     <div class="blist" id="hostmessages"></div>
@@ -4090,8 +4097,86 @@ function openTipsModal(){
   openModal('tipsModal');
 }
 function spotsHtmlHost(x){ return spotsHtml(x); }
+
+/* ============ ev üzrə gəlir və hesabatlar ============ */
+state.hostRepPeriod='all';
+function hostRepWindow(){
+  var p=state.hostRepPeriod||'all', now=new Date(), t=today();
+  if(p==='month'){ var a=t.slice(0,8)+'01'; var nm=new Date(now.getFullYear(),now.getMonth()+1,1); return {from:a,to:nm.toISOString().slice(0,10),label:'Bu ay'}; }
+  if(p==='30') return {from:addDays(t,-30),to:addDays(t,1),label:'Son 30 gün'};
+  if(p==='year') return {from:t.slice(0,4)+'-01-01',to:(parseInt(t.slice(0,4),10)+1)+'-01-01',label:'Bu il'};
+  return {from:null,to:null,label:'Bütün dövr'};
+}
+function bkIsPaid(b){ return (b.status==='hold'||b.status==='complaint'||b.status==='released') && b.paymentStatus!=='pending' && b.paymentStatus!=='failed' && b.paymentStatus!=='expired'; }
+function houseReport(x,w){
+  var all=state.bookings.filter(function(b){ return b.lid==x.id; });
+  var inWin=function(b){ return !w.from || (b.d1>=w.from && b.d1<w.to); };
+  var list=all.filter(inWin);
+  var paid=list.filter(bkIsPaid);
+  var rep={
+    list:list, paid:paid,
+    count:paid.length,
+    nights:paid.reduce(function(s,b){return s+(b.n||0);},0),
+    earned:paid.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+(b.hostGets||0);},0),
+    pending:paid.filter(function(b){return b.status==='hold'||b.status==='complaint';}).reduce(function(s,b){return s+(b.hostGets||0);},0),
+    fee:paid.reduce(function(s,b){return s+Math.max(0,((b.rent||0)+(b.clean||0))-(b.hostGets||0));},0),
+    complaints:paid.filter(function(b){return b.status==='complaint';}).length,
+    refunded:list.filter(function(b){return b.status==='refunded';}),
+    occupancy:null
+  };
+  rep.total=rep.earned+rep.pending;
+  rep.adr=rep.nights?rep.total/rep.nights:0;
+  if(w.from){
+    var days=Math.max(1,Math.round((new Date(w.to)-new Date(w.from))/86400000)), occ=0;
+    paid.forEach(function(b){
+      var s=b.d1<w.from?w.from:b.d1, e=b.d2>w.to?w.to:b.d2;
+      var n=Math.round((new Date(e)-new Date(s))/86400000); if(n>0) occ+=n;
+    });
+    rep.occupancy=Math.min(100,Math.round(occ/days*100));
+  }
+  return rep;
+}
+function renderHostReports(){
+  var el=document.getElementById('hostReports'); if(!el) return;
+  var sel=document.getElementById('hostRepPeriod'); if(sel) sel.value=state.hostRepPeriod||'all';
+  var mine=state.custom.filter(function(x){ return state.user && x.ownerEmail===state.user.email && x.st==='approved'; });
+  if(!mine.length){ el.innerHTML='<div class="empty"><h3>Hələ təsdiqlənmiş evin yoxdur</h3><p>Elan təsdiqlənəndən sonra burada hər ev üçün gəlir göstəriləcək.</p></div>'; return; }
+  var w=hostRepWindow();
+  var tile=function(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v money">'+v+'</div></div>'; };
+  var tileN=function(k,v){ return '<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; };
+  var grand={total:0,earned:0,pending:0};
+  var cards=mine.map(function(x,i){
+    var r=houseReport(x,w);
+    grand.total+=r.total; grand.earned+=r.earned; grand.pending+=r.pending;
+    var rows=r.list.slice().sort(function(a,b){ return a.d1<b.d1?1:-1; }).map(function(b){
+      return '<tr><td>'+esc(b.code)+'</td><td>'+esc(b.d1)+' → '+esc(b.d2)+'</td><td>'+(b.n||'')+'</td><td>'+esc(b.guest||'')+'</td><td>'+az2(b.hostGets||0)+'</td><td>'+statusTag(b.status,b)+'</td></tr>';
+    }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted)">Bu dövrdə rezervasiya yoxdur</td></tr>';
+    return '<details class="split" style="margin-bottom:12px;padding:12px"'+(mine.length===1?' open':'')+'>'
+      +'<summary style="cursor:pointer;font-weight:800;font-size:16px">'+esc(x.t)+' <span style="font-weight:600;color:var(--muted)">· '+esc(x.c)+' · cəmi '+az2(r.total)+'</span></summary>'
+      +'<div class="stats" style="margin:12px 0">'
+        +tileN('Rezervasiya',r.count)+tileN('Gecə',r.nights)
+        +tile('Hesabıma köçürülən',az2(r.earned))+tile('Gözləyən ödəniş',az2(r.pending))
+        +tile('Orta gecəlik gəlir',az2(r.adr))+tile('Platforma komissiyası (3%)',az2(r.fee))
+        +(r.occupancy!==null?tileN('Doluluq',r.occupancy+'%'):'')
+        +tileN('Şikayətdə',r.complaints)+tileN('Geri qaytarılan',r.refunded.length)
+      +'</div>'
+      +'<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn sm ghost" style="width:auto" onclick="exportHouseReportCsv('+x.id+')">⬇ CSV</button></div>'
+      +'<div class="tblwrap"><table class="tbl"><thead><tr><th>Kod</th><th>Tarix</th><th>Gecə</th><th>Qonaq</th><th>Sənə düşən</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      +'</details>';
+  }).join('');
+  el.innerHTML=(mine.length>1?'<div class="stats" style="margin-bottom:12px">'+tile('Bütün evlər: cəmi',az2(grand.total))+tile('Köçürülən',az2(grand.earned))+tile('Gözləyən',az2(grand.pending))+'</div>':'')+cards;
+}
+function exportHouseReportCsv(id){
+  var x=byId(id); if(!x) return;
+  var w=hostRepWindow(), r=houseReport(x,w);
+  var headers=['Kod','Giriş','Çıxış','Gecə','Qonaq','Kirayə','Təmizlik','Sənə düşən','Komissiya','Status','Ödəniş'];
+  var rows=r.list.map(function(b){ return [b.code,b.d1,b.d2,b.n,b.guest,b.rent,b.clean,b.hostGets,Math.max(0,((b.rent||0)+(b.clean||0))-(b.hostGets||0)),b.status,b.paymentStatus||'']; });
+  downloadCsv('buralar-hesabat-'+id+'-'+today()+'.csv',headers,rows);
+  toast('Hesabat yükləndi ('+rows.length+' sətir)');
+}
 function renderHost(){
   loadHostNotices();
+  renderHostReports();
   var mine = state.custom.filter(function(x){ return state.user && x.ownerEmail===state.user.email; });
   var earn=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
   var pend=state.bookings.filter(function(b){return (b.status==='hold'||b.status==='complaint')&&b.paymentStatus!=='pending'&&b.paymentStatus!=='failed';}).reduce(function(s,b){return s+b.hostGets;},0);
