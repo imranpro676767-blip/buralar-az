@@ -896,6 +896,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <input type="checkbox" id="h-terms" style="margin-top:3px;width:18px;height:18px;flex:none">
         <span><a href="#" onclick="openModal('tosModal');return false" style="color:var(--nar);font-weight:700">İstifadə Şərtlərini</a> oxudum və qəbul edirəm. Evin təhlükəsiz olmasına (hovuz, balkon, pilləkən, qaz, elektrik və s.), elan məlumatlarının doğruluğuna və qonaqlarla münasibətlərə görə məsuliyyət daşıdığımı, Buralar.az-ın isə yalnız vasitəçi olduğunu təsdiq edirəm.</span>
       </label>
+      <label class="full" style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;cursor:pointer">
+        <input type="checkbox" id="h-privacy" style="margin-top:3px;width:18px;height:18px;flex:none">
+        <span><a href="#" onclick="openModal('privacyModal');return false" style="color:var(--nar);font-weight:700">Məxfilik siyasətini</a> oxudum və VÖEN, IBAN, bank kartı kodu, WhatsApp nömrəsi və evin dəqiq ünvanı kimi məlumatlarımın bu siyasətə uyğun emal olunmasına razıyam.</span>
+      </label>
       <div class="full">
         <button class="btn dark" type="submit" id="listingSubmitBtn">Elanı təsdiqə göndər</button>
         <p class="note" style="margin-top:8px">Elan göndərildikdən sonra idarəetmə yoxlayır. Təsdiqlənənə qədər saytda görünmür.</p>
@@ -1063,6 +1067,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <img id="u-idpreview" style="display:none">
         <p class="note" style="text-align:left">Şəkil yalnız kimlik yoxlaması üçün istifadə olunur, adminə görünəcək. <a href="#" onclick="openModal('privacyModal');return false" style="color:var(--nar);font-weight:700">Məxfilik siyasətini oxu</a></p>
       </div>
+      <label style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;cursor:pointer;font-weight:600">
+        <input type="checkbox" id="u-privacy" style="margin-top:3px;width:18px;height:18px;flex:none">
+        <span><a href="#" onclick="openModal('privacyModal');return false" style="color:var(--nar);font-weight:700">Məxfilik siyasətini</a> oxudum və şəxsi məlumatlarımın (ad, telefon, FİN, şəxsiyyət vəsiqəsi şəkli) bu siyasətə uyğun emal olunmasına razıyam.</span>
+      </label>
       <div id="verifyBox" style="display:none;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:600;color:var(--muted)"></div>
       <button class="btn" onclick="finishLogin()">Təsdiqlə və daxil ol</button>
     </div>
@@ -2330,6 +2338,7 @@ function finishLogin(){
   if(p.replace(/\D/g,'').length<12){ toast("Telefon nömrəsini tam yaz (9 rəqəm)"); return; }
   if(f.length!==7){ toast("FİN 7 simvoldan ibarət olmalıdır"); return; }
   if(!state.idPhotoData){ toast("Şəxsiyyət vəsiqənin şəklini yüklə"); return; }
+  if(!document.getElementById('u-privacy').checked){ toast("Davam etmək üçün Məxfilik siyasətini qəbul etməlisən"); return; }
   if(!fbAuth || !fbAuth.currentUser || fbAuth.currentUser.email!==e){
     toast("Google girişi doğrulanmadı, yenidən 'Google ilə davam et' düyməsini basın"); return;
   }
@@ -2363,6 +2372,7 @@ function finishLogin(){
     var existing = snap.exists ? snap.data() : null;
     var rec = {
       email:e, name:n, phone:p, fin:f, idPhoto:idPhotoUrl, idPhotoHash:photoHash, uid:fbAuth.currentUser.uid,
+      privacyVersion:PRIVACY_VERSION, privacyAcceptedAt:Date.now(),
       status:status, flags:flags, rejectionReason:null, registeredAt: existing?existing.registeredAt:new Date().toISOString()
     };
     return customersSync.save(rec);
@@ -2996,6 +3006,7 @@ function calc(){
 
 /* ============ ödənişdən əvvəl təhlükəsizlik siyasəti ============ */
 var TERMS_VERSION='2026-10-v1';
+var PRIVACY_VERSION='2026-10-v1';
 (function(){ var l=document.getElementById('tosVersionLabel'); if(l) l.textContent=TERMS_VERSION; })();
 function openSafetyModal(id){
   state.safetyBookId=id;
@@ -3826,6 +3837,7 @@ function addListing(e){
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
   var epReq=readEpointRequest(); if(epReq===false) return;
   if(!ck('h-terms')){ toast("Elan göndərmək üçün İstifadə Şərtlərini qəbul etməlisən"); return; }
+  if(!ck('h-privacy')){ toast("Elan göndərmək üçün Məxfilik siyasətini də qəbul etməlisən"); return; }
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
@@ -3884,7 +3896,7 @@ function addListing(e){
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       rt:5,rv:0,sc:(id%6),host:v('h-name'),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen,iban:iban,bizCard:bizCard,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(),
+      voen:voen,iban:iban,bizCard:bizCard,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(), privacyVersion:PRIVACY_VERSION,
       cover:coverUrl, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
