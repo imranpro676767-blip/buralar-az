@@ -879,7 +879,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
       <h4>Rəsmi və ödəniş məlumatları</h4>
       <label>VÖEN<input id="h-voen" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" placeholder="10 rəqəm" title="VÖEN 10 rəqəmdən ibarət olmalıdır"></label>
-      <label>Ad, Soyad / Şirkət adı<input id="h-name" required maxlength="60" placeholder="Elnur Məmmədov"></label>
+      <label>Ad, Soyad / Şirkət adı<input id="h-name" required maxlength="50" placeholder="Elnur Məmmədov"></label>
       <label>Bank<select id="h-bank"><option>Kapital Bank</option><option>ABB</option><option>PAŞA Bank</option><option>Bank Respublika</option><option>Unibank</option><option>Rabitəbank</option><option>AccessBank</option></select></label>
       <label>Hesab nömrəsi (IBAN)<input id="h-iban" required maxlength="28" autocomplete="off" oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,28)" placeholder="AZ00XXXX00000000000000000000"></label>
       <div class="full" style="border-top:1px solid var(--line,#e5e5e5);padding-top:12px">
@@ -1062,7 +1062,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       Google ilə davam et
     </button>
     <div id="loginStep2" style="display:none;gap:12px">
-      <label>Ad, Soyad (şəxsiyyət vəsiqəsindəki kimi)<input id="u-name" maxlength="60" autocomplete="off"></label>
+      <label>Ad, Soyad (şəxsiyyət vəsiqəsindəki kimi)<input id="u-name" maxlength="50" autocomplete="off"></label>
       <label>E-poçt (Google-dan)<input id="u-email" readonly style="opacity:.7"></label>
       <label>Telefon nömrəsi
         <div class="phoneinput"><span>+994</span><input id="u-phone" inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
@@ -2338,7 +2338,7 @@ function googleSignIn(){
   provider.setCustomParameters({prompt:'select_account'}); /* hər dəfə hesab seçmə ekranını göstər */
   fbAuth.signInWithPopup(provider).then(function(result){
     var u = result.user;
-    document.getElementById('u-name').value = u.displayName || '';
+    document.getElementById('u-name').value = (u.displayName || '').slice(0,50);
     document.getElementById('u-email').value = u.email || '';
     document.getElementById('loginStep2').style.display='grid';
     /* Digər istifadəçilərin qeydiyyat məlumatları brauzerə ümumiyyətlə yüklənmir (məxfilik üçün) —
@@ -2382,7 +2382,7 @@ function previewIdPhoto(input){
   reader.readAsDataURL(f);
 }
 function finishLogin(){
-  var n=document.getElementById('u-name').value.trim(), e=document.getElementById('u-email').value.trim();
+  var n=document.getElementById('u-name').value.trim().slice(0,50), e=document.getElementById('u-email').value.trim();
   var p=fullAzPhone('u-phone'), f=document.getElementById('u-fin').value.trim().toUpperCase();
   var box=document.getElementById('verifyBox');
   if(!n||n.split(' ').filter(Boolean).length<2){ toast("Ad və soyadı tam yaz"); return; }
@@ -4112,7 +4112,7 @@ function addListing(e){
       minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.slice(),
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
-      rt:5,rv:0,sc:(id%6),host:v('h-name'),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
+      rt:5,rv:0,sc:(id%6),host:v('h-name').slice(0,50),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen,iban:iban,bizCard:bizCard,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(), privacyVersion:PRIVACY_VERSION,
       cover:coverUrl, rooms:roomsClean,
