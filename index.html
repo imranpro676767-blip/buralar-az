@@ -538,6 +538,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p>Elan yerləşdirmək üçün VÖEN və bank hesabı tələb olunur. Elan idarəetmə tərəfindən təsdiqləndikdən və Epoint ödəniş hesabınız qoşulduqdan sonra saytda görünür. Səndən 3% komissiya tutulur. Rezervasiya ödənişi Epoint vasitəsilə avtomatik hesabına bölünür.</p>
     </div>
     <div class="stats" id="hoststats"></div>
+    <div id="hostNotices"></div>
 
     <h3 style="margin:0 0 12px">Mənim elanlarım</h3>
     <button id="tipsBadge" class="btn sm ghost" style="display:none;margin-bottom:12px;width:auto" onclick="openTipsModal()">💡 İpucu</button>
@@ -929,6 +930,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
         <button aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
         <button aria-selected="false" onclick="goSub('notif')">Bildirişlər <span id="notifcount"></span></button>
+        <button aria-selected="false" onclick="goSub('hnotice')">Ev sahibi bildirişləri</button>
         <button aria-selected="false" onclick="goSub('msg')">Yazışmalar <span id="msgcount"></span></button>
         <button aria-selected="false" onclick="goSub('support')">Dəstək mesajları <span id="supportcount"></span></button>
         <button aria-selected="false" onclick="goSub('sanc')">Nəzarət <span id="sanccount"></span></button>
@@ -972,6 +974,19 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
       <div class="sub" id="s-rep"><div class="blist" id="replist"></div></div>
       <div class="sub" id="s-notif"><div class="blist" id="notiflist"></div></div>
+      <div class="sub" id="s-hnotice">
+        <p class="note" style="text-align:left;margin:0 0 10px"><b>Ev sahiblərinə bildiriş.</b> "Şərt yeniləməsi" göndərəndə bütün ev sahiblərinə e-poçt gedir, onlar paneldə təsdiq edir. Müddət bitəndən sonra təsdiq etməyənlərin elanları yeni bron qəbul etmir (ödənilmiş bronlar təsirlənmir). "Məlumat" isə sadəcə xəbərdarlıqdır ("Oxudum" düyməsi ilə).</p>
+        <div class="split" style="margin-bottom:14px;padding:12px">
+          <div style="display:grid;gap:8px">
+            <select id="hn-type" onchange="document.getElementById('hn-grace-wrap').style.display=this.value==='terms'?'':'none'" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600"><option value="terms">Şərt yeniləməsi (qəbul tələb olunur)</option><option value="info">Məlumat (yalnız oxumaq)</option></select>
+            <input type="text" id="hn-title" maxlength="100" placeholder="Başlıq" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600">
+            <textarea id="hn-body" rows="5" maxlength="1500" placeholder="Mətn (nə dəyişdi, nə etmək lazımdır)" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600"></textarea>
+            <label id="hn-grace-wrap" style="font-weight:700;font-size:13px">Təsdiq üçün müddət (gün)<input type="number" id="hn-grace" min="1" max="60" value="14" style="margin-top:4px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"></label>
+            <button class="btn sm" style="width:auto" id="hn-send" onclick="adminSendNotice()">Bütün ev sahiblərinə göndər</button>
+          </div>
+        </div>
+        <div id="hnlist"></div>
+      </div>
       <div class="sub" id="s-msg">
         <input type="text" id="msgSearch" placeholder="Ev adı, qonaq və ya ev sahibi adı / e-poçtu və ya mesaj mətni üzrə axtar..." oninput="renderAdminMessages()"
           style="width:100%;box-sizing:border-box;margin-bottom:14px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px">
@@ -2437,9 +2452,10 @@ function adminLogout(){
      qonaq/ev sahibi kimi giriş edibsə, onun ümumi sessiyası (state.user) ayrıca saxlanılır və
      logout() ilə çıxılmalıdır. */
 }
-var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','msg','support','sanc','fin'];
+var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','hnotice','msg','support','sanc','fin'];
 function goSub(s){
   state.sub=s;
+  if(s==='hnotice') setTimeout(loadAdminNotices,0);
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
   document.getElementById('s-'+s).classList.add('active');
   document.querySelectorAll('.subtabs button[onclick^="goSub"]').forEach(function(b,i){ b.setAttribute('aria-selected', SUBTABS[i]===s?'true':'false'); });
@@ -3448,7 +3464,8 @@ var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri
 function addRoomToPending(){
   var kind=document.getElementById('rm-kind').value;
   if(!state.currentRoomPhotos.length){ toast("Bu sahə üçün ən azı 1 şəkil yüklə"); return; }
-  var room={id:'RM-'+Math.floor(1e5+Math.random()*9e5), kind:kind, photos:state.currentRoomPhotos.slice(), photoFiles:state.currentRoomPhotoFiles.slice()};
+  var _ed=state.editingRoom;
+  var room={id:_ed?_ed.room.id:('RM-'+Math.floor(1e5+Math.random()*9e5)), kind:kind, photos:state.currentRoomPhotos.slice(), photoFiles:state.currentRoomPhotoFiles.slice()};
   var ck=function(id){return document.getElementById(id).checked;}, v=function(id){return document.getElementById(id).value;};
   if(kind==='bedroom'){
     room.bedType=v('rm-bedtype'); room.heating=v('rm-b-heat'); room.privateBathroom=ck('rm-b-bath');
@@ -3521,7 +3538,7 @@ function addRoomToPending(){
     if(ck('rm-y-fruittrees')) room.yardFeatures.push('Meyvə ağacları');
     if(ck('rm-y-decotrees')) room.yardFeatures.push('Dekorativ ağaclar');
   }
-  state.pendingRooms.push(room);
+  if(_ed){ state.pendingRooms.splice(Math.min(_ed.index,state.pendingRooms.length),0,room); state.editingRoom=null; } else state.pendingRooms.push(room);
   state.currentRoomPhotos=[];
   state.currentRoomPhotoFiles=[];
   renderRoomPhotoGrid();
@@ -3557,7 +3574,122 @@ function addRoomToPending(){
   document.getElementById('rm-y-flowers').checked=false; document.getElementById('rm-y-bigtrees').checked=false;
   document.getElementById('rm-y-fruittrees').checked=false; document.getElementById('rm-y-decotrees').checked=false;
   renderPendingRooms();
-  toast(roomLabel(room)+" əlavə edildi — indi növbəti sahəni yığa bilərsən");
+  toast(_ed ? (roomLabel(room)+" yeniləndi") : (roomLabel(room)+" əlavə edildi — indi növbəti sahəni yığa bilərsən"));
+}
+
+/* ============ ev sahibi bildirişləri (şərt qəbulu + məlumat) ============ */
+state.hostNotices=null; state._hnAt=0;
+function hnDaysLeft(ms){ return Math.ceil((ms-Date.now())/86400000); }
+function loadHostNotices(force){
+  var box=document.getElementById('hostNotices'); if(!box) return;
+  if(!fbOnline || !fbFunctions || !state.user){ box.innerHTML=''; return; }
+  if(state._hnEmail!==state.user.email){ state._hnEmail=state.user.email; state.hostNotices=null; force=true; }
+  if(!force && Date.now()-state._hnAt<30000){ renderHostNotices(); return; }
+  state._hnAt=Date.now();
+  fbFunctions.httpsCallable('getHostNotices')({}).then(function(res){
+    state.hostNotices=(res.data&&res.data.notices)||[]; renderHostNotices();
+  }).catch(function(e){ console.error('Bildirişlər alınmadı:',e); });
+}
+function renderHostNotices(){
+  var box=document.getElementById('hostNotices'); if(!box) return;
+  var list=(state.hostNotices||[]).filter(function(n){ return !n.acked; });
+  if(!list.length){ box.innerHTML=''; return; }
+  box.innerHTML='<h3 style="margin:0 0 10px">Sizin üçün bildirişlər</h3>'+list.map(function(n){
+    var terms=n.type==='terms';
+    var left=terms&&n.deadlineAt?hnDaysLeft(n.deadlineAt):null;
+    var late=terms&&left!==null&&left<=0;
+    return '<div class="split" style="margin-bottom:12px;padding:14px;border:2px solid '+(late?'var(--nar)':'var(--warn)')+'">'
+      +'<div style="font-weight:800;font-size:16px;margin-bottom:6px">'+esc(n.title)+'</div>'
+      +'<div style="white-space:pre-wrap;margin-bottom:8px">'+esc(n.body)+'</div>'
+      +(terms?'<div style="font-weight:800;margin-bottom:8px;color:'+(late?'var(--nar)':'var(--warn)')+'">'+(late?'Müddət bitib: təsdiq edilməyənə qədər elanlarınız yeni bron qəbul etmir':(left+' gün qalıb: sonra təsdiq etməsəniz elanlarınız yeni bron qəbul etməyəcək'))+'</div>'
+        +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:700;font-size:14px;margin-bottom:8px"><input type="checkbox" id="hn-acc-'+n.id+'" style="width:17px;height:17px;flex:none;margin-top:2px"><span><a href="#" onclick="openModal(\'tosModal\');return false" style="color:var(--nar)">İstifadə Şərtlərini</a> və yuxarıdakı yeniliyi oxudum, qəbul edirəm</span></label>'
+        +'<button class="btn sm" style="width:auto" onclick="ackHostNotice(\''+n.id+'\',true)">Təsdiq et</button>'
+        :'<button class="btn sm ghost" style="width:auto" onclick="ackHostNotice(\''+n.id+'\',false)">Oxudum</button>')
+      +'</div>';
+  }).join('');
+}
+function ackHostNotice(id,needCheck){
+  if(needCheck){ var c=document.getElementById('hn-acc-'+id); if(!c||!c.checked){ toast('Təsdiq üçün qutunu işarələ'); return; } }
+  fbFunctions.httpsCallable('ackHostNotice')({id:id}).then(function(){
+    (state.hostNotices||[]).forEach(function(n){ if(n.id===id) n.acked=true; });
+    renderHostNotices(); toast('Təşəkkürlər, qeyd edildi');
+  }).catch(function(e){ toast((e&&e.message)||'Alınmadı, yenidən cəhd et'); });
+}
+function adminSendNotice(){
+  var type=document.getElementById('hn-type').value, title=document.getElementById('hn-title').value.trim(), body=document.getElementById('hn-body').value.trim();
+  var grace=parseInt(document.getElementById('hn-grace').value,10)||14;
+  if(title.length<5||body.length<10){ toast('Başlıq (ən azı 5) və mətn (ən azı 10 simvol) yaz'); return; }
+  if(!confirm('Bu bildiriş bütün ev sahiblərinə e-poçtla göndəriləcək. Davam edək?')) return;
+  var b=document.getElementById('hn-send'); b.disabled=true;
+  fbFunctions.httpsCallable('adminPublishNotice')({type:type,title:title,body:body,graceDays:grace}).then(function(res){
+    toast('Göndərildi: '+res.data.emailed+' ev sahibinə e-poçt');
+    document.getElementById('hn-title').value=''; document.getElementById('hn-body').value='';
+    loadAdminNotices();
+  }).catch(function(e){ toast((e&&e.message)||'Göndərilmədi'); }).finally(function(){ b.disabled=false; });
+}
+function loadAdminNotices(){
+  var el=document.getElementById('hnlist'); if(!el||!fbOnline||!fbFunctions) return;
+  el.innerHTML='<p class="note" style="text-align:left">Yüklənir...</p>';
+  fbFunctions.httpsCallable('adminNoticeStatus')({}).then(function(res){
+    var ns=(res.data&&res.data.notices)||[];
+    if(!ns.length){ el.innerHTML='<p class="note" style="text-align:left">Hələ bildiriş göndərilməyib.</p>'; return; }
+    el.innerHTML=ns.map(function(n){
+      var terms=n.type==='terms';
+      return '<div class="split" style="margin-bottom:10px;padding:12px"><div style="font-weight:800">'+(terms?'[Şərt] ':'[Məlumat] ')+esc(n.title)+'</div>'
+        +'<div class="m" style="margin:4px 0">Göndərilib: '+new Date(n.createdAt).toLocaleString('az-AZ')+(terms&&n.deadlineAt?' · Son tarix: '+new Date(n.deadlineAt).toLocaleDateString('az-AZ'):'')+'</div>'
+        +'<div style="font-weight:700">Təsdiq edən: '+n.acked+' / '+n.total+'</div>'
+        +(n.pending.length?'<details style="margin-top:6px"><summary style="cursor:pointer;font-weight:700">Hələ təsdiq etməyənlər ('+n.pending.length+')</summary><div style="margin-top:6px;font-size:13px">'+n.pending.map(esc).join('<br>')+'</div></details>':'')
+        +'</div>';
+    }).join('');
+  }).catch(function(e){ el.innerHTML='<p class="note" style="text-align:left;color:var(--nar)">'+esc((e&&e.message)||'Yüklənmədi')+'</p>'; });
+}
+
+/* ============ mövcud otağı redaktə et ============ */
+var ROOM_CHECK_MAPS={
+  bedroom:{field:'amenities',pairs:[['Kondisioner','rm-b-ac'],['Paltar dolabı','rm-b-wardrobe'],['Ütü','rm-b-iron'],['Televizor','rm-b-tv'],['Yazı masası','rm-b-desk'],['Seyf','rm-b-safe'],['Fen','rm-b-fan']]},
+  bathroom:{field:'toiletries',pairs:[['Şampun','rm-ba-shampoo'],['Dəsmal','rm-ba-towel'],['Sabun','rm-ba-soap'],['Diş fırçası','rm-ba-toothbrush'],['Diş pastası','rm-ba-toothpaste'],['Duş geli','rm-ba-showergel'],['Tualet kağızı','rm-ba-toiletpaper'],['Fen','rm-ba-hairdryer']]},
+  gym:{field:'equipment',pairs:[['Qaçış zolağı','rm-gy-treadmill'],['Stasionar velosiped','rm-gy-bike'],['Eliptik trenajor','rm-gy-elliptical'],['Çəki dəstləri','rm-gy-weights'],['Güc tərbiyəsi maşınları','rm-gy-machines'],['Turnik','rm-gy-pullupbar'],['Məşq skamyası','rm-gy-bench'],['Yoga döşəkçəsi','rm-gy-yogamat'],['Boks kisəsi','rm-gy-punchbag'],['Güzgülü divar','rm-gy-mirror'],['Kondisioner','rm-gy-ac']]},
+  hamam:{field:'hamamAmenities',pairs:[['Dəsmal','rm-h-towel'],['Tərlik','rm-h-slippers'],['Xalat','rm-h-robe'],['Duş','rm-h-shower'],['Oturacaq yerləri','rm-h-seating']]},
+  yardsit:{field:'yardSitFeatures',pairs:[['Oturma yeri','rm-ys-seating'],['Stol','rm-ys-table'],['Stul','rm-ys-chairs'],['Çöl mətbəxi','rm-ys-outdoorkitchen'],['Mətbəx ləvazimatları','rm-ys-kitchenware'],['Manqal','rm-ys-bbq'],['Samovar','rm-ys-samovar'],['Şiş','rm-ys-skewer']]},
+  yard:{field:'yardFeatures',pairs:[['Uşaq əyləncəsi ləvazimatı (karusel və s.)','rm-y-kids'],['Yaşıllıq','rm-y-greenery'],['Gül-çiçək','rm-y-flowers'],['Böyük ağaclar','rm-y-bigtrees'],['Meyvə ağacları','rm-y-fruittrees'],['Dekorativ ağaclar','rm-y-decotrees']]}
+};
+state.editingRoom=null;
+function loadRoomIntoBuilder(r){
+  var $=function(id){return document.getElementById(id);};
+  $('rm-kind').value=r.kind; updateRoomKindUI();
+  var cm=ROOM_CHECK_MAPS[r.kind];
+  if(cm){ var have=r[cm.field]||[]; cm.pairs.forEach(function(p){ var e=$(p[1]); if(e) e.checked=have.indexOf(p[0])>=0; }); }
+  if(r.kind==='kitchen'){ var kh=r.kitchenItems||[]; KITCHEN_MAP.forEach(function(m){ var e=$('rm-k-'+m[0]); if(e) e.checked=kh.indexOf(m[1])>=0; }); }
+  if(r.kind==='bedroom'){ if(r.bedType) $('rm-bedtype').value=r.bedType; if(r.heating) $('rm-b-heat').value=r.heating; $('rm-b-bath').checked=!!r.privateBathroom; }
+  if(r.kind==='pool'){ if(r.temp) $('rm-p-temp').value=r.temp; if(r.size) $('rm-p-size').value=r.size; if(r.poolType) $('rm-p-type').value=r.poolType; }
+  if(r.kind==='game'){
+    ['domino','nard','billiard','tennis','foosball','dart','airhockey','ps'].forEach(function(k){ var e=$('rm-g-'+k); if(e) e.checked=!!r[k]; });
+    $('rm-g-ps-genwrap').style.display=r.ps?'':'none'; if(r.psGen) $('rm-g-ps-gen').value=r.psGen;
+  }
+  if(r.kind==='bathroom' && r.showerType) $('rm-ba-type').value=r.showerType;
+  if(r.kind==='hamam' && r.hamamType) $('rm-h-type').value=r.hamamType;
+  if(r.kind==='other') $('rm-other-name').value=r.otherName||'';
+}
+function editRoomInPending(id){
+  if(state.editingRoom){ toast('Əvvəlcə başqa otağın redaktəsini bitir və ya ləğv et'); return; }
+  if(state.currentRoomPhotos.length){ toast('Əvvəlcə yuxarıda yığdığın yeni sahəni əlavə et'); return; }
+  var idx=-1; state.pendingRooms.forEach(function(r,i){ if(r.id===id) idx=i; });
+  if(idx<0) return;
+  var r=state.pendingRooms[idx];
+  state.editingRoom={room:r,index:idx};
+  state.pendingRooms.splice(idx,1);
+  state.currentRoomPhotos=(r.photos||[]).slice();
+  state.currentRoomPhotoFiles=state.currentRoomPhotos.map(function(_,i){ return (r.photoFiles&&r.photoFiles[i])||null; });
+  loadRoomIntoBuilder(r);
+  renderPendingRooms(); renderRoomPhotoGrid();
+  var k=document.getElementById('rm-kind'); if(k&&k.scrollIntoView) k.scrollIntoView({behavior:'smooth',block:'center'});
+  toast('Dəyişikliyi et və "Otağı əlavə et" düyməsini bas. Şəkillər saxlanılır');
+}
+function cancelRoomEdit(){
+  var e=state.editingRoom; if(!e) return;
+  state.pendingRooms.splice(Math.min(e.index,state.pendingRooms.length),0,e.room);
+  state.editingRoom=null; state.currentRoomPhotos=[]; state.currentRoomPhotoFiles=[];
+  renderPendingRooms(); renderRoomPhotoGrid(); toast('Redaktə ləğv edildi, otaq əvvəlki kimi qaldı');
 }
 function removeRoomFromPending(id){ state.pendingRooms=state.pendingRooms.filter(function(r){return r.id!==id;}); renderPendingRooms(); renderRoomPhotoGrid(); }
 function roomSummary(r){
@@ -3575,14 +3707,16 @@ function roomSummary(r){
 }
 function renderPendingRooms(){
   var box=document.getElementById('pendingRoomsList');
-  if(!state.pendingRooms.length){ box.innerHTML='<p class="note" style="text-align:left">Hələ heç bir otaq/sahə əlavə edilməyib.</p>'; return; }
+  if(!state.pendingRooms.length && !state.editingRoom){ box.innerHTML='<p class="note" style="text-align:left">Hələ heç bir otaq/sahə əlavə edilməyib.</p>'; return; }
   box.innerHTML=state.pendingRooms.map(function(r){
     return '<div class="bk"><div class="th" style="border-radius:10px;overflow:hidden"><img src="'+r.photos[0]+'" style="width:100%;height:100%;object-fit:cover" alt=""></div>'
       +'<div><h4>'+esc(roomLabel(r))+'</h4><div class="m">'+esc(roomSummary(r))+'</div><div class="m">'+r.photos.length+' şəkil yükləndi</div></div>'
-      +'<div class="act"><button type="button" class="btn sm ghost" onclick="removeRoomFromPending(\''+r.id+'\')">Sil</button></div></div>';
+      +'<div class="act"><button type="button" class="btn sm ghost" onclick="editRoomInPending(\''+r.id+'\')">Redaktə et</button><button type="button" class="btn sm ghost" onclick="removeRoomFromPending(\''+r.id+'\')">Sil</button></div></div>';
   }).join('');
+  if(state.editingRoom){ box.innerHTML='<div class="hint" style="color:var(--warn);font-weight:800;margin-bottom:8px">Redaktə edilir: '+esc(roomLabel(state.editingRoom.room))+'. Dəyişib "Otağı əlavə et" düyməsini bas. <button type="button" class="btn sm ghost" style="width:auto;margin-left:6px" onclick="cancelRoomEdit()">Ləğv et</button></div>'+box.innerHTML; }
 }
 function resetRoomBuilderDraft(){
+  state.editingRoom=null;
   state.coverData=null; state.coverFile=null; state.pendingRooms=[]; state.currentRoomPhotos=[]; state.currentRoomPhotoFiles=[];
   document.getElementById('h-cover-preview').innerHTML='';
   document.getElementById('rm-kind').value='bedroom'; updateRoomKindUI();
@@ -3688,6 +3822,7 @@ function addListing(e){
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
+  if(state.editingRoom){ toast("Redaktə etdiyin otağı əlavə et və ya ləğv et"); return; }
   if(!state.pendingRooms.some(function(r){return r.kind==='bedroom';})){ toast("Ən azı bir yataq otağı əlavə etməlisən"); return; }
   var minStay=parseInt(v('h-minstay'),10)||1;
   var maxStayRaw=v('h-maxstay').trim();
@@ -3956,6 +4091,7 @@ function openTipsModal(){
 }
 function spotsHtmlHost(x){ return spotsHtml(x); }
 function renderHost(){
+  loadHostNotices();
   var mine = state.custom.filter(function(x){ return state.user && x.ownerEmail===state.user.email; });
   var earn=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
   var pend=state.bookings.filter(function(b){return (b.status==='hold'||b.status==='complaint')&&b.paymentStatus!=='pending'&&b.paymentStatus!=='failed';}).reduce(function(s,b){return s+b.hostGets;},0);
@@ -4424,6 +4560,7 @@ function submitListingEdit(e){
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
+  if(state.editingRoom){ toast("Redaktə etdiyin otağı əlavə et və ya ləğv et"); return; }
   if(!state.pendingRooms.some(function(r){return r.kind==='bedroom';})){ toast("Ən azı bir yataq otağı əlavə etməlisən"); return; }
   var minStay=parseInt(v('h-minstay'),10)||1;
   var maxStayRaw=v('h-maxstay').trim();
