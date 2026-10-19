@@ -526,6 +526,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <h2>Rezervasiyalarım</h2>
       <p>Ödəniş girişdən 24 saat sonra ev sahibinə köçürülür. Bu müddət ərzində ev elandakı ev deyilsə və ya açar təqdim olunmayıbsa, şikayət göndərə bilərsən.</p>
     </div>
+    <div id="myClaims"></div>
     <div class="blist" id="mybookings"></div>
   </div>
 </section>
@@ -563,6 +564,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <button class="btn dark" id="hostBkToggle" onclick="toggleHostBookings()">Rezervasiyalara bax</button>
     </div>
     <div class="blist" id="hostbookings" style="display:none"></div>
+    <div id="hostClaims"></div>
 
     <h3 style="margin:28px 0 12px">Təqvim</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Gələn rezervasiyalar bu təqvimə avtomatik düşür. Elanını yerləşdirərkən qoyduğun minimum/maksimum gecə şərtinə görə bəzi tək günlər heç kimə göstərilmir — həmin günlər aşağıda fərqli rənglə işarələnir ki, sən də bilə.</p>
@@ -942,6 +944,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
         <button aria-selected="false" onclick="goSub('notif')">Bildirişlər <span id="notifcount"></span></button>
         <button aria-selected="false" onclick="goSub('hnotice')">Ev sahibi bildirişləri</button>
+        <button aria-selected="false" onclick="goSub('dmg')">Ziyan iddiaları</button>
         <button aria-selected="false" onclick="goSub('msg')">Yazışmalar <span id="msgcount"></span></button>
         <button aria-selected="false" onclick="goSub('support')">Dəstək mesajları <span id="supportcount"></span></button>
         <button aria-selected="false" onclick="goSub('sanc')">Nəzarət <span id="sanccount"></span></button>
@@ -997,6 +1000,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           </div>
         </div>
         <div id="hnlist"></div>
+      </div>
+      <div class="sub" id="s-dmg">
+        <p class="note" style="text-align:left;margin:0 0 10px"><b>Ziyan iddiaları.</b> Ev sahibi çıxışdan sonra 48 saat ərzində iddia göndərir, qonaq 72 saat ərzində cavab verir. Etiraz və ya cavabsızlıq olanda sübutlara (giriş şəkilləri, iddia şəkilləri, qonağın cavabı) baxıb qərar ver. Ödəniş platformadan keçmir: qərardan sonra tərəflər birbaşa həll edir, ev sahibi "Ödənişi aldım" işarələyir.</p>
+        <div id="dmglist"></div>
       </div>
       <div class="sub" id="s-msg">
         <input type="text" id="msgSearch" placeholder="Ev adı, qonaq və ya ev sahibi adı / e-poçtu və ya mesaj mətni üzrə axtar..." oninput="renderAdminMessages()"
@@ -1075,6 +1082,50 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <button class="btn" onclick="finishLogin()">Təsdiqlə və daxil ol</button>
     </div>
     <button class="btn ghost" onclick="closeModal('loginModal')">Bağla</button>
+  </div>
+</div>
+
+<!-- ZİYAN İDDİASI (ev sahibi) -->
+<div class="modal" id="dmgModal" role="dialog" aria-modal="true" aria-label="Ziyan iddiası">
+  <div class="box">
+    <h3>Ziyan iddiası göndər</h3>
+    <p>Çıxışdan sonra 48 saat ərzində, yalnız sübutla göndərə bilərsən. Qonağa bildiriş gedir, o 72 saat ərzində qəbul edə və ya etiraz edə bilər. Etiraz olarsa idarəetmə sübutlara baxıb qərar verir. Ödəniş hələlik tərəflər arasında birbaşa həll olunur.</p>
+    <label>Zərərin məbləği (₼, maksimum 2000)<input id="d-amount" type="number" min="1" max="2000" step="0.01" inputmode="decimal" placeholder="məs. 150"></label>
+    <label>Nə zədələnib? (maksimum 400 simvol)<textarea id="d-text" rows="4" maxlength="400" placeholder="Məs.: yataq otağındakı televizorun ekranı çatlayıb. Giriş şəkillərində sağlam idi."></textarea></label>
+    <label>Sübut şəkilləri (ən azı 1, maksimum 8)<input type="file" id="d-photos" accept="image/*" multiple onchange="cpPick(this,'dmg',8,'d-preview')"></label>
+    <div id="d-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0"></div>
+    <button class="btn" id="dmgSendBtn" onclick="sendDamageClaim()">İddianı göndər</button>
+    <button class="btn ghost" onclick="closeModal('dmgModal')">İmtina</button>
+  </div>
+</div>
+<!-- GİRİŞ ŞƏKİLLƏRİ (ev sahibi) -->
+<div class="modal" id="condModal" role="dialog" aria-modal="true" aria-label="Giriş şəkilləri">
+  <div class="box">
+    <h3>Evin giriş vəziyyəti şəkilləri</h3>
+    <p>Qonaq gəlməzdən əvvəl evin və əşyaların vəziyyətini çək (məsələn televizor, mebel, divarlar). Sonradan ziyan çıxsa, bu şəkillər iddiada müqayisə üçün istifadə olunur. Maksimum 10 şəkil, çıxışa qədər əlavə etmək olar.</p>
+    <label>Şəkillər<input type="file" id="cd-photos" accept="image/*" multiple onchange="cpPick(this,'cond',10,'cd-preview')"></label>
+    <div id="cd-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0"></div>
+    <button class="btn" id="condSendBtn" onclick="sendConditionPhotos()">Şəkilləri saxla</button>
+    <button class="btn ghost" onclick="closeModal('condModal')">Bağla</button>
+  </div>
+</div>
+<!-- ZİYAN İDDİASINA CAVAB (qonaq) -->
+<div class="modal" id="respModal" role="dialog" aria-modal="true" aria-label="İddiaya cavab">
+  <div class="box">
+    <h3>Ziyan iddiasına cavab</h3>
+    <div id="respInfo" class="note" style="text-align:left;margin-bottom:8px"></div>
+    <label>Cavabın<select id="rs-action" onchange="document.getElementById('rs-dispute').style.display=this.value==='dispute'?'':'none'">
+      <option value="accept">İddianı qəbul edirəm</option>
+      <option value="dispute">Etiraz edirəm</option>
+    </select></label>
+    <div id="rs-dispute" style="display:none">
+      <label>Etiraz səbəbi (maksimum 400 simvol)<textarea id="rs-text" rows="4" maxlength="400" placeholder="Nə üçün razı deyilsən? Şəkillərlə sübut et."></textarea></label>
+      <label>Razı olduğun məbləğ (₼, istəyə bağlı)<input id="rs-offer" type="number" min="0" step="0.01" inputmode="decimal"></label>
+      <label>Sübut şəkilləri (maksimum 8)<input type="file" id="rs-photos" accept="image/*" multiple onchange="cpPick(this,'resp',8,'rs-preview')"></label>
+      <div id="rs-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0"></div>
+    </div>
+    <button class="btn" id="respSendBtn" onclick="sendClaimResponse()">Cavabı göndər</button>
+    <button class="btn ghost" onclick="closeModal('respModal')">Bağla</button>
   </div>
 </div>
 
@@ -1157,7 +1208,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>2. Ödənişin saxlanması.</b> Ödədiyiniz məbləğ dərhal ev sahibinə keçmir — girişdən 24 saat sonra köçürülür. Bu müddət ərzində problem yaranarsa, şikayət göndərə bilərsiniz.</p>
       <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə tamamilə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
       <p><b>4. Fırıldaqçılığa qarşı tədbir.</b> Saxta sənədlə qeydiyyat aşkarlansa, hesab admin tərəfindən bloklanır. Əgər bu, ödəniş edilmiş aktiv bron zamanı baş verərsə və pul hələ ev sahibinə çatmayıbsa, bron ləğv olunur və məbləğ sizə tam qaytarılır.</p>
-      <p><b>5. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz isə yalnız bron edən/bron olunan qarşı tərəfə (ev sahibi ↔ qonaq) — rezervasiya edildiyi andan etibarən — açıqlanır, başqa heç bir istifadəçiyə göstərilmir.</p>
+      <p><b>5. Evə dəyən ziyan.</b> Evə və ya əşyalara vurduğunuz ziyana görə siz cavabdehsiniz. Ev sahibi çıxışdan sonra 48 saat ərzində sübutla ziyan iddiası göndərə bilər; sizə bildiriş gələcək və 72 saat ərzində qəbul edə və ya sübutla etiraz edə bilərsiniz. Etiraz olarsa idarəetmə sübutlara baxıb qərar verir. Qəbul etdiyiniz və ya təsdiqlənmiş ziyanı ödəməsəniz hesabınız nəzarətə alına və ya bloklana bilər.</p>
+      <p><b>6. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz isə yalnız bron edən/bron olunan qarşı tərəfə (ev sahibi ↔ qonaq) — rezervasiya edildiyi andan etibarən — açıqlanır, başqa heç bir istifadəçiyə göstərilmir.</p>
     </div>
     <label style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;margin:12px 0;cursor:pointer">
       <input type="checkbox" id="tosAccept" style="margin-top:3px;width:18px;height:18px;flex:none">
@@ -2469,10 +2521,11 @@ function adminLogout(){
      qonaq/ev sahibi kimi giriş edibsə, onun ümumi sessiyası (state.user) ayrıca saxlanılır və
      logout() ilə çıxılmalıdır. */
 }
-var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','hnotice','msg','support','sanc','fin'];
+var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','hnotice','dmg','msg','support','sanc','fin'];
 function goSub(s){
   state.sub=s;
   if(s==='hnotice') setTimeout(loadAdminNotices,0);
+  if(s==='dmg') setTimeout(loadAdminClaims,0);
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
   document.getElementById('s-'+s).classList.add('active');
   document.querySelectorAll('.subtabs button[onclick^="goSub"]').forEach(function(b,i){ b.setAttribute('aria-selected', SUBTABS[i]===s?'true':'false'); });
@@ -3251,6 +3304,7 @@ function hostContactHtml(lid,b){
 }
 function renderBookings(){
   autoRelease();
+  loadClaims();
   var el=document.getElementById('mybookings');
   var mine = state.bookings.filter(function(b){ return state.user && b.email===state.user.email; });
   if(!mine.length){
@@ -3593,6 +3647,170 @@ function addRoomToPending(){
   document.getElementById('rm-y-fruittrees').checked=false; document.getElementById('rm-y-decotrees').checked=false;
   renderPendingRooms();
   toast(_ed ? (roomLabel(room)+" yeniləndi") : (roomLabel(room)+" əlavə edildi — indi növbəti sahəni yığa bilərsən"));
+}
+
+
+/* ============ ziyan iddiaları ============ */
+state.claims=null; state._clAt=0; state._clEmail=null; state.cp={dmg:[],cond:[],resp:[]};
+var cpUrls=[];
+function claimStatusText(c){
+  var m={open:'Qonağın cavabı gözlənilir',accepted:'Qonaq iddianı qəbul etdi',disputed:'Qonaq etiraz etdi, idarəetmə baxır',no_response:'Qonaq cavab vermədi, idarəetmə baxır',decided:'İdarəetmə qərar verdi'};
+  return m[c.status]||c.status;
+}
+function cpPick(inp,key,max,previewId){
+  var files=Array.prototype.slice.call(inp.files||[]), skipped=false;
+  files.forEach(function(f){
+    if(!/^image\//.test(f.type) || f.size>10*1024*1024 || state.cp[key].length>=max){ skipped=true; return; }
+    state.cp[key].push(f);
+  });
+  inp.value=''; if(skipped) toast('Maksimum '+max+' şəkil (yalnız şəkil faylları, 10MB-dan kiçik)');
+  cpRender(key,previewId);
+}
+function cpRemove(key,i,previewId){ state.cp[key].splice(i,1); cpRender(key,previewId); }
+function cpRender(key,previewId){
+  var el=document.getElementById(previewId); if(!el) return;
+  el.innerHTML=state.cp[key].map(function(f,i){
+    var u=URL.createObjectURL(f); cpUrls.push(u);
+    return '<div style="position:relative;width:64px;height:64px"><img src="'+u+'" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:8px;display:block"><button type="button" onclick="cpRemove(\''+key+'\','+i+',\''+previewId+'\')" aria-label="Sil" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:#222;color:#fff;font-size:11px;cursor:pointer">✕</button></div>';
+  }).join('');
+}
+function claimPhotosHtml(arr,label){
+  if(!arr||!arr.length) return '';
+  return '<div style="margin-top:6px"><div class="m" style="font-weight:700">'+label+'</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">'+arr.map(function(u){
+    return '<a href="'+esc(u)+'" target="_blank" rel="noopener"><img src="'+esc(u)+'" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;display:block"></a>';
+  }).join('')+'</div></div>';
+}
+function loadClaims(force){
+  if(!fbOnline||!fbFunctions||!state.user) return;
+  if(state._clEmail!==state.user.email){ state._clEmail=state.user.email; state.claims=null; force=true; }
+  if(!force && Date.now()-state._clAt<30000){ renderClaims(); return; }
+  state._clAt=Date.now();
+  fbFunctions.httpsCallable('getMyDamageClaims')({}).then(function(res){
+    state.claims=(res.data&&res.data.claims)||[]; renderClaims();
+  }).catch(function(e){ console.error('İddialar alınmadı:',e); });
+}
+function claimCardHtml(c){
+  var dl=c.status==='open'&&c.guestDeadlineAt?'<div class="m" style="color:var(--warn);font-weight:700">Cavab üçün son vaxt: '+new Date(c.guestDeadlineAt).toLocaleString('az-AZ')+'</div>':'';
+  var gr=c.guestResponse?'<div class="m" style="margin-top:6px"><b>Qonağın cavabı:</b> '+(c.guestResponse.action==='accept'?'qəbul etdi':'etiraz etdi')+(c.guestResponse.text?' · '+esc(c.guestResponse.text):'')+(c.guestResponse.offerAmount!=null?' · razı olduğu məbləğ: '+az2(c.guestResponse.offerAmount):'')+'</div>'+claimPhotosHtml(c.guestResponse.photos,'Qonağın şəkilləri'):'';
+  var dec=c.status==='decided'?'<div class="m" style="margin-top:6px"><b>Qərar:</b> '+(c.decision==='guest'?'iddia əsassız sayıldı':('qonaq '+az2(c.finalAmount||0)+' ödəməlidir'))+(c.adminNote?' · '+esc(c.adminNote):'')+'</div>':'';
+  var pay='';
+  if(c.payStatus==='awaiting_payment'){
+    pay='<div class="m" style="margin-top:6px;color:var(--warn);font-weight:800">Ödəniş gözlənilir: '+az2(c.finalAmount||c.amount)+' (tərəflər birbaşa həll edir)</div>'
+      +(c.role==='host'?'<button class="btn sm dark" style="width:auto;margin-top:6px" onclick="markClaimPaid(\''+c.id+'\')">Ödənişi aldım</button>':'');
+  } else if(c.payStatus==='paid'){ pay='<div class="m" style="margin-top:6px;color:var(--ok);font-weight:800">Ödəniş alındı</div>'; }
+  var act=(c.role==='guest'&&c.status==='open')?'<button class="btn sm dark" style="width:auto;margin-top:6px" onclick="openClaimResponse(\''+c.id+'\')">Cavab ver</button>':'';
+  return '<div class="split" style="margin-bottom:12px;padding:12px;display:block">'
+    +'<div style="font-weight:800">'+esc(c.title)+' · '+esc(c.code)+' · '+az2(c.amount)+'</div>'
+    +'<div class="m">'+(c.role==='host'?'Qonaq: '+esc(c.guestName):'Ev sahibi: '+esc(c.hostName))+' · '+claimStatusText(c)+'</div>'
+    +'<div style="white-space:pre-wrap;margin-top:6px">'+esc(c.description)+'</div>'
+    +claimPhotosHtml(c.photos,'İddia şəkilləri')+claimPhotosHtml(c.beforePhotos,'Giriş şəkilləri (ev sahibi əvvəlcədən yükləyib)')
+    +dl+gr+dec+pay+act+'</div>';
+}
+function renderClaims(){
+  var list=state.claims||[];
+  var g=document.getElementById('myClaims'), h=document.getElementById('hostClaims');
+  var gl=list.filter(function(c){return c.role==='guest';}), hl=list.filter(function(c){return c.role==='host';});
+  if(g) g.innerHTML=gl.length?('<h3 style="margin:0 0 10px">Ziyan iddiaları</h3>'+gl.map(claimCardHtml).join('')):'';
+  if(h) h.innerHTML=hl.length?('<h3 style="margin:24px 0 10px">Göndərdiyim ziyan iddiaları</h3>'+hl.map(claimCardHtml).join('')):'';
+}
+function claimFor(code){ return (state.claims||[]).filter(function(c){ return c.code===code; })[0]; }
+function bkCheckoutMs(b){ var R=b.rules||DEFAULT_RULES; var t=new Date(b.d2+'T'+(/^\d{2}:\d{2}$/.test(R.cout||'')?R.cout:'12:00')+':00+04:00').getTime(); return isNaN(t)?new Date(b.d2).getTime():t; }
+function claimEligible(b){
+  if(b.paymentStatus!=='paid' || (b.status!=='hold'&&b.status!=='released')) return false;
+  var now=Date.now();
+  return now>=new Date(b.d1+'T00:00:00+04:00').getTime() && now<=bkCheckoutMs(b)+48*3600000 && !claimFor(b.code);
+}
+function condEligible(b){ return b.paymentStatus==='paid' && (b.status==='hold'||b.status==='released') && Date.now()<=bkCheckoutMs(b); }
+function hostClaimButtonsHtml(b){
+  var out='';
+  if(condEligible(b)) out+='<button class="btn sm ghost" onclick="openCondPhotos(\''+b.code+'\')">Giriş şəkilləri</button>';
+  if(claimEligible(b)) out+='<button class="btn sm ghost" onclick="openDamageClaim(\''+b.code+'\')">Ziyan bildir</button>';
+  else if(claimFor(b.code)) out+='<span class="m">İddia göndərilib</span>';
+  return out;
+}
+function openDamageClaim(code){ state.dmgCode=code; state.cp.dmg=[]; cpRender('dmg','d-preview'); document.getElementById('d-amount').value=''; document.getElementById('d-text').value=''; openModal('dmgModal'); }
+function sendDamageClaim(){
+  var amount=parseFloat(document.getElementById('d-amount').value), txt=document.getElementById('d-text').value.trim().slice(0,400), code=state.dmgCode, files=state.cp.dmg.slice(0,8);
+  if(!(amount>=1&&amount<=2000)){ toast('Məbləğ 1 ilə 2000 ₼ arasında olmalıdır'); return; }
+  if(txt.length<10){ toast('Nəyin zədələndiyini ətraflı yaz'); return; }
+  if(!files.length){ toast('Ən azı 1 sübut şəkli yüklə'); return; }
+  var b=document.getElementById('dmgSendBtn'); b.disabled=true; b.textContent='Şəkillər yüklənir...';
+  Promise.all(files.map(function(f){ return uploadImageToStorage(f,'claims/'+code+'/dmg'); })).then(function(urls){
+    return fbFunctions.httpsCallable('fileDamageClaim')({code:code,amount:amount,description:txt,photos:urls});
+  }).then(function(){ closeModal('dmgModal'); state.cp.dmg=[]; toast('İddia göndərildi, qonağa bildiriş getdi'); loadClaims(true); })
+  .catch(function(e){ toast((e&&e.message)||'İddia göndərilmədi'); })
+  .then(function(){ b.disabled=false; b.textContent='İddianı göndər'; });
+}
+function openCondPhotos(code){ state.condCode=code; state.cp.cond=[]; cpRender('cond','cd-preview'); openModal('condModal'); }
+function sendConditionPhotos(){
+  var code=state.condCode, files=state.cp.cond.slice(0,10);
+  if(!files.length){ toast('Şəkil seç'); return; }
+  var b=document.getElementById('condSendBtn'); b.disabled=true; b.textContent='Yüklənir...';
+  Promise.all(files.map(function(f){ return uploadImageToStorage(f,'claims/'+code+'/before'); })).then(function(urls){
+    return fbFunctions.httpsCallable('saveConditionPhotos')({code:code,photos:urls});
+  }).then(function(res){ closeModal('condModal'); state.cp.cond=[]; toast('Saxlanıldı (bu rezervasiya üçün cəmi '+res.data.count+' şəkil)'); })
+  .catch(function(e){ toast((e&&e.message)||'Saxlanmadı'); })
+  .then(function(){ b.disabled=false; b.textContent='Şəkilləri saxla'; });
+}
+function openClaimResponse(id){
+  var c=(state.claims||[]).filter(function(x){return x.id===id;})[0]; if(!c) return;
+  state.respId=id; state.cp.resp=[]; cpRender('resp','rs-preview');
+  document.getElementById('respInfo').innerHTML='<b>'+esc(c.title)+'</b> · '+az2(c.amount)+'<br>'+esc(c.description)+claimPhotosHtml(c.photos,'İddia şəkilləri')+claimPhotosHtml(c.beforePhotos,'Giriş şəkilləri');
+  document.getElementById('rs-action').value='accept'; document.getElementById('rs-dispute').style.display='none';
+  document.getElementById('rs-text').value=''; document.getElementById('rs-offer').value='';
+  openModal('respModal');
+}
+function sendClaimResponse(){
+  var action=document.getElementById('rs-action').value, txt=document.getElementById('rs-text').value.trim().slice(0,400), offer=document.getElementById('rs-offer').value;
+  if(action==='dispute' && txt.length<10){ toast('Etiraz səbəbini yaz'); return; }
+  if(action==='accept' && !confirm('İddianı qəbul etsən, məbləği ev sahibi ilə birbaşa həll etməli olacaqsan. Davam edək?')) return;
+  var id=state.respId, files=action==='dispute'?state.cp.resp.slice(0,8):[], code=id.slice(3);
+  var b=document.getElementById('respSendBtn'); b.disabled=true; b.textContent='Göndərilir...';
+  Promise.all(files.map(function(f){ return uploadImageToStorage(f,'claims/'+code+'/resp'); })).then(function(urls){
+    return fbFunctions.httpsCallable('respondDamageClaim')({claimId:id,action:action,text:txt,photos:urls,offerAmount:offer});
+  }).then(function(){ closeModal('respModal'); toast('Cavabın göndərildi'); loadClaims(true); })
+  .catch(function(e){ toast((e&&e.message)||'Göndərilmədi'); })
+  .then(function(){ b.disabled=false; b.textContent='Cavabı göndər'; });
+}
+function markClaimPaid(id){
+  if(!confirm('Ödənişi aldığını təsdiqləyirsən?')) return;
+  fbFunctions.httpsCallable('markDamageClaimPaid')({claimId:id}).then(function(){ toast('Qeyd edildi'); loadClaims(true); if(state.adminAuth) loadAdminClaims(); })
+  .catch(function(e){ toast((e&&e.message)||'Alınmadı'); });
+}
+/* admin */
+function loadAdminClaims(){
+  var el=document.getElementById('dmglist'); if(!el||!fbOnline||!fbFunctions) return;
+  el.innerHTML='<p class="note" style="text-align:left">Yüklənir...</p>';
+  fbFunctions.httpsCallable('adminListDamageClaims')({}).then(function(res){
+    var cs=(res.data&&res.data.claims)||[];
+    if(!cs.length){ el.innerHTML='<p class="note" style="text-align:left">Hələ iddia yoxdur.</p>'; return; }
+    el.innerHTML=cs.map(function(c){
+      var needs=['disputed','no_response','open'].indexOf(c.status)>=0;
+      var form=needs?'<div style="display:grid;gap:6px;margin-top:8px">'
+        +'<select id="dd-'+c.id+'" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px;font-weight:600"><option value="host">İddia əsaslıdır (tam məbləğ)</option><option value="partial">Qismən əsaslıdır</option><option value="guest">İddia əsassızdır</option></select>'
+        +'<input id="da-'+c.id+'" type="number" min="1" step="0.01" placeholder="Qismən məbləğ (₼) — yalnız qismən qərar üçün" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px;font-weight:600">'
+        +'<input id="dn-'+c.id+'" maxlength="300" placeholder="Qərarın səbəbi (hər iki tərəfə göndəriləcək)" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px;font-weight:600">'
+        +'<button class="btn sm" style="width:auto" onclick="adminDecideClaim(\''+c.id+'\')">Qərar ver</button></div>':'';
+      var paidBtn=c.payStatus==='awaiting_payment'?'<button class="btn sm ghost" style="width:auto;margin-top:6px" onclick="markClaimPaid(\''+c.id+'\')">Ödənilib kimi işarələ</button>':'';
+      return '<div class="split" style="margin-bottom:12px;padding:12px;display:block">'
+        +'<div style="font-weight:800">'+esc(c.code)+' · '+esc(c.title)+' · '+az2(c.amount)+'</div>'
+        +'<div class="m">Ev sahibi: '+esc(c.hostName)+' ('+esc(c.hostEmail)+') → Qonaq: '+esc(c.guestName)+' ('+esc(c.guestEmail)+')</div>'
+        +'<div class="m">'+claimStatusText(c)+' · '+new Date(c.createdAt).toLocaleString('az-AZ')+'</div>'
+        +'<div style="white-space:pre-wrap;margin-top:6px">'+esc(c.description)+'</div>'
+        +claimPhotosHtml(c.photos,'İddia şəkilləri')+claimPhotosHtml(c.beforePhotos,'Giriş şəkilləri')
+        +(c.guestResponse?'<div class="m" style="margin-top:6px"><b>Qonağın cavabı:</b> '+(c.guestResponse.action==='accept'?'qəbul etdi':'etiraz etdi')+(c.guestResponse.text?' · '+esc(c.guestResponse.text):'')+(c.guestResponse.offerAmount!=null?' · təklif: '+az2(c.guestResponse.offerAmount):'')+'</div>'+claimPhotosHtml(c.guestResponse.photos,'Qonağın şəkilləri'):'')
+        +(c.status==='decided'?'<div class="m" style="margin-top:6px"><b>Qərar:</b> '+esc(c.decision)+' · '+az2(c.finalAmount||0)+' · '+esc(c.adminNote||'')+'</div>':'')
+        +(c.payStatus==='paid'?'<div class="m" style="color:var(--ok);font-weight:800;margin-top:6px">Ödəniş alınıb</div>':'')
+        +form+paidBtn+'</div>';
+    }).join('');
+  }).catch(function(e){ el.innerHTML='<p class="note" style="text-align:left;color:var(--nar)">'+esc((e&&e.message)||'Yüklənmədi')+'</p>'; });
+}
+function adminDecideClaim(id){
+  var decision=document.getElementById('dd-'+id).value, amount=document.getElementById('da-'+id).value, note=document.getElementById('dn-'+id).value.trim();
+  if(note.length<5){ toast('Qərarın səbəbini yaz'); return; }
+  if(!confirm('Qərar hər iki tərəfə e-poçtla göndəriləcək. Davam edək?')) return;
+  fbFunctions.httpsCallable('adminDecideDamageClaim')({claimId:id,decision:decision,amount:amount,note:note}).then(function(){ toast('Qərar göndərildi'); loadAdminClaims(); })
+  .catch(function(e){ toast((e&&e.message)||'Alınmadı'); });
 }
 
 /* ============ ev sahibi bildirişləri (şərt qəbulu + məlumat) ============ */
@@ -4188,6 +4406,7 @@ function exportHouseReportCsv(id){
 }
 function renderHost(){
   loadHostNotices();
+  loadClaims();
   renderHostReports();
   var mine = state.custom.filter(function(x){ return state.user && x.ownerEmail===state.user.email; });
   var earn=state.bookings.filter(function(b){return b.status==='released';}).reduce(function(s,b){return s+b.hostGets;},0);
@@ -4257,6 +4476,7 @@ function renderHost(){
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.hostGets)+'</div>'
       +(b.status==='released'?(reviewsFor('host',b.code).length?'<span class="m">Qiymətləndirmisiniz</span>':'<button class="btn sm dark" onclick="openRate(\''+b.code+'\',\'host\')">Qonağı qiymətləndir</button>'):'')
+      +hostClaimButtonsHtml(b)
       +'</div></div>';
   }).join('');
 }
