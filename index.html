@@ -268,11 +268,76 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .dpday.disabled{opacity:.3;cursor:not-allowed}
 .dpday.sel{background:var(--ink);color:#F4EFE4}
 .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-/* Admin paneli: bölmə düymələri aşağı sürüşdürəndə də yuxarıda qalır (sayt başlığının altında) */
-#adminContent>.subtabs{position:sticky;top:var(--hdrH,64px);z-index:30;background:var(--paper);padding:10px 0 8px;margin-top:0;border-bottom:1px solid var(--line)}
-@media (max-width:760px){.subtabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px}.subtabs::-webkit-scrollbar{display:none}.subtabs button{flex:none;white-space:nowrap}}
-.subtabs button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 13px;font-weight:700;font-size:14px;color:var(--muted)}
-.subtabs button[aria-selected="true"]{background:var(--ink);color:#F4EFE4;border-color:var(--ink)}
+/* ===== Admin iş məkanı: solda qruplaşdırılmış naviqasiya, sağda məzmun ===== */
+#adminContent{display:grid;grid-template-columns:236px minmax(0,1fr);column-gap:26px;align-items:start}
+#adminContent>*{grid-column:2;min-width:0}
+#adminContent>.adm-nav{grid-column:1;grid-row:1/span 60;position:sticky;top:calc(var(--hdrH,64px) + 12px);display:flex;flex-direction:column;gap:2px;margin:18px 0 0;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;max-height:calc(100vh - var(--hdrH,64px) - 28px);overflow-y:auto}
+.adm-nav .adm-grp{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 5px}
+.adm-nav .adm-grp:first-child{padding-top:2px}
+.adm-nav button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;border-radius:9px;padding:9px 10px;font-weight:700;font-size:14px;color:var(--ink)}
+.adm-nav button:hover{background:var(--paper)}
+.adm-nav button[aria-selected="true"]{background:var(--ink);color:#F4EFE4}
+.adm-nav button span{margin-left:auto;font-size:12px;font-weight:800;background:var(--nar);color:#fff;border-radius:999px;padding:1px 8px}
+.adm-nav button span:empty{display:none}
+.adm-nav .adm-out{margin-top:10px;border-top:1px solid var(--line);border-radius:0;padding-top:12px;color:var(--muted)}
+#admHead{margin:18px 0 4px}
+#admHead h2{margin:0;font-size:24px;letter-spacing:-.01em}
+#admHead p{margin:4px 0 0;color:var(--muted);font-size:14.5px}
+/* Rezervasiya paneli */
+.rz-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.rz-bar label{display:grid;gap:4px;font-size:12px;font-weight:800;color:var(--muted)}
+.rz-bar input,.rz-bar select{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:9px 10px;font:inherit;font-size:14px;color:var(--ink)}
+.rz-bar .grow{flex:1;min-width:200px}
+.rz-quick{display:flex;gap:6px;flex-wrap:wrap}
+.rz-quick button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;color:var(--muted)}
+.rz-quick button:hover{color:var(--ink);border-color:var(--ink)}
+.rz-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.rz-chips button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-weight:700;font-size:13.5px;color:var(--muted);display:inline-flex;gap:7px;align-items:center}
+.rz-chips button b{background:var(--paper);border-radius:999px;padding:0 8px;font-size:12px;color:var(--ink)}
+.rz-chips button[aria-pressed="true"]{background:var(--ink);color:#F4EFE4;border-color:var(--ink)}
+.rz-chips button[aria-pressed="true"] b{background:rgba(244,239,228,.18);color:#F4EFE4}
+.rz-sum{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 8px;font-size:14px;color:var(--muted)}
+.rz-sum b{color:var(--ink)}
+.rz-pager{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:14px;color:var(--muted)}
+.rz-pager .pg{display:flex;gap:6px}
+#s-rezall .tblwrap{max-height:none}
+table.tbl tr.clk{cursor:pointer}
+table.tbl tr.clk:hover td{background:var(--paper)}
+.dash-todo{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.dash-todo button{text-align:left;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:13px 14px;display:grid;gap:2px;color:var(--ink)}
+.dash-todo button:hover{border-color:var(--ink)}
+.dash-todo b{font-size:26px;line-height:1.1}
+.dash-todo span{font-size:13px;font-weight:700;color:var(--muted)}
+.dash-todo button.hot{border-color:var(--nar)}
+.dash-todo button.hot b{color:var(--nar)}
+.dash-two{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;margin:0 0 14px}
+@media (max-width:1100px){.dash-two{grid-template-columns:1fr}}
+.dash-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.dash-card h4{margin:0 0 4px;font-size:15px}
+.dash-card .sub2{font-size:13px;color:var(--muted);margin-bottom:10px}
+.dash-card svg{width:100%;height:auto;display:block}
+.dash-list{display:grid;gap:2px}
+.dash-list button{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;border:0;background:transparent;border-radius:9px;padding:8px 8px;font-size:14px;color:var(--ink)}
+.dash-list button:hover{background:var(--paper)}
+.dash-list small{color:var(--muted);font-size:12.5px}
+.hm{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:8px}
+.hm div{background:var(--paper);border-radius:10px;padding:8px 10px}
+.hm span{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.hm b{font-size:14.5px}
+.bkd{display:grid;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.bkd div{display:flex;justify-content:space-between;gap:14px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:14px}
+.bkd div:last-child{border-bottom:0}
+.bkd div span{color:var(--muted);flex:none}
+.bkd div b{text-align:right;overflow-wrap:anywhere}
+.bkd h5{margin:0;padding:8px 12px;background:var(--paper);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:900px){
+  #adminContent{display:block}
+  #adminContent>.adm-nav{position:sticky;top:var(--hdrH,64px);z-index:30;flex-direction:row;overflow-x:auto;max-height:none;margin:0 -2px;padding:8px;border-radius:0 0 12px 12px;scrollbar-width:none}
+  .adm-nav::-webkit-scrollbar{display:none}
+  .adm-nav .adm-grp{display:none}
+  .adm-nav button{flex:none;width:auto;white-space:nowrap;border:1px solid var(--line)}
+  .adm-nav .adm-out{margin:0;border-top:1px solid var(--line);padding-top:9px}
+}
 .sub{display:none}.sub.active{display:block}
 
 .blist{display:grid;gap:12px}
@@ -931,52 +996,101 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </div>
 
     <div id="adminContent" style="display:none">
+      <nav class="subtabs adm-nav" aria-label="Admin bölmələri">
+        <div class="adm-grp">Əməliyyatlar</div>
+        <button data-sub="dash" aria-selected="true" onclick="goSub('dash')">İcmal</button>
+        <button data-sub="rezall" aria-selected="false" onclick="goSub('rezall')">Rezervasiyalar</button>
+        <button data-sub="cmp" aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
+        <button data-sub="dmg" aria-selected="false" onclick="goSub('dmg')">Ziyan iddiaları <span id="dmgcount"></span></button>
+        <button data-sub="msg" aria-selected="false" onclick="goSub('msg')">Yazışmalar <span id="msgcount"></span></button>
+        <button data-sub="support" aria-selected="false" onclick="goSub('support')">Dəstək mesajları <span id="supportcount"></span></button>
+        <div class="adm-grp">İstifadəçilər</div>
+        <button data-sub="cust" aria-selected="false" onclick="goSub('cust')">Müştərilər <span id="custcount"></span></button>
+        <button data-sub="hosts" aria-selected="false" onclick="goSub('hosts')">Ev sahibləri <span id="hostscount"></span></button>
+        <button data-sub="sanc" aria-selected="false" onclick="goSub('sanc')">Nəzarət <span id="sanccount"></span></button>
+        <div class="adm-grp">Elanlar</div>
+        <button data-sub="mod" aria-selected="false" onclick="goSub('mod')">Elan moderasiyası <span id="modcount"></span></button>
+        <button data-sub="edits" aria-selected="false" onclick="goSub('edits')">Elan dəyişiklikləri <span id="editcount"></span></button>
+        <button data-sub="dels" aria-selected="false" onclick="goSub('dels')">Silinmə müraciətləri <span id="delcount"></span></button>
+        <div class="adm-grp">Rəy və bildirişlər</div>
+        <button data-sub="rep" aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
+        <button data-sub="notif" aria-selected="false" onclick="goSub('notif')">Bildirişlər <span id="notifcount"></span></button>
+        <button data-sub="hnotice" aria-selected="false" onclick="goSub('hnotice')">Ev sahibi bildirişləri</button>
+        <div class="adm-grp">Analitika</div>
+        <button data-sub="stats" aria-selected="false" onclick="goSub('stats')">Bazar statistikası</button>
+        <button data-sub="fin" aria-selected="false" onclick="goSub('fin')">Maliyyə</button>
+        <button class="adm-out" onclick="adminLogout()">Admindən çıx</button>
+      </nav>
+      <div id="admHead"><h2>İcmal</h2><p>Bu gün nə gözləyir, gəlir və yaxınlaşan girişlər.</p></div>
       <div class="stats" id="adminstats"></div>
-      <div class="subtabs">
-        <button aria-selected="true" onclick="goSub('rezall')">Bütün rezervasiyalar</button>
-        <button aria-selected="false" onclick="goSub('cust')">Müştərilər <span id="custcount"></span></button>
-        <button aria-selected="false" onclick="goSub('mod')">Elan moderasiyası <span id="modcount"></span></button>
-        <button aria-selected="false" onclick="goSub('hosts')">Ev sahibləri <span id="hostscount"></span></button>
-        <button aria-selected="false" onclick="goSub('stats')">Bazar statistikası</button>
-        <button aria-selected="false" onclick="goSub('edits')">Elan dəyişiklikləri <span id="editcount"></span></button>
-        <button aria-selected="false" onclick="goSub('dels')">Silinmək üçün müraciət olunan evlər <span id="delcount"></span></button>
-        <button aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
-        <button aria-selected="false" onclick="goSub('rep')">Qərəzli rəy şikayətləri <span id="repcount"></span></button>
-        <button aria-selected="false" onclick="goSub('notif')">Bildirişlər <span id="notifcount"></span></button>
-        <button aria-selected="false" onclick="goSub('hnotice')">Ev sahibi bildirişləri</button>
-        <button aria-selected="false" onclick="goSub('dmg')">Ziyan iddiaları</button>
-        <button aria-selected="false" onclick="goSub('msg')">Yazışmalar <span id="msgcount"></span></button>
-        <button aria-selected="false" onclick="goSub('support')">Dəstək mesajları <span id="supportcount"></span></button>
-        <button aria-selected="false" onclick="goSub('sanc')">Nəzarət <span id="sanccount"></span></button>
-        <button aria-selected="false" onclick="goSub('fin')">Maliyyə</button>
-        <button class="icon-btn" style="margin-left:auto" onclick="adminLogout()">Admindən çıx</button>
+
+      <div class="sub active" id="s-dash">
+        <div class="dash-todo" id="dashTodo"></div>
+        <div class="dash-two">
+          <div class="dash-card"><h4>Son 14 gün: ödənilmiş bronlar</h4><div class="sub2" id="dashChartSum"></div><div id="dashChart"></div></div>
+          <div class="dash-card"><h4>Yaxınlaşan girişlər (7 gün)</h4><div class="sub2">Ödənilmiş bronlar</div><div class="dash-list" id="dashUpcoming"></div></div>
+        </div>
+        <div class="dash-card"><h4>Son rezervasiyalar</h4><div class="dash-list" id="dashRecent"></div>
+          <div style="margin-top:8px"><button class="btn sm ghost" style="width:auto" onclick="goSub('rezall')">Hamısına bax →</button></div></div>
       </div>
 
-      <div class="sub active" id="s-rezall">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn sm ghost" onclick="exportBookingsCsv()">⬇ CSV ixrac et</button></div>
+      <div class="sub" id="s-rezall">
+        <div class="rz-bar">
+          <label class="grow">Axtar<input type="text" id="rz-q" placeholder="Kod, ev, qonaq, telefon və ya ev sahibi..." oninput="rezSet('q',this.value)"></label>
+          <label>Tarix növü<select id="rz-basis" onchange="rezSet('basis',this.value)">
+            <option value="created">Rezervasiya tarixi</option><option value="in">Giriş tarixi</option><option value="out">Çıxış tarixi</option></select></label>
+          <label>Başlanğıc<input type="date" id="rz-from" onchange="rezSet('from',this.value)"></label>
+          <label>Son<input type="date" id="rz-to" onchange="rezSet('to',this.value)"></label>
+          <div class="rz-quick">
+            <button onclick="rezQuick('today')">Bu gün</button><button onclick="rezQuick('7')">Son 7 gün</button>
+            <button onclick="rezQuick('30')">Son 30 gün</button><button onclick="rezQuick('month')">Bu ay</button>
+            <button onclick="rezQuick('')">Təmizlə</button>
+          </div>
+          <button class="btn sm ghost" style="width:auto" onclick="exportBookingsCsv()">⬇ CSV (filtrlənmiş)</button>
+        </div>
+        <div class="rz-chips" id="rezchips"></div>
+        <div class="rz-sum" id="rezsum"></div>
         <div class="tblwrap"><table class="tbl">
-          <thead><tr><th>Kod</th><th>Ev</th><th>Qonaq</th><th>Telefon</th><th>Ev sahibi</th><th>Tarix</th><th>Gecə</th><th>Ödəniş</th><th>Bank</th><th>Status</th><th>Admin əməliyyatı</th></tr></thead>
+          <thead><tr><th>Kod</th><th>Ev</th><th>Qonaq</th><th>Telefon</th><th>Ev sahibi</th><th>Yaradılıb</th><th>Giriş – Çıxış</th><th>Gecə</th><th>Məbləğ</th><th>Status</th></tr></thead>
           <tbody id="rezalltable"></tbody>
         </table></div>
+        <div class="rz-pager" id="rezpager"></div>
       </div>
 
       <div class="sub" id="s-cust">
         <div style="display:flex;gap:10px;margin-bottom:14px">
-          <input type="text" id="custSearch" placeholder="Ad, telefon, e-poçt və ya FİN üzrə axtar..." oninput="renderCustomers()"
+          <input type="text" id="custSearch" placeholder="Ad, telefon, e-poçt və ya FİN üzrə axtar..." oninput="CU.page=1;renderCustomers()"
             style="flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px">
           <button class="btn sm ghost" style="width:auto;white-space:nowrap" onclick="exportCustomersCsv()">⬇ CSV</button>
         </div>
+        <div class="rz-bar" style="margin-top:0">
+          <label>Qeydiyyat: başlanğıc<input type="date" id="cu-from" onchange="cuSet('from',this.value)"></label>
+          <label>Son<input type="date" id="cu-to" onchange="cuSet('to',this.value)"></label>
+          <div class="rz-quick"><button onclick="cuQuick('7')">Son 7 gün</button><button onclick="cuQuick('30')">Son 30 gün</button><button onclick="cuQuick('')">Təmizlə</button></div>
+        </div>
+        <div class="rz-chips" id="custchips"></div>
+        <div class="rz-sum" id="custsum"></div>
         <div class="blist" id="customerlist"></div>
+        <div class="rz-pager" id="custpager"></div>
       </div>
 
       <div class="sub" id="s-mod">
         <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn sm ghost" onclick="exportListingsCsv()">⬇ Bütün elanları CSV ixrac et</button></div>
+        <input type="text" id="modSearch" placeholder="Elan, ev sahibi, e-poçt, şəhər və ya VÖEN üzrə axtar..." oninput="mdSet('q',this.value)"
+          style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
+        <div class="rz-chips" id="modchips"></div>
+        <div class="rz-sum" id="modsum"></div>
         <div class="blist" id="modlist"></div>
+        <div class="rz-pager" id="modpager"></div>
       </div>
       <div class="sub" id="s-hosts">
-        <input type="text" id="hostSearch" placeholder="Ad, e-poçt və ya VÖEN üzrə axtar..." oninput="renderHostsAdmin()"
+        <input type="text" id="hostSearch" placeholder="Ad, e-poçt və ya VÖEN üzrə axtar..." oninput="HU.page=1;renderHostsAdmin()"
           style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
+        <div class="rz-bar" style="margin-top:0"><label>Sırala<select id="hostSort" onchange="huSet('sort',this.value)"><option value="listings">Elan sayına görə</option><option value="gmv">Dövriyyəyə görə</option><option value="bookings">Bron sayına görə</option><option value="complaints">Şikayətlərə görə</option></select></label></div>
+        <div class="rz-chips" id="hostchips"></div>
+        <div class="rz-sum" id="hostsum"></div>
         <div class="blist" id="hostslist"></div>
+        <div class="rz-pager" id="hostpager"></div>
       </div>
       <div class="sub" id="s-stats">
         <input type="text" id="statsSearch" placeholder="Region və ya ev tipi üzrə axtar..." oninput="renderMarketStatsAdmin()"
@@ -1003,7 +1117,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
       <div class="sub" id="s-dmg">
         <p class="note" style="text-align:left;margin:0 0 10px"><b>Ziyan iddiaları.</b> Ev sahibi çıxışdan sonra 48 saat ərzində iddia göndərir, qonaq 72 saat ərzində cavab verir. Etiraz və ya cavabsızlıq olanda sübutlara (giriş şəkilləri, iddia şəkilləri, qonağın cavabı) baxıb qərar ver. Ödəniş platformadan keçmir: qərardan sonra tərəflər birbaşa həll edir, ev sahibi "Ödənişi aldım" işarələyir.</p>
+        <input type="text" id="dmgSearch" placeholder="Kod, ev, ev sahibi, qonaq və ya iddia mətni üzrə axtar..." oninput="dmSet('q',this.value)"
+          style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
+        <div class="rz-chips" id="dmgchips"></div>
+        <div class="rz-sum" id="dmgsum"></div>
         <div id="dmglist"></div>
+        <div class="rz-pager" id="dmgpager"></div>
       </div>
       <div class="sub" id="s-msg">
         <input type="text" id="msgSearch" placeholder="Ev adı, qonaq və ya ev sahibi adı / e-poçtu və ya mesaj mətni üzrə axtar..." oninput="renderAdminMessages()"
@@ -1086,6 +1205,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 </div>
 
 <!-- ZİYAN İDDİASI (ev sahibi) -->
+<div class="modal" id="bkDetailModal" role="dialog" aria-modal="true" aria-label="Rezervasiya detalları">
+  <div class="box" style="width:min(640px,100%)">
+    <div id="bkDetailBody"></div>
+    <button class="btn ghost" onclick="closeModal('bkDetailModal')">Bağla</button>
+  </div>
+</div>
 <div class="modal" id="dmgModal" role="dialog" aria-modal="true" aria-label="Ziyan iddiası">
   <div class="box">
     <h3>Ziyan iddiası göndər</h3>
@@ -1396,7 +1521,7 @@ var DEFAULT_RULES = {kids:true,pets:false,smoke:false,party:false,quiet:true,nos
 
 var SEED=[]; /* nümunə evlər silindi — yalnız real elanlar (Firestore) göstərilir */
 
-var state={tab:'kesf',sub:'rezall',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
+var state={tab:'kesf',sub:'dash',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
   notifications:[],reviews:[],reports:[],customers:[],sanctions:[],violations:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,editingListingId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
   coverData:null,coverFile:null,pendingRooms:[],currentRoomPhotos:[],currentRoomPhotoFiles:[],galleryList:[],galleryIdx:0,
   calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null,guestType:null,pool:'Hamısı',
@@ -2462,7 +2587,7 @@ function go(tab){
   if(tab==='host'){ renderHost(); setTimeout(ensureHostMap,60); }
   if(tab==='admin'){
     document.getElementById('adminGate').style.display = state.adminAuth?'none':'flex';
-    document.getElementById('adminContent').style.display = state.adminAuth?'block':'none';
+    document.getElementById('adminContent').style.display = state.adminAuth?'':'none';
     if(state.adminAuth) renderAdmin();
     if(location.hash!=='#admin'){ try{ location.hash='admin'; }catch(e){} }
   } else if(location.hash){
@@ -2497,7 +2622,7 @@ function adminGoogleLogin(){
       }
       state.adminAuth=true;
       document.getElementById('adminGate').style.display='none';
-      document.getElementById('adminContent').style.display='block';
+      document.getElementById('adminContent').style.display='';
       startAdminOnlySync();
       startAdminChatSync();
       startAdminSupportSync();
@@ -2522,13 +2647,38 @@ function adminLogout(){
      logout() ilə çıxılmalıdır. */
 }
 var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','hnotice','dmg','msg','support','sanc','fin'];
+var ADM_HEAD={
+  dash:['İcmal','Bu gün nə gözləyir, gəlir və yaxınlaşan girişlər.'],
+  rezall:['Rezervasiyalar','Bütün bronlar: status, tarix aralığı və axtarışla süz.'],
+  cmp:['Rezervasiya şikayətləri','Qonaqların şikayətləri və geri qaytarma qərarları.'],
+  dmg:['Ziyan iddiaları','Ev sahiblərinin ziyan iddiaları, qonaq cavabları və qərarlar.'],
+  msg:['Yazışmalar','Qonaq və ev sahibi yazışmalarına nəzarət.'],
+  support:['Dəstək mesajları','İstifadəçilərdən gələn dəstək müraciətləri.'],
+  cust:['Müştərilər','Qeydiyyatdan keçmiş və doğrulanmış istifadəçilər.'],
+  hosts:['Ev sahibləri','Ev sahiblərinin rekvizitləri və Epoint ID-ləri.'],
+  sanc:['Nəzarət','Pozuntular, xəbərdarlıqlar və sanksiyalar.'],
+  mod:['Elan moderasiyası','Təsdiq gözləyən yeni elanlar.'],
+  edits:['Elan dəyişiklikləri','Ev sahiblərinin göndərdiyi dəyişikliklər.'],
+  dels:['Silinmə müraciətləri','Elanı silmək istəyən ev sahibləri.'],
+  rep:['Qərəzli rəy şikayətləri','Rəylər barədə ev sahibi şikayətləri.'],
+  notif:['Bildirişlər','Platforma bildirişləri.'],
+  hnotice:['Ev sahibi bildirişləri','Şərt yeniləmələri və məlumat bildirişləri.'],
+  stats:['Bazar statistikası','Bölgələr, evlər və tələb üzrə göstəricilər.'],
+  fin:['Maliyyə','Ev sahiblərinə ödənişlər və komissiya.']
+};
 function goSub(s){
   state.sub=s;
   if(s==='hnotice') setTimeout(loadAdminNotices,0);
   if(s==='dmg') setTimeout(loadAdminClaims,0);
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
-  document.getElementById('s-'+s).classList.add('active');
-  document.querySelectorAll('.subtabs button[onclick^="goSub"]').forEach(function(b,i){ b.setAttribute('aria-selected', SUBTABS[i]===s?'true':'false'); });
+  var pane=document.getElementById('s-'+s); if(pane) pane.classList.add('active');
+  document.querySelectorAll('.adm-nav button[data-sub]').forEach(function(b){ b.setAttribute('aria-selected', b.getAttribute('data-sub')===s?'true':'false'); });
+  var h=ADM_HEAD[s]||['',''];
+  var hd=document.getElementById('admHead'); if(hd) hd.innerHTML='<h2>'+h[0]+'</h2><p>'+h[1]+'</p>';
+  var st=document.getElementById('adminstats'); if(st) st.style.display=(s==='dash'||s==='rezall'||s==='fin'||s==='stats')?'':'none';
+  if(s==='rezall' && typeof renderRez==='function') renderRez();
+  if(s==='dash' && typeof renderDash==='function') renderDash();
+  window.scrollTo({top:0,behavior:'auto'});
 }
 
 /* ============ siyahı ============ */
@@ -3778,13 +3928,37 @@ function markClaimPaid(id){
   .catch(function(e){ toast((e&&e.message)||'Alınmadı'); });
 }
 /* admin */
+/* ===== Ziyan iddiaları (admin): məlumat önbelleği + filtr + səhifələmə ===== */
+var DM={cat:'needs',q:'',page:1,per:8};
+var DM_CATS=[['needs','Qərar gözləyir'],['open','Qonaq cavabı gözlənilir'],['accepted','Qəbul edilib'],['decided','Qərar verilib'],['all','Hamısı']];
+function dmCat(c){ if(c.status==='disputed'||c.status==='no_response') return 'needs'; return c.status==='open'?'open':(c.status==='accepted'?'accepted':(c.status==='decided'?'decided':'other')); }
+function dmSet(k,v){ DM[k]=v; DM.page=1; renderClaimsAdmin(); }
+function dmPage(n){ DM.page=n; renderClaimsAdmin(); }
+function claimsOf(email,role){
+  var cs=state.adminClaims; if(!cs) return null;
+  var key=role==='guest'?'guestEmail':'hostEmail', e=String(email||'').toLowerCase();
+  return cs.filter(function(c){ return String(c[key]||'').toLowerCase()===e; });
+}
+function fetchAdminClaims(cb){
+  if(!fbOnline||!fbFunctions||!state.adminAuth){ return; }
+  state._acAt=Date.now();
+  fbFunctions.httpsCallable('adminListDamageClaims')({}).then(function(res){
+    state.adminClaims=(res.data&&res.data.claims)||[];
+    var n=state.adminClaims.filter(function(c){return dmCat(c)==='needs';}).length;
+    var sp=document.getElementById('dmgcount'); if(sp) sp.textContent=n?('('+n+')'):'';
+    if(cb) cb(null);
+    try{ renderDash(); renderHostsAdmin(); renderCustomers(); }catch(e){}
+  }).catch(function(e){ if(cb) cb(e); });
+}
 function loadAdminClaims(){
   var el=document.getElementById('dmglist'); if(!el||!fbOnline||!fbFunctions) return;
-  el.innerHTML='<p class="note" style="text-align:left">Yüklənir...</p>';
-  fbFunctions.httpsCallable('adminListDamageClaims')({}).then(function(res){
-    var cs=(res.data&&res.data.claims)||[];
-    if(!cs.length){ el.innerHTML='<p class="note" style="text-align:left">Hələ iddia yoxdur.</p>'; return; }
-    el.innerHTML=cs.map(function(c){
+  if(!state.adminClaims) el.innerHTML='<p class="note" style="text-align:left">Yüklənir...</p>';
+  fetchAdminClaims(function(err){
+    if(err){ el.innerHTML='<p class="note" style="text-align:left;color:var(--nar)">'+esc((err&&err.message)||'Yüklənmədi')+'</p>'; return; }
+    renderClaimsAdmin();
+  });
+}
+function claimCardAdmin(c){
       var needs=['disputed','no_response','open'].indexOf(c.status)>=0;
       var form=needs?'<div style="display:grid;gap:6px;margin-top:8px">'
         +'<select id="dd-'+c.id+'" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px;font-weight:600"><option value="host">İddia əsaslıdır (tam məbləğ)</option><option value="partial">Qismən əsaslıdır</option><option value="guest">İddia əsassızdır</option></select>'
@@ -3802,8 +3976,21 @@ function loadAdminClaims(){
         +(c.status==='decided'?'<div class="m" style="margin-top:6px"><b>Qərar:</b> '+esc(c.decision)+' · '+az2(c.finalAmount||0)+' · '+esc(c.adminNote||'')+'</div>':'')
         +(c.payStatus==='paid'?'<div class="m" style="color:var(--ok);font-weight:800;margin-top:6px">Ödəniş alınıb</div>':'')
         +form+paidBtn+'</div>';
-    }).join('');
-  }).catch(function(e){ el.innerHTML='<p class="note" style="text-align:left;color:var(--nar)">'+esc((e&&e.message)||'Yüklənmədi')+'</p>'; });
+}
+function renderClaimsAdmin(){
+  var el=document.getElementById('dmglist'); if(!el) return;
+  var all=state.adminClaims||[];
+  var q=DM.q.trim().toLowerCase();
+  var base=all.filter(function(c){ return !q || [c.code,c.title,c.hostName,c.hostEmail,c.guestName,c.guestEmail,c.description].join(' ').toLowerCase().indexOf(q)>=0; });
+  var counts={all:base.length}; base.forEach(function(c){ var k=dmCat(c); counts[k]=(counts[k]||0)+1; });
+  var list=(DM.cat==='all'?base:base.filter(function(c){return dmCat(c)===DM.cat;})).slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+  var pages=Math.max(1,Math.ceil(list.length/DM.per)); if(DM.page>pages) DM.page=pages;
+  var rows=list.slice((DM.page-1)*DM.per,DM.page*DM.per);
+  var sum=list.reduce(function(s,c){return s+(+c.amount||0);},0);
+  document.getElementById('dmgchips').innerHTML=chipsHtml(DM_CATS,DM.cat,counts,'dmSet');
+  document.getElementById('dmgsum').innerHTML='<span><b>'+list.length+'</b> iddia</span><span>Cəmi iddia məbləği: <b>'+az2(sum)+'</b></span>';
+  el.innerHTML=rows.length?rows.map(claimCardAdmin).join(''):'<div class="empty"><h3>Bu filtrə uyğun iddia yoxdur</h3></div>';
+  document.getElementById('dmgpager').innerHTML=pagerHtml(DM.page,DM.per,list.length,'dmPage');
 }
 function adminDecideClaim(id){
   var decision=document.getElementById('dd-'+id).value, amount=document.getElementById('da-'+id).value, note=document.getElementById('dn-'+id).value.trim();
@@ -5136,10 +5323,18 @@ function custTag(status){
 function renderCustomers(){
   var qEl=document.getElementById('custSearch');
   var q=(qEl?qEl.value:'').trim().toLowerCase();
-  var list=state.customers.filter(function(c){
+  var base=state.customers.filter(function(c){
+    if(CU.from||CU.to){ var d=c.registeredAt?rezLocalDay(new Date(c.registeredAt).getTime()):''; if(!d||(CU.from&&d<CU.from)||(CU.to&&d>CU.to)) return false; }
     if(!q) return true;
     return (c.name+' '+c.phone+' '+c.email+' '+c.fin).toLowerCase().indexOf(q)>=0;
   });
+  var cuCounts={all:base.length}; base.forEach(function(c){ var k=cuCat(c); cuCounts[k]=(cuCounts[k]||0)+1; });
+  var list=(CU.cat==='all'?base:base.filter(function(c){return cuCat(c)===CU.cat;})).slice().sort(function(a,b){return new Date(b.registeredAt||0)-new Date(a.registeredAt||0);});
+  var cuTotal=list.length, cuPages=Math.max(1,Math.ceil(cuTotal/CU.per)); if(CU.page>cuPages) CU.page=cuPages;
+  list=list.slice((CU.page-1)*CU.per,CU.page*CU.per);
+  var chE=document.getElementById('custchips'); if(chE) chE.innerHTML=chipsHtml(CU_CATS,CU.cat,cuCounts,'cuSet');
+  var smE=document.getElementById('custsum'); if(smE) smE.innerHTML='<span><b>'+cuTotal+'</b> müştəri</span>';
+  var pgE=document.getElementById('custpager'); if(pgE) pgE.innerHTML=pagerHtml(CU.page,CU.per,cuTotal,'cuPage');
   var el=document.getElementById('customerlist'); if(!el) return;
   if(!state.customers.length){ el.innerHTML='<div class="empty"><h3>Hələ qeydiyyatlı müştəri yoxdur</h3><p>İstifadəçilər daxil olub şəxsiyyət vəsiqəsini yüklədikcə burada görünəcəklər.</p></div>'; return; }
   if(!list.length){ el.innerHTML='<div class="empty"><h3>Axtarışa uyğun müştəri tapılmadı</h3></div>'; return; }
@@ -5173,6 +5368,7 @@ function renderCustomers(){
       +'<div class="m">'+esc(c.email)+' · '+esc(c.phone)+' · FİN '+esc(c.fin)+'</div>'
       +'<div class="m">Qeydiyyat: '+new Date(c.registeredAt).toLocaleDateString('az-AZ')+' · '+theirBookings.length+' rezervasiya</div>'
       +'<div class="m">'+guestRatingBadgeHtml(c.email)+'</div>'
+      +(function(){ var cs=claimsOf(c.email,'guest'); return cs&&cs.length?'<div class="m" style="color:var(--nar);font-weight:700">Ziyan iddiası: '+cs.length+' ('+az2(cs.reduce(function(s,x){return s+(+x.amount||0);},0))+')</div>':''; })()
       +'<div style="margin-top:6px">'+custTag(c.status)+'</div>'
       +(c.flags&&c.flags.length?'<div class="split" style="border-color:var(--warn)">'+c.flags.map(function(f){return '<div><span style="color:var(--warn)">⚠ '+esc(f)+'</span></div>';}).join('')+'</div>':'')
       +(c.status==='rejected'&&c.rejectionReason?'<div class="split" style="border-color:var(--nar)"><div><span style="color:var(--nar)">✕ İmtina səbəbi: '+esc(c.rejectionReason)+'</span></div></div>':'')
@@ -5237,13 +5433,25 @@ function renderHostsAdmin(){
     groups[key].iban=x.iban;
     groups[key].whatsapp=x.whatsapp;
   });
-  var all=Object.keys(groups).map(function(k){return groups[k];});
+  var all=Object.keys(groups).map(function(k){var g=groups[k]; g.m=hostMetrics(g); return g;});
 
-  var list=all.filter(function(g){
+  var hbase=all.filter(function(g){
     if(!q) return true;
     return ((g.host||'')+' '+(g.email||'')+' '+(g.voen||'')).toLowerCase().indexOf(q)>=0;
   });
-  list.sort(function(a,b){return b.listings.length-a.listings.length;});
+  var huCounts={all:hbase.length}; hbase.forEach(function(g){ huCats(g).forEach(function(k){ huCounts[k]=(huCounts[k]||0)+1; }); });
+  var list=(HU.cat==='all'?hbase:hbase.filter(function(g){return huCats(g).indexOf(HU.cat)>=0;})).slice();
+  list.sort(function(a,b){
+    if(HU.sort==='gmv') return b.m.gmv-a.m.gmv;
+    if(HU.sort==='bookings') return b.m.n-a.m.n;
+    if(HU.sort==='complaints') return b.m.cmp-a.m.cmp;
+    return b.listings.length-a.listings.length;
+  });
+  var huTotal=list.length, huPages=Math.max(1,Math.ceil(huTotal/HU.per)); if(HU.page>huPages) HU.page=huPages;
+  list=list.slice((HU.page-1)*HU.per,HU.page*HU.per);
+  var hcE=document.getElementById('hostchips'); if(hcE) hcE.innerHTML=chipsHtml(HU_CATS,HU.cat,huCounts,'huSet');
+  var hsE=document.getElementById('hostsum'); if(hsE) hsE.innerHTML='<span><b>'+huTotal+'</b> ev sahibi</span>';
+  var hpE=document.getElementById('hostpager'); if(hpE) hpE.innerHTML=pagerHtml(HU.page,HU.per,huTotal,'huPage');
 
   var countEl=document.getElementById('hostscount');
   if(countEl) countEl.textContent = all.length?('('+all.length+')'):'';
@@ -5273,6 +5481,7 @@ function renderHostsAdmin(){
       +'<div class="m">'+esc(g.bank||'—')+' · '+(g.iban?esc(g.iban.slice(0,8))+'…':'—')+'</div>'
       +'<div class="m">'+(g.whatsapp?('WhatsApp: <a href="https://wa.me/'+esc(g.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(g.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
       +'<div class="m"><b>'+g.listings.length+'</b> elan · '+breakdown+'</div>'
+      +hostMetricsHtml(g)
       +'<div class="split" style="margin-top:8px">'+rows+'</div>'
       +(g.email?('<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+(sancTagHtml(g.email)||'')+sancButtonsHtml(g.email)+'</div>'):'')
       +'</div></div>';
@@ -5331,9 +5540,291 @@ function downloadCsv(filename, headers, rows){
   var a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click();
   setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },200);
 }
+
+/* ===== Rezervasiyalar: kateqoriya + tarix aralığı + axtarış + səhifələmə ===== */
+var REZ={cat:'all',q:'',basis:'created',from:'',to:'',page:1,per:25};
+var REZ_CATS=[['all','Hamısı'],['pending','Ödəniş gözlənilir'],['expired','Ödəniş vaxtı bitib'],['failed','Ödəniş alınmadı'],['hold','Təsdiqlənib (vəsait saxlanılır)'],['complaint','Şikayət'],['released','Ev sahibinə köçürülüb'],['refunded','Geri qaytarılıb']];
+function rezCat(b){
+  if(b.status==='expired') return 'expired';
+  if(b.status==='hold' && b.paymentStatus==='pending') return 'pending';
+  if(b.status==='hold' && b.paymentStatus==='failed') return 'failed';
+  if(b.status==='hold') return 'hold';
+  if(b.status==='complaint') return 'complaint';
+  if(b.status==='released') return 'released';
+  if(b.status==='refunded') return 'refunded';
+  return 'other';
+}
+function rezLocalDay(ms){ return new Date(ms).toLocaleDateString('sv-SE'); }
+function rezInRange(b){
+  if(!REZ.from && !REZ.to) return true;
+  var d;
+  if(REZ.basis==='in') d=b.d1||''; else if(REZ.basis==='out') d=b.d2||''; else d=b.createdAt?rezLocalDay(b.createdAt):'';
+  if(!d) return false;
+  if(REZ.from && d<REZ.from) return false;
+  if(REZ.to && d>REZ.to) return false;
+  return true;
+}
+function rezMatches(b){
+  if(!rezInRange(b)) return false;
+  var q=REZ.q.trim().toLowerCase();
+  if(!q) return true;
+  return [b.code,b.title,b.guest,b.phone,b.host,b.email].join(' ').toLowerCase().indexOf(q)>=0;
+}
+function rezFiltered(){
+  var base=state.bookings.filter(rezMatches);
+  var counts={all:base.length};
+  base.forEach(function(b){ var c=rezCat(b); counts[c]=(counts[c]||0)+1; });
+  var list=REZ.cat==='all'?base:base.filter(function(b){return rezCat(b)===REZ.cat;});
+  list=list.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+  return {list:list,counts:counts};
+}
+function rezSet(k,v){ REZ[k]=v; REZ.page=1; renderRez(); }
+function rezQuick(k){
+  var now=new Date(), iso=function(d){return d.toLocaleDateString('sv-SE');};
+  if(k==='today'){ REZ.from=REZ.to=iso(now); }
+  else if(k==='7'||k==='30'){ var f=new Date(now.getTime()-(+k-1)*86400000); REZ.from=iso(f); REZ.to=iso(now); }
+  else if(k==='month'){ REZ.from=iso(new Date(now.getFullYear(),now.getMonth(),1)); REZ.to=iso(now); }
+  else { REZ.from=''; REZ.to=''; REZ.q=''; REZ.cat='all'; var qi=document.getElementById('rz-q'); if(qi) qi.value=''; }
+  if(k) REZ.basis=document.getElementById('rz-basis')?document.getElementById('rz-basis').value:REZ.basis;
+  var a=document.getElementById('rz-from'), b=document.getElementById('rz-to');
+  if(a) a.value=REZ.from; if(b) b.value=REZ.to;
+  REZ.page=1; renderRez();
+}
+function rezPage(n){ REZ.page=n; renderRez(); var t=document.getElementById('s-rezall'); if(t) t.scrollIntoView({block:'start'}); }
+function renderRez(){
+  var tb=document.getElementById('rezalltable'); if(!tb) return;
+  var r=rezFiltered(), list=r.list, counts=r.counts;
+  document.getElementById('rezchips').innerHTML=REZ_CATS.map(function(c){
+    return '<button aria-pressed="'+(REZ.cat===c[0])+'" onclick="rezSet(\'cat\',\''+c[0]+'\')">'+c[1]+' <b>'+(counts[c[0]]||0)+'</b></button>';
+  }).join('');
+  var sum=list.reduce(function(s,b){return s+(+b.total||0);},0);
+  var paidSum=list.filter(isPaidBooking).reduce(function(s,b){return s+(+b.total||0);},0);
+  document.getElementById('rezsum').innerHTML='<span><b>'+list.length+'</b> rezervasiya tapıldı</span><span>Cəmi məbləğ: <b>'+az2(sum)+'</b> · Ödənilmiş: <b>'+az2(paidSum)+'</b></span>';
+  var pages=Math.max(1,Math.ceil(list.length/REZ.per));
+  if(REZ.page>pages) REZ.page=pages;
+  var from=(REZ.page-1)*REZ.per, rows=list.slice(from,from+REZ.per);
+  tb.innerHTML = rows.length ? rows.map(function(b){
+    return '<tr class="clk" onclick="openBkDetail(\''+esc(b.code)+'\')"><td>'+esc(b.code)+'</td><td>'+esc((b.title||'').slice(0,26))+'</td><td>'+esc(b.guest||'—')+'</td><td>'+esc(b.phone||'—')+'</td>'
+      +'<td>'+esc(b.host||'—')+'</td><td>'+(b.createdAt?new Date(b.createdAt).toLocaleString('az-AZ',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—')+'</td>'
+      +'<td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td><td class="money">'+az2(b.total)+'</td><td>'+statusTag(b.status,b)+'</td></tr>';
+  }).join('') : '<tr><td colspan="10" style="color:var(--muted);text-align:center;padding:26px">Bu filtrlərə uyğun rezervasiya yoxdur.</td></tr>';
+  document.getElementById('rezpager').innerHTML = list.length>REZ.per
+    ? '<span>'+(from+1)+'–'+Math.min(from+REZ.per,list.length)+' / '+list.length+'</span><div class="pg"><button class="btn sm ghost" style="width:auto" '+(REZ.page<=1?'disabled':'')+' onclick="rezPage('+(REZ.page-1)+')">← Əvvəlki</button><span style="align-self:center">'+REZ.page+' / '+pages+'</span><button class="btn sm ghost" style="width:auto" '+(REZ.page>=pages?'disabled':'')+' onclick="rezPage('+(REZ.page+1)+')">Növbəti →</button></div>'
+    : '';
+}
+
+/* ===== Ortaq səhifələmə ===== */
+function pagerHtml(page,per,total,fn){
+  if(total<=per) return '';
+  var pages=Math.ceil(total/per), from=(page-1)*per;
+  return '<span>'+(from+1)+'–'+Math.min(from+per,total)+' / '+total+'</span><div class="pg"><button class="btn sm ghost" style="width:auto" '+(page<=1?'disabled':'')+' onclick="'+fn+'('+(page-1)+')">← Əvvəlki</button><span style="align-self:center">'+page+' / '+pages+'</span><button class="btn sm ghost" style="width:auto" '+(page>=pages?'disabled':'')+' onclick="'+fn+'('+(page+1)+')">Növbəti →</button></div>';
+}
+function chipsHtml(cats,cur,counts,fn){
+  return cats.map(function(c){ return '<button aria-pressed="'+(cur===c[0])+'" onclick="'+fn+'(\'cat\',\''+c[0]+'\')">'+c[1]+' <b>'+(counts[c[0]]||0)+'</b></button>'; }).join('');
+}
+
+/* ===== İcmal ===== */
+function dashN(id){ var e=document.getElementById(id); var m=e?e.textContent.match(/\d+/):null; return m?+m[0]:0; }
+function renderDash(){
+  var el=document.getElementById('dashTodo'); if(!el) return;
+  var pendCust=state.customers.filter(function(c){return c.status==='pending'||c.status==='unverified'||!c.status;}).length;
+  var pendPay=state.bookings.filter(function(b){return rezCat(b)==='pending';}).length;
+  var tiles=[
+    ['Yeni elanlar',dashN('modcount'),"goSub('mod')"],
+    ['Elan dəyişiklikləri',dashN('editcount'),"goSub('edits')"],
+    ['Silinmə müraciətləri',dashN('delcount'),"goSub('dels')"],
+    ['Rezervasiya şikayətləri',dashN('cmpcount'),"goSub('cmp')"],
+    ['Ziyan iddiaları (qərar gözləyir)',dashN('dmgcount'),"DM.cat='needs';DM.page=1;goSub('dmg')"],
+    ['Rəy şikayətləri',dashN('repcount'),"goSub('rep')"],
+    ['Dəstək mesajları',dashN('supportcount'),"goSub('support')"],
+    ['Yoxlanılmamış müştərilər',pendCust,"CU.cat='other';CU.page=1;goSub('cust')"],
+    ['Ödəniş gözləyən bronlar',pendPay,"REZ.cat='pending';REZ.page=1;goSub('rezall')"]
+  ];
+  el.innerHTML=tiles.map(function(t){ return '<button class="'+(t[1]?'hot':'')+'" onclick="'+t[2]+'"><b>'+t[1]+'</b><span>'+t[0]+'</span></button>'; }).join('');
+
+  /* Son 14 gün qrafiki */
+  var days=[], now=new Date();
+  for(var i=13;i>=0;i--){ var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i); days.push({k:d.toLocaleDateString('sv-SE'),label:('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2),sum:0,n:0}); }
+  var idx={}; days.forEach(function(d,i){idx[d.k]=i;});
+  state.bookings.filter(isPaidBooking).forEach(function(b){
+    var t=b.paidAt||b.createdAt; if(!t) return;
+    var k=rezLocalDay(t); if(k in idx){ days[idx[k]].sum+=(+b.total||0); days[idx[k]].n++; }
+  });
+  var tot=days.reduce(function(s,d){return s+d.sum;},0), cnt=days.reduce(function(s,d){return s+d.n;},0);
+  document.getElementById('dashChartSum').textContent=cnt+' bron · '+az2(tot);
+  var max=Math.max.apply(null,days.map(function(d){return d.sum;}).concat([1]));
+  var W=560,H=170,pad=22,bw=(W-pad)/14, svg='<svg viewBox="0 0 '+W+' '+(H+22)+'" role="img" aria-label="Son 14 gün ödənilmiş bronlar">';
+  [0.5,1].forEach(function(f){ var y=H-(H-14)*f; svg+='<line x1="0" x2="'+W+'" y1="'+y+'" y2="'+y+'" stroke="currentColor" opacity=".12"/>'; });
+  days.forEach(function(d,i){
+    var h=d.sum?Math.max(3,(H-14)*d.sum/max):0, x=pad/2+i*bw+4, w=bw-8;
+    svg+='<g><title>'+d.label+': '+d.n+' bron · '+az2(d.sum)+'</title><rect x="'+x+'" y="'+(H-h)+'" width="'+w+'" height="'+h+'" rx="4" fill="var(--ok)"/></g>';
+    if(i%2===0) svg+='<text x="'+(x+w/2)+'" y="'+(H+15)+'" text-anchor="middle" font-size="11" fill="currentColor" opacity=".6">'+d.label+'</text>';
+  });
+  document.getElementById('dashChart').innerHTML=svg+'</svg>';
+
+  /* Yaxınlaşan girişlər */
+  var t0=rezLocalDay(Date.now()), t7=rezLocalDay(Date.now()+7*86400000);
+  var up=state.bookings.filter(function(b){return isPaidBooking(b) && b.status==='hold' && b.d1>=t0 && b.d1<=t7;}).sort(function(a,b){return a.d1<b.d1?-1:1;}).slice(0,8);
+  document.getElementById('dashUpcoming').innerHTML=up.length?up.map(function(b){
+    return '<button onclick="openBkDetail(\''+esc(b.code)+'\')"><span><b>'+fmtDate(b.d1)+'</b> · '+esc((b.title||'').slice(0,24))+'<br><small>'+esc(b.guest||'—')+'</small></span><small>'+az2(b.total)+'</small></button>';
+  }).join(''):'<div class="m" style="color:var(--muted);padding:8px">Növbəti 7 gündə giriş yoxdur.</div>';
+
+  /* Son rezervasiyalar */
+  var rec=state.bookings.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}).slice(0,8);
+  document.getElementById('dashRecent').innerHTML=rec.length?rec.map(function(b){
+    return '<button onclick="openBkDetail(\''+esc(b.code)+'\')"><span><b>'+esc(b.code)+'</b> · '+esc((b.title||'').slice(0,28))+' · '+esc(b.guest||'—')+'<br><small>'+(b.createdAt?new Date(b.createdAt).toLocaleString('az-AZ'):'—')+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</small></span><span style="display:flex;gap:10px;align-items:center"><small>'+az2(b.total)+'</small>'+statusTag(b.status,b)+'</span></button>';
+  }).join(''):'<div class="m" style="color:var(--muted);padding:8px">Hələ rezervasiya yoxdur.</div>';
+}
+
+/* ===== Rezervasiya detalı ===== */
+function openBkDetail(code){
+  var b=state.bookings.filter(function(x){return x.code===code;})[0]; if(!b) return;
+  function r(l,v){ return '<div><span>'+l+'</span><b>'+(v===undefined||v===null||v===''?'—':v)+'</b></div>'; }
+  function dt(t){ return t?new Date(t).toLocaleString('az-AZ'):'—'; }
+  var h='<h3 style="margin:0 0 4px">'+esc(b.code)+' '+statusTag(b.status,b)+'</h3><div class="m" style="margin-bottom:12px">'+esc(b.title||'')+(b.city?' · '+esc(b.city):'')+'</div><div style="display:grid;gap:12px">';
+  h+='<div class="bkd"><h5>Qonaq</h5>'+r('Ad',esc(b.guest))+r('Telefon',esc(b.phone))+r('E-poçt',esc(b.email))+r('Qonaq sayı',b.g)+'</div>';
+  h+='<div class="bkd"><h5>Ev sahibi</h5>'+r('Ad',esc(b.host))+r('E-poçt',esc(b.hostEmail))+'</div>';
+  h+='<div class="bkd"><h5>Qalma</h5>'+r('Giriş',fmtDate(b.d1))+r('Çıxış',fmtDate(b.d2))+r('Gecə',b.n)+r('Rezervasiya vaxtı',dt(b.createdAt))+r('Pulun köçürülmə vaxtı',dt(b.releaseAt))+'</div>';
+  h+='<div class="bkd"><h5>Ödəniş</h5>'+r('Kirayə',b.rent!=null?az2(b.rent):'')+r('Təmizlik',b.clean!=null?az2(b.clean):'')+r('Cəmi (qonaq ödəyib)',az2(b.total))+r('Ev sahibinə çatan',b.hostGets!=null?az2(b.hostGets):'')+r('Platforma komissiyası',b.platform!=null?az2(b.platform):'')+r('Ödəniş statusu',esc(b.paymentStatus))+r('Ödəniş vaxtı',dt(b.paidAt))+r('Ev sahibinə ödəniş',b.status==='released'?(b.payoutStatus==='paid'?'Ödənilib'+(b.payoutRef?' ('+esc(b.payoutRef)+')':''):'Gözləyir'):'—')+'</div>';
+  if(b.complaint) h+='<div class="bkd"><h5>Şikayət</h5>'+r('Səbəb',esc(b.complaint.reason))+r('Qərar',b.complaint.st==='pending'?'yoxlanılır':(b.complaint.st==='approved'?'təsdiqləndi':'rədd edildi'))+'</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  if(b.email) h+='<button class="btn sm ghost" style="width:auto" onclick="bkGo(\'cust\',\''+esc(b.email)+'\')">Qonağa bax</button>';
+  if(b.hostEmail||b.host) h+='<button class="btn sm ghost" style="width:auto" onclick="bkGo(\'hosts\',\''+esc(b.hostEmail||b.host)+'\')">Ev sahibinə bax</button>';
+  if(b.complaint) h+='<button class="btn sm ghost" style="width:auto" onclick="closeModal(\'bkDetailModal\');goSub(\'cmp\')">Şikayətə keç</button>';
+  h+='</div></div>';
+  document.getElementById('bkDetailBody').innerHTML=h;
+  openModal('bkDetailModal');
+}
+function bkGo(sub,q){
+  closeModal('bkDetailModal');
+  var id=sub==='cust'?'custSearch':'hostSearch', e=document.getElementById(id);
+  if(sub==='cust'){ CU.cat='all'; CU.from=CU.to=''; CU.page=1; } else { HU.cat='all'; HU.page=1; }
+  if(e) e.value=q;
+  goSub(sub);
+  if(sub==='cust') renderCustomers(); else renderHostsAdmin();
+}
+
+/* ===== Müştərilər: status + qeydiyyat tarixi + səhifələmə ===== */
+var CU={cat:'all',from:'',to:'',page:1,per:15};
+var CU_CATS=[['all','Hamısı'],['other','Yoxlanılmayıb'],['verified','Təsdiqlənib'],['flagged','Nəzarətdə'],['rejected','Rədd edilib'],['banned','Bloklanıb']];
+function cuCat(c){ return ['verified','flagged','rejected','banned'].indexOf(c.status)>=0?c.status:'other'; }
+function cuSet(k,v){ CU[k]=v; CU.page=1; renderCustomers(); }
+function cuPage(n){ CU.page=n; renderCustomers(); }
+function cuQuick(k){
+  var now=new Date(), iso=function(d){return d.toLocaleDateString('sv-SE');};
+  if(k==='7'||k==='30'){ CU.from=iso(new Date(now.getTime()-(+k-1)*86400000)); CU.to=iso(now); } else { CU.from=''; CU.to=''; CU.cat='all'; var q=document.getElementById('custSearch'); if(q) q.value=''; }
+  var a=document.getElementById('cu-from'), b=document.getElementById('cu-to'); if(a) a.value=CU.from; if(b) b.value=CU.to;
+  CU.page=1; renderCustomers();
+}
+/* ===== Ev sahibləri: filtr + səhifələmə ===== */
+var HU={cat:'all',page:1,per:12,sort:'listings'};
+function hostMetrics(g){
+  var ids={}; g.listings.forEach(function(x){ids[x.id]=1;});
+  var bks=state.bookings.filter(function(b){ return (b.lid!=null && ids[b.lid]) || (g.email && b.hostEmail===g.email); });
+  var paid=bks.filter(isPaidBooking);
+  return {
+    n:bks.length, paidN:paid.length,
+    gmv:paid.reduce(function(s,b){return s+(+b.total||0);},0),
+    hostGets:paid.reduce(function(s,b){return s+(+b.hostGets||0);},0),
+    com:paid.reduce(function(s,b){return s+(+b.platform||0);},0),
+    cmp:bks.filter(function(b){return b.complaint;}).length,
+    cmpUp:bks.filter(function(b){return b.complaint && b.complaint.st==='approved';}).length,
+    refunded:bks.filter(function(b){return b.status==='refunded' && b.paymentStatus==='paid';}).length,
+    recent:bks.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}).slice(0,6)
+  };
+}
+function hostClaimTile(g){
+  var cs=g.email?claimsOf(g.email,'host'):null;
+  if(!cs) return '<div><span>Ziyan iddiası</span><b>—</b></div>';
+  var amt=cs.reduce(function(s,c){return s+(+c.amount||0);},0), pend=cs.filter(function(c){return dmCat(c)==='needs';}).length;
+  return '<div><span>Ziyan iddiası</span><b style="color:'+(pend?'var(--nar)':'inherit')+'">'+cs.length+(cs.length?' · '+az2(amt):'')+(pend?' ('+pend+' qərar gözləyir)':'')+'</b></div>';
+}
+function hostMetricsHtml(g){
+  var m=g.m, key=esc(g.email||g.host||'');
+  var isOpen=!!(state.hostOpen&&state.hostOpen[key]);
+  var h='<div class="hm"><div><span>Bron</span><b>'+m.n+' ('+m.paidN+' ödənilmiş)</b></div><div><span>Dövriyyə</span><b>'+az2(m.gmv)+'</b></div>'
+    +'<div><span>Ev sahibinə çatan</span><b>'+az2(m.hostGets)+'</b></div><div><span>Komissiya</span><b>'+az2(m.com)+'</b></div>'
+    +'<div><span>Şikayət</span><b style="color:'+(m.cmp?'var(--nar)':'inherit')+'">'+m.cmp+(m.cmp?' ('+m.cmpUp+' təsdiq)':'')+'</b></div><div><span>Geri qaytarılan</span><b>'+m.refunded+'</b></div>'+hostClaimTile(g)+'</div>';
+  if(m.recent.length){
+    h+='<details'+(isOpen?' open':'')+' ontoggle="toggleHostOpen(this,\''+key+'\')" style="margin-top:8px"><summary style="cursor:pointer;font-weight:700">Son rezervasiyalar ('+m.recent.length+')</summary><div class="dash-list" style="margin-top:6px">'
+      +m.recent.map(function(b){ return '<button onclick="openBkDetail(\''+esc(b.code)+'\')"><span><b>'+esc(b.code)+'</b> · '+esc((b.title||'').slice(0,26))+'<br><small>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+esc(b.guest||'—')+'</small></span><span style="display:flex;gap:8px;align-items:center"><small>'+az2(b.total)+'</small>'+statusTag(b.status,b)+'</span></button>'; }).join('')
+      +'</div></details>';
+  }
+  return h;
+}
+function toggleHostOpen(el,key){ state.hostOpen=state.hostOpen||{}; if(el.open) state.hostOpen[key]=true; else delete state.hostOpen[key]; }
+var HU_CATS=[['all','Hamısı'],['approved','Aktiv elanı var'],['pending','Təsdiq gözləyən elanı var'],['none','Təsdiqlənmiş elanı yoxdur']];
+function huCats(g){
+  var c=[]; if(g.listings.some(function(x){return x.st==='approved';})) c.push('approved'); else c.push('none');
+  if(g.listings.some(function(x){return x.st==='pending';})) c.push('pending');
+  return c;
+}
+function huSet(k,v){ HU[k]=v; HU.page=1; renderHostsAdmin(); }
+function huPage(n){ HU.page=n; renderHostsAdmin(); }
+
+/* ===== Elan moderasiyası: kateqoriya + axtarış + səhifələmə ===== */
+var MD={cat:'pending',q:'',page:1,per:8};
+var MD_CATS=[['pending','Təsdiq gözləyir'],['noid','Epoint ID gözləyir'],['approved','Təsdiqlənib'],['rejected','Rədd edilib'],['all','Hamısı']];
+function mdCat(x){
+  if(x.st==='pending') return 'pending';
+  if(x.st==='approved') return isEpointId(x.epointId)?'approved':'noid';
+  return 'rejected';
+}
+function mdSet(k,v){ MD[k]=v; MD.page=1; renderMod(); }
+function mdPage(n){ MD.page=n; renderMod(); }
+function modPendingCard(x){
+    var R=x.rules||DEFAULT_RULES;
+    var roomCount = x.rooms?x.rooms.length:0;
+    var photoCount = allPhotosOf(x).length;
+    return '<div class="bk"><div class="th">'+(x.cover?'<img src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">':scene(x.sc,x.id))+'</div><div>'
+      +'<h4>'+esc(x.t)+'</h4>'
+      +'<div class="m">'+esc(x.c)+' ('+regionOf(x.c)+') · '+esc(x.d)+' · '+esc(x.ty)+' · '+az(x.p)+'/gecə</div>'
+      +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban)+'</div>'
+      +'<div class="m">'+(x.whatsapp?('WhatsApp (görüntülü təsdiq): <a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
+      +'<div class="m">'+(roomCount?roomCount+' otaq/sahə · ':'')+photoCount+' şəkil yükləndi</div>'
+      +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
+      +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
+      +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
+      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
+      +'</div><div class="act">'
+      +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
+      +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
+      +'<button class="btn sm ghost" onclick="approveListing('+x.id+',false)">Rədd et</button></div></div>';
+}
+function modApprovedCard(x){
+        var okId=isEpointId(x.epointId);
+        return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
+          +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
+          +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
+          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
+          +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button></div></div>';
+}
+function modRejectedCard(x){
+  return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
+    +'<div class="m">'+esc(x.c)+' · '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
+    +'<div class="m">'+listingTag(x.st)+'</div></div><div class="act"><button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button></div></div>';
+}
+function renderMod(){
+  var el=document.getElementById('modlist'); if(!el) return;
+  var q=MD.q.trim().toLowerCase();
+  var base=state.custom.filter(function(x){
+    if(!q) return true;
+    return [x.t,x.host,x.ownerEmail,x.c,x.d,x.voen].join(' ').toLowerCase().indexOf(q)>=0;
+  });
+  var counts={all:base.length}; base.forEach(function(x){ var k=mdCat(x); counts[k]=(counts[k]||0)+1; });
+  var list=(MD.cat==='all'?base:base.filter(function(x){return mdCat(x)===MD.cat;})).slice().sort(function(a,b){return (b.id||0)-(a.id||0);});
+  var pages=Math.max(1,Math.ceil(list.length/MD.per)); if(MD.page>pages) MD.page=pages;
+  var rows=list.slice((MD.page-1)*MD.per,MD.page*MD.per);
+  document.getElementById('modchips').innerHTML=chipsHtml(MD_CATS,MD.cat,counts,'mdSet');
+  document.getElementById('modsum').innerHTML='<span><b>'+list.length+'</b> elan</span>';
+  el.innerHTML=rows.length?rows.map(function(x){
+    var c=mdCat(x); return c==='pending'?modPendingCard(x):(c==='rejected'?modRejectedCard(x):modApprovedCard(x));
+  }).join(''):'<div class="empty"><h3>Bu filtrə uyğun elan yoxdur</h3></div>';
+  document.getElementById('modpager').innerHTML=pagerHtml(MD.page,MD.per,list.length,'mdPage');
+}
 function exportBookingsCsv(){
   var headers=['Kod','Ev','Şəhər','Qonaq','Telefon','E-poçt','Ev sahibi','Giriş','Çıxış','Gecə','Qonaq sayı','Kirayə','Təmizlik','Cəmi','Ev sahibinə','Komissiya','Status','Ev sahibinə ödəniş statusu','Ödəniş referansı','Ödəniş tarixi'];
-  var rows=state.bookings.map(function(b){ return [b.code,b.title,b.city,b.guest,b.phone,b.email,b.host,b.d1,b.d2,b.n,b.g,b.rent,b.clean,b.total,b.hostGets,b.platform,b.status,
+  var rows=rezFiltered().list.map(function(b){ return [b.code,b.title,b.city,b.guest,b.phone,b.email,b.host,b.d1,b.d2,b.n,b.g,b.rent,b.clean,b.total,b.hostGets,b.platform,b.status,
     (b.status==='released'?(b.payoutStatus==='paid'?'Ödənilib':'Gözləyir'):'—'), b.payoutRef||'', b.payoutAt?new Date(b.payoutAt).toLocaleString('az-AZ'):'']; });
   downloadCsv('buralar-bronlar-'+today()+'.csv', headers, rows);
   toast('CSV yükləndi ('+rows.length+' bron)');
@@ -5380,38 +5871,7 @@ function renderAdmin(){
 
   var pend=state.custom.filter(function(x){return x.st==='pending';});
   document.getElementById('modcount').textContent = pend.length?('('+pend.length+')'):'';
-  document.getElementById('modlist').innerHTML = pend.length ? pend.map(function(x){
-    var R=x.rules||DEFAULT_RULES;
-    var roomCount = x.rooms?x.rooms.length:0;
-    var photoCount = allPhotosOf(x).length;
-    return '<div class="bk"><div class="th">'+(x.cover?'<img src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">':scene(x.sc,x.id))+'</div><div>'
-      +'<h4>'+esc(x.t)+'</h4>'
-      +'<div class="m">'+esc(x.c)+' ('+regionOf(x.c)+') · '+esc(x.d)+' · '+esc(x.ty)+' · '+az(x.p)+'/gecə</div>'
-      +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban)+'</div>'
-      +'<div class="m">'+(x.whatsapp?('WhatsApp (görüntülü təsdiq): <a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
-      +'<div class="m">'+(roomCount?roomCount+' otaq/sahə · ':'')+photoCount+' şəkil yükləndi</div>'
-      +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
-      +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
-      +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
-      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
-      +'</div><div class="act">'
-      +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
-      +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
-      +'<button class="btn sm ghost" onclick="approveListing('+x.id+',false)">Rədd et</button></div></div>';
-  }).join('') : '<div class="empty"><h3>Təsdiq gözləyən elan yoxdur</h3><p>Ev sahibləri elan göndərdikcə burada görünəcək.</p></div>';
-  var apprAll=state.custom.filter(function(x){return x.st==='approved';});
-  if(apprAll.length){
-    document.getElementById('modlist').innerHTML += '<h3 style="margin:22px 0 8px">Təsdiqlənmiş elanlar: Epoint ID</h3>'
-      +'<p class="note">ID olmayan elan müştərilərə görünmür və bron edilə bilmir.</p>'
-      +apprAll.map(function(x){
-        var okId=isEpointId(x.epointId);
-        return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
-          +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
-          +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
-          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
-          +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button></div></div>';
-      }).join('');
-  }
+  renderMod();
 
   renderHostsAdmin();
   renderMarketStatsAdmin();
@@ -5448,15 +5908,9 @@ function renderAdmin(){
   }).join('') : '<tr><td colspan="10" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
     + (state.bookings.length>adminFinShown ? '<tr><td colspan="10" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminFinShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminFinShown)+' qalır)</button></td></tr>' : '');
 
-  var rt=document.getElementById('rezalltable');
-  var rezRows=state.bookings.slice(0,adminRezShown);
-  rt.innerHTML = (state.bookings.length ? rezRows.map(function(b){
-    var ops = '<span class="m">—</span>';
-    return '<tr><td>'+b.code+'</td><td>'+esc(b.title.slice(0,26))+'</td><td>'+esc(b.guest||'—')+'</td><td>'+esc(b.phone||'—')+'</td>'
-      +'<td>'+esc(b.host)+'</td><td>'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+'</td><td>'+b.n+'</td>'
-      +'<td class="money">'+az2(b.total)+'</td><td>'+esc(b.bank)+'</td><td>'+statusTag(b.status,b)+'</td><td style="white-space:nowrap">'+ops+'</td></tr>';
-  }).join('') : '<tr><td colspan="11" style="color:var(--muted)">Hələ rezervasiya yoxdur.</td></tr>')
-    + (state.bookings.length>adminRezShown ? '<tr><td colspan="11" style="text-align:center"><button class="btn sm ghost" style="width:auto" onclick="adminRezShown+=100;renderAdmin()">Daha çox göstər ('+(state.bookings.length-adminRezShown)+' qalır)</button></td></tr>' : '');
+  renderRez();
+  setTimeout(renderDash,0);
+  if(state.adminAuth && (!state._acAt || Date.now()-state._acAt>120000)) fetchAdminClaims();
 
   var edits=state.custom.filter(function(x){return x.pendingEdit;});
   document.getElementById('editcount').textContent = edits.length?('('+edits.length+')'):'';
@@ -5554,7 +6008,7 @@ if(fbAuth){
         if(ok && state.tab==='admin' && !state.adminAuth){
           state.adminAuth=true;
           document.getElementById('adminGate').style.display='none';
-          document.getElementById('adminContent').style.display='block';
+          document.getElementById('adminContent').style.display='';
           startAdminOnlySync();
           startAdminChatSync();
           startAdminSupportSync();
