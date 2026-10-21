@@ -958,7 +958,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p class="note full" style="text-align:left;margin:-4px 0 0;color:var(--warn);font-weight:700">⚠ Bu nömrəni mütləq düzgün qeyd et — elanın təsdiqi üçün səninlə bu WhatsApp nömrəsi vasitəsilə görüntülü əlaqə saxlanılacaq və şəxsiyyət yoxlanılacaq.</p>
       <h4>Epoint ödəniş hesabı</h4>
       <p class="note full" style="text-align:left;margin:0">Müştərinin ödədiyi məbləğin sənə düşən hissəsi (komissiya çıxılmaqla) <b>Epoint vasitəsilə avtomatik hesabına köçürülür</b>. Bunun üçün Epoint-də tacir kimi qeydiyyatdan keçməlisən. <span id="epRegLinkWrap"></span> Qeydiyyatdan sonra aldığın <b>tacir ID-sini</b> aşağıya yaz. ID-ni yazmasan da elan göndərilir, amma ID təsdiqlənmədən elan saytda görünməyəcək.</p>
-      <label class="full">Epoint tacir ID-n (məs. i000123456)<input id="h-epoint" placeholder="i000123456" autocomplete="off" maxlength="13"></label>
+      <label class="full">Epoint tacir ID-n (məs. 12345 və ya i000123456)<input id="h-epoint" placeholder="12345 / i000123456" autocomplete="off" maxlength="13"></label>
       <label class="full" style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;cursor:pointer">
         <input type="checkbox" id="h-terms" style="margin-top:3px;width:18px;height:18px;flex:none">
         <span><a href="#" onclick="openModal('tosModal');return false" style="color:var(--nar);font-weight:700">İstifadə Şərtlərini</a> oxudum və qəbul edirəm. Evin təhlükəsiz olmasına (hovuz, balkon, pilləkən, qaz, elektrik və s.), elan məlumatlarının doğruluğuna və qonaqlarla münasibətlərə görə məsuliyyət daşıdığımı, Buralar.az-ın isə yalnız vasitəçi olduğunu təsdiq edirəm.</span>
@@ -2327,8 +2327,8 @@ function approved(){ return all().filter(function(x){return x.st==='approved' &&
 var EPOINT_REG_URL='https://epoint.az/az/registration?hunter=10438';
 (function(){ var w=document.getElementById('epRegLinkWrap'); if(!w) return;
   w.innerHTML = EPOINT_REG_URL ? '<a href="'+EPOINT_REG_URL+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">Epoint qeydiyyat linki ↗</a>' : '<i>Qeydiyyat linki üçün bizimlə əlaqə saxla.</i>'; })();
-function readEpointRequest(){ var el=document.getElementById('h-epoint'); var val=String(el&&el.value||'').trim().toLowerCase(); if(val && !isEpointId(val)){ toast('Epoint ID düzgün deyil. Nümunə: i000123456'); return false; } return val; }
-function isEpointId(v){ return /^i\d{6,12}$/.test(String(v||'').trim()); }
+function readEpointRequest(){ var el=document.getElementById('h-epoint'); var val=String(el&&el.value||'').trim().toLowerCase(); if(val && !isEpointId(val)){ toast('Epoint ID düzgün deyil. Nümunə: 12345 və ya i000123456'); return false; } return val; }
+function isEpointId(v){ return /^i?\d{5,12}$/.test(String(v||'').trim()); }
 
 /* ============ helpers ============ */
 function az(n){ return Math.round(n).toLocaleString('az-AZ')+" ₼"; }
@@ -3077,7 +3077,7 @@ function openAdminDetail(id){
     +'</div>'
     +'<hr class="sep" style="margin:6px 0">'
     +(x.st==='pending'
-      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
+      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
       : '<p class="note">Bu elan artıq baxılıb ('+(x.st==='approved'?'təsdiqlənib':'rədd edilib')+').</p>')
   +'</div></aside>';
   document.getElementById('detailBody').innerHTML = galleryHtmlFor(x) + '<div class="detail">' + leftInfoHtml(x) + adminAside + '</div>';
@@ -5305,7 +5305,7 @@ function approveListing(id,ok){
   if(ok){
     var inp=document.getElementById('ep-'+id)||document.getElementById('ep-d-'+id);
     var val=String(inp&&inp.value?inp.value:(x.epointId||'')).trim().toLowerCase();
-    if(!isEpointId(val)){ toast('Təsdiq üçün ev sahibinin Epoint tacir ID-sini yaz (məs. i000123456)'); return false; }
+    if(!isEpointId(val)){ toast('Təsdiq üçün ev sahibinin Epoint tacir ID-sini yaz (məs. 12345 və ya i000123456)'); return false; }
     x.epointId = val;
   }
   x.st = ok?'approved':'rejected';
@@ -5316,7 +5316,7 @@ function saveEpointId(id){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
   var inp=document.getElementById('epa-'+id);
   var val=String(inp&&inp.value||'').trim().toLowerCase();
-  if(!isEpointId(val)){ toast('Epoint ID düzgün deyil (məs. i000123456)'); return; }
+  if(!isEpointId(val)){ toast('Epoint ID düzgün deyil (məs. 12345 və ya i000123456)'); return; }
   x.epointId=val;
   syncListing(x).then(function(){ toast('Epoint ID saxlandı'); renderAdmin(); render(); });
 }
@@ -5895,7 +5895,7 @@ function modPendingCard(x){
       +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
       +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
       +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
-      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
+      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
       +'</div><div class="act">'
       +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
       +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
@@ -5906,7 +5906,7 @@ function modApprovedCard(x){
         return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
           +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
           +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
-          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
+          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
           +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button>'+'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDeleteListings(['+x.id+'])">Sil</button>'+'</div></div>';
 }
 function modDeletingCard(x){
