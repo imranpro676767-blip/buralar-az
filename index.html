@@ -3164,7 +3164,7 @@ function openAdminDetail(id){
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ünvan (dəqiq)</span>'+esc(x.d)+', '+esc(x.c)+(x.lat!=null?' ('+x.lat+', '+x.lng+')':'')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Təmizlik haqqı</span>'+az(x.cl||0)+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Min/Maks gecə</span>'+(x.minNights||1)+' / '+(x.maxNights||'limitsiz')+'</div>'
-      +(x.priceTiers&&x.priceTiers.length?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Uzun qalmaya endirim</span>'+priceTiersOf(x).map(function(t){return t.minNights+'g: '+t.price+'₼';}).join(' · ')+'</div>':'')
+      +(x.priceTiers&&x.priceTiers.length?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Uzun qalmaya endirim</span>'+visibleTiersOf(x).map(function(t){return t.minNights+'g: '+t.price+'₼';}).join(' · ')+'</div>':'')
       +(x.minGuestRating?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Minimum qonaq reytinqi</span>'+x.minGuestRating+'+ ulduz</div>':'')
       +(guestPolicyText(x)?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Kimlərə icarə verilir</span>'+esc(guestPolicyText(x))+'</div>':'')
     +'</div>'
@@ -3195,7 +3195,7 @@ function previewPendingEdit(id){
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">WhatsApp</span>'+esc(merged.whatsapp||'—')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ünvan (dəqiq)</span>'+esc(merged.d)+', '+esc(merged.c)+(merged.lat!=null?' ('+merged.lat+', '+merged.lng+')':'')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Təmizlik haqqı</span>'+az(merged.cl||0)+'</div>'
-      +(merged.priceTiers&&merged.priceTiers.length?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Uzun qalmaya endirim</span>'+priceTiersOf(merged).map(function(t){return t.minNights+'g: '+t.price+'₼';}).join(' · ')+'</div>':'')
+      +(merged.priceTiers&&merged.priceTiers.length?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Uzun qalmaya endirim</span>'+visibleTiersOf(merged).map(function(t){return t.minNights+'g: '+t.price+'₼';}).join(' · ')+'</div>':'')
     +'</div>'
     +'<hr class="sep" style="margin:10px 0">'
     +'<button class="btn ok" onclick="approveEdit('+x.id+',true);closeDetail()">Dəyişikliyi təsdiqlə</button>'
@@ -3270,8 +3270,15 @@ function renderPriceTiers(){
   }).join('');
   box.innerHTML=rows;
 }
+/* Minimum qalmadan aşağı gecə sayları heç vaxt göstərilmir: 1-ci sətir minimumdan başlayır */
+function visibleTiersOf(x){
+  var mn=x.minNights||1;
+  var t=[{minNights:mn,price:nightlyRateFor(x,mn)}];
+  priceTiersOf(x).forEach(function(pt){ if(pt.minNights>mn) t.push(pt); });
+  return t;
+}
 function priceTiersTableHtml(x){
-  var t=priceTiersOf(x);
+  var t=visibleTiersOf(x);
   if(t.length<=1) return '';
   return '<div class="tierbox"><div class="tierbox-h">Nə qədər çox qalsan, bir o qədər ucuzdur</div>'
     + t.map(function(tier,i){
