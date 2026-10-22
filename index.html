@@ -3286,13 +3286,18 @@ function book(id){
           state.user.status=d.status; state.user.verified=(d.status==='verified'); state.user.rejectionReason=d.rejectionReason||null;
           save(); renderAuth();
         }
-        book(id);
+        /* Yalnız status artıq "verified"-dirsə bron axınını davam etdir; əks halda sonsuz "yoxlanılır"
+           dövrəsi yaranırdı (hər cəhd yenidən yoxlayıb yenidən book() çağırırdı). */
+        if(state.user && state.user.status==='verified'){ book(id); return; }
+        toast(state.user && state.user.status==='rejected'
+          ? 'Qeydiyyatınız rədd edilib, bron edə bilməzsiniz.'
+          : 'Hesabınız hələ admin təsdiqini gözləyir. Təsdiqləndikdən sonra bron edə biləcəksiniz.');
       }).catch(function(){ state._statusRechecking=false; toast('Status yoxlanıla bilmədi, səhifəni yeniləyib yenidən cəhd et'); });
       return;
     }
     toast(state.user.status==='rejected'
-      ? "Qeydiyyatın rədd edilib, bron edə bilməzsən"
-      : "Hesabın hələ admin təsdiqini gözləyir, təsdiqləndikdən sonra bron edə bilərsən [status: "+state.user.status+" | "+state.user.email+"]");
+      ? "Qeydiyyatınız rədd edilib, bron edə bilməzsiniz."
+      : "Hesabınız hələ admin təsdiqini gözləyir. Təsdiqləndikdən sonra bron edə biləcəksiniz.");
     return;
   }
   var x=byId(id);
