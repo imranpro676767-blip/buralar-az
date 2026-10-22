@@ -1835,6 +1835,7 @@ function openChatById(id){
      yalnız yazışmanın həqiqi tərəfi (qonaq və ya ev sahibi) özü açanda oxundu sayılır. */
   if(state.user && state.user.email===c.guestEmail) markChatRead(c, 'guest');
   else if(state.user && state.user.email===c.hostEmail) markChatRead(c, 'host');
+  else if(state.adminAuth) admMarkChatSeen(c);
   renderChatModal(id, c);
   openModal('chatModal');
 }
@@ -2033,9 +2034,28 @@ function renderSanctions(){
   }).join('');
 }
 
+/* Admin üçün "oxunmamış yazışma": hər yazışmanın son fəaliyyət vaxtı (lastAt), admin həmin yazışmada
+   "Bax"a basanda yadda saxlanılır (bu brauzerdə). Yeni mesaj gələndə lastAt artır və yazışma yenidən
+   "Yeni" olur, qırmızı say qayıdır. */
+var ADM_CHAT_SEEN_KEY='buralar_admin_chat_seen';
+function admChatSeen(){ try{ return JSON.parse(localStorage.getItem(ADM_CHAT_SEEN_KEY)||'{}')||{}; }catch(e){ return {}; } }
+function admChatUnread(c){ return (c.lastAt||0) > (admChatSeen()[c.id]||0); }
+function admMarkChatSeen(c){
+  if(!c) return;
+  var m=admChatSeen(); m[c.id]=c.lastAt||Date.now();
+  try{ localStorage.setItem(ADM_CHAT_SEEN_KEY,JSON.stringify(m)); }catch(e){}
+  renderAdminMessages();
+}
+function admMarkAllChatsSeen(){
+  var m=admChatSeen();
+  state.chatsAdmin.forEach(function(c){ m[c.id]=c.lastAt||Date.now(); });
+  try{ localStorage.setItem(ADM_CHAT_SEEN_KEY,JSON.stringify(m)); }catch(e){}
+  renderAdminMessages();
+}
 function renderAdminMessages(){
   var el=document.getElementById('msglist'); if(!el) return;
-  document.getElementById('msgcount').textContent = state.chatsAdmin.length?('('+state.chatsAdmin.length+')'):'';
+  var unreadChats=state.chatsAdmin.filter(admChatUnread).length;
+  document.getElementById('msgcount').textContent = unreadChats?('('+unreadChats+')'):'';
   if(!state.chatsAdmin.length){ el.innerHTML='<div class="empty"><h3>Hələ yazışma yoxdur</h3><p>Qonaqla ev sahibi arasındakı bütün bron-öncəsi yazışmalar burada görünəcək.</p></div>'; return; }
   var list = state.chatsAdmin.slice().sort(function(a,b){return (b.lastAt||0)-(a.lastAt||0);});
   var qEl=document.getElementById('msgSearch');
@@ -2049,9 +2069,10 @@ function renderAdminMessages(){
     });
     if(!list.length){ el.innerHTML='<div class="empty"><h3>Heç nə tapılmadı</h3><p>"'+esc(q)+'" üzrə yazışma yoxdur.</p></div>'; return; }
   }
-  el.innerHTML = list.map(function(c){
-    return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
-      +'<h4>'+esc(c.listingTitle||'')+'</h4>'
+  el.innerHTML = (unreadChats?'<div style="margin-bottom:10px"><button class="btn sm ghost" onclick="admMarkAllChatsSeen()">Hamısını oxunmuş say ('+unreadChats+')</button></div>':'') + list.map(function(c){
+    var isNew=admChatUnread(c);
+    return '<div class="bk" style="grid-template-columns:1fr auto'+(isNew?';border-color:var(--nar)':'')+'"><div>'
+      +'<h4>'+esc(c.listingTitle||'')+(isNew?' <span class="tag hold">Yeni</span>':'')+'</h4>'
       +'<div class="m">Qonaq: '+esc(c.guestName||'')+' ('+esc(c.guestEmail)+') · Ev sahibi: '+esc(c.hostName||'')+' ('+esc(c.hostEmail)+')</div>'
       +'<div class="m">'+(c.messages?c.messages.length:0)+' mesaj · son fəaliyyət: '+(c.lastAt?new Date(c.lastAt).toLocaleString('az-AZ'):'—')+'</div>'
       +'<div style="margin-top:6px">'+(sancTagHtml(c.hostEmail)?('Ev sahibi: '+sancTagHtml(c.hostEmail)+' '):'')+(sancTagHtml(c.guestEmail)?('Qonaq: '+sancTagHtml(c.guestEmail)):'')+'</div>'
