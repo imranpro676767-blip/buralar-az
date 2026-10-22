@@ -3408,7 +3408,7 @@ function handlePayReturn(){
     if(!p) return;
     history.replaceState(null,'',location.pathname);
     go('rez');
-    toast(p==='success'?"Ödəniş qəbul edildi, rezervasiya təsdiqlənir...":"Ödəniş alınmadı. Rezervasiyalarım bölməsindən yenidən cəhd edə bilərsən (10 dəqiqə ərzində)");
+    toast(p==='success'?"Ödəniş qəbul edildi, rezervasiya təsdiqlənir...":"Ödəniş alınmadı. Rezervasiyalarım bölməsindən yenidən cəhd edə bilərsən (3 dəqiqə ərzində)");
   }catch(e){}
 }
 /* Bron sənədini YALNIZ bunlardan biri Firestore-a yaza bilər (bax firestore.rules): admin, bronun
@@ -3530,10 +3530,37 @@ function resolveComplaint(code,ok){
   save(); renderAdmin(); renderBookings();
   toast(ok?"Şikayət təsdiqləndi, 100% geri qaytarılır":"Şikayət rədd edildi, ödəniş ev sahibinə köçürüldü");
 }
+/* Ödəniş pəncərəsi: 3 dəqiqə (serverdəki PAYMENT_WINDOW_MS ilə eyni) */
+var PAY_WINDOW_MS=3*60*1000;
+/* Ödənilməmiş sayılır: vaxtı bitib/ləğv, gözləyir, uğursuz. Qalanı ödənilmiş (və ya ödənilmişdən sonrakı) bron sayılır. */
+function bkWasPaid(b){ return !(b.status==='expired' || ['pending','failed','expired'].indexOf(b.paymentStatus)>=0); }
+function payCountdownHtml(b){
+  if(!(b.status==='hold' && (b.paymentStatus==='pending'||b.paymentStatus==='failed') && b.createdAt)) return '';
+  return ' <span class="m paycd" style="font-weight:800;color:var(--warn)" data-exp="'+(b.createdAt+PAY_WINDOW_MS)+'"></span>';
+}
+function tickPayCountdowns(){
+  var els=document.querySelectorAll('.paycd'); if(!els.length) return;
+  for(var i=0;i<els.length;i++){
+    var el=els[i], ms=(+el.getAttribute('data-exp'))-Date.now();
+    var card=el.closest('.bk'), btns=card?card.querySelectorAll('.paybtn'):[];
+    if(ms<=0){
+      el.textContent='Ödəniş vaxtı bitir…'; el.style.color='var(--nar)';
+      for(var j=0;j<btns.length;j++) if(btns[j].getAttribute('data-pay')==='1') btns[j].disabled=true;
+    } else {
+      var t=Math.ceil(ms/1000), m=Math.floor(t/60), sc=t%60;
+      el.textContent='Ödənişə '+(m<10?'0':'')+m+':'+(sc<10?'0':'')+sc+' qalıb';
+    }
+  }
+}
+setInterval(tickPayCountdowns,1000);
 function statusTag(s,b){
   if(b && b.paymentStatus==='pending' && s==='hold') return '<span class="tag wait">Ödəniş gözlənilir</span>';
   if(b && b.paymentStatus==='failed' && s==='hold') return '<span class="tag cancel">Ödəniş alınmadı</span>';
-  if(s==='expired') return '<span class="tag cancel">Ödəniş vaxtı bitib</span>';
+  if(s==='expired'){
+    if(b && b.paymentCreateFailed) return '<span class="tag cancel">Ödəniş səhifəsi açılmadı</span>';
+    if(b && b.cancelledByGuest) return '<span class="tag cancel">Ləğv edildi</span>';
+    return '<span class="tag cancel">Ödəniş vaxtı bitib</span>';
+  }
   if(s==='hold') return '<span class="tag hold">Vəsait saxlanılır</span>';
   if(s==='released') return '<span class="tag done">Ev sahibinə köçürülüb</span>';
   if(s==='complaint') return '<span class="tag wait">Şikayət yoxlanılır</span>';
@@ -3571,14 +3598,14 @@ function renderBookings(){
       +'<div class="m">'+esc(b.city)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
       +'<div class="m">Kod: '+b.code+' · '+esc(b.bank)+' · giriş '+esc(R.cin)+'</div>'
       +(b.status!=='refunded'?'<div class="m">Ev sahibi ('+esc(b.host)+') ilə əlaqə: '+hostContactHtml(b.lid,b)+'</div>':'')
-      +'<div style="margin-top:8px">'+statusTag(b.status,b)+(b.status==='hold'&&!(b.paymentStatus==='pending'||b.paymentStatus==='failed')?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
+      +'<div style="margin-top:8px">'+statusTag(b.status,b)+payCountdownHtml(b)+(b.status==='hold'&&!(b.paymentStatus==='pending'||b.paymentStatus==='failed')?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
       +(b.complaint?'<div class="split"><div><span>Şikayət: '+esc(b.complaint.reason)+'</span><b>'+(b.complaint.st==='pending'?'yoxlanılır':(b.complaint.st==='approved'?'təsdiqləndi':'rədd edildi'))+'</b></div></div>':'')
       +(b.status==='hold'?'<div class="split"><div><span>Ev sahibinə çatacaq</span><b>'+az2(b.hostGets)+'</b></div><div><span>Platforma komissiyası</span><b>'+az2(b.platform)+'</b></div></div>':'')
       +(b.notified24&&b.exactAddress?'<div class="split"><div><span>Dəqiq ünvan</span><b>'+esc(b.exactAddress)+'</b></div></div>'+(b.mapsUrl?'<a href="'+b.mapsUrl+'" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:var(--nar)">Xəritədə göstər →</a>':''):'')
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.total)+'</div>'
       +((b.status==='hold'&&(b.paymentStatus==='pending'||b.paymentStatus==='failed'))
-        ? '<button class="btn sm dark" onclick="payBooking(\''+b.code+'\')">Ödə</button><button class="btn sm ghost" title="Bu bronu ləğv et və tarixləri azad et" onclick="cancelUnpaid(\''+b.code+'\')">✕ Ləğv et</button>'
+        ? '<button class="btn sm dark paybtn" data-pay="1"'+((b.createdAt&&Date.now()>b.createdAt+PAY_WINDOW_MS)?' disabled':'')+' onclick="payBooking(\''+b.code+'\')">Ödə</button><button class="btn sm ghost paybtn" title="Bu bronu ləğv et və tarixləri azad et" onclick="cancelUnpaid(\''+b.code+'\')">✕ Ləğv et</button>'
         : b.status==='expired' ? '<span class="m">Tarixlər azad edilib</span>'
         : b.status==='hold'
         ? '<button class="btn sm ghost" onclick="openDetail('+b.lid+',\''+b.code+'\')">Evə bax</button>'
@@ -4776,7 +4803,7 @@ function renderHost(){
     hsel.style.display = multi ? '' : 'none';
     hsel.innerHTML = mine.map(function(x){ return '<option value="'+x.id+'"'+(x.id===state.hostBkListingId?' selected':'')+'>'+esc(x.t)+'</option>'; }).join('');
   }
-  var hb = state.bookings.filter(function(b){ return b.lid===state.hostBkListingId; });
+  var hb = state.bookings.filter(function(b){ return b.lid===state.hostBkListingId && bkWasPaid(b); });
   var hel = document.getElementById('hostbookings');
   state.hostBkCount = hb.length; applyHostBkToggle();
   if(!hb.length){ hel.innerHTML='<div class="empty"><h3>Hələ rezervasiya yoxdur</h3><p>Elanların təsdiqləndikcə buradakı siyahı dolacaq.</p></div>'; return; }
@@ -5468,6 +5495,8 @@ function renderCustomers(){
   if(!list.length){ el.innerHTML='<div class="empty"><h3>Axtarışa uyğun müştəri tapılmadı</h3></div>'; return; }
   el.innerHTML=list.map(function(c){
     var theirBookings=state.bookings.filter(function(b){return b.email===c.email || b.phone===c.phone;});
+    var paidCnt=theirBookings.filter(bkWasPaid).length, unpaidCnt=theirBookings.length-paidCnt;
+    var cntText=paidCnt+' rezervasiya'+(unpaidCnt?' (+'+unpaidCnt+' ödənilməyib)':'');
     var staysRows=theirBookings.map(function(b){
       return '<div><span>'+esc(b.title)+' · '+fmtDate(b.d1)+'–'+fmtDate(b.d2)+'</span><b>'+statusTag(b.status,b)+'</b></div>';
     }).join('');
@@ -5486,7 +5515,7 @@ function renderCustomers(){
       var isOpen=!!(state.custOpen&&state.custOpen[c.email]);
       stays='<details'+(isOpen?' open':'')+' ontoggle="toggleCustStays(this,\''+esc(c.email)+'\')" style="width:100%">'
         +'<summary style="cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center">'
-        +'<span>'+theirBookings.length+' rezervasiya: <span style="font-weight:500;color:var(--muted)">'+summary+'</span></span>'
+        +'<span>'+cntText+': <span style="font-weight:500;color:var(--muted)">'+summary+'</span></span>'
         +'<span style="color:var(--nar);white-space:nowrap">Siyahı ▾</span></summary>'
         +'<div style="display:grid;gap:8px;margin-top:8px;max-height:340px;overflow:auto">'+staysRows+'</div></details>';
     }
@@ -5494,7 +5523,7 @@ function renderCustomers(){
       +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></a>'
       +'<div><h4>'+esc(c.name)+'</h4>'
       +'<div class="m">'+esc(c.email)+' · '+esc(c.phone)+' · FİN '+esc(c.fin)+'</div>'
-      +'<div class="m">Qeydiyyat: '+new Date(c.registeredAt).toLocaleDateString('az-AZ')+' · '+theirBookings.length+' rezervasiya</div>'
+      +'<div class="m">Qeydiyyat: '+new Date(c.registeredAt).toLocaleDateString('az-AZ')+' · '+cntText+'</div>'
       +'<div class="m">'+guestRatingBadgeHtml(c.email)+'</div>'
       +(function(){ var cs=claimsOf(c.email,'guest'); return cs&&cs.length?'<div class="m" style="color:var(--nar);font-weight:700">Ziyan iddiası: '+cs.length+' ('+az2(cs.reduce(function(s,x){return s+(+x.amount||0);},0))+')</div>':''; })()
       +'<div style="margin-top:6px">'+custTag(c.status)+'</div>'+delBannerHtml(c.deletePending)
