@@ -3123,7 +3123,7 @@ function openDetail(id,bookingCode){
     galleryHtmlFor(x)
   + '<div class="detail">' + leftInfoHtml(x)
   +'<aside><div class="booker">'
-    +'<div class="p">'+(lowestNightlyRate(x)<x.p?(az(lowestNightlyRate(x))+'-dan'):az(x.p))+' <span>gecə'+(isDriverListing(x)?' / sürücü':'')+'</span></div>'
+    +'<div class="p">'+(function(){ var vt=visibleTiersOf(x), last=vt[vt.length-1], sfx=(isDriverListing(x)?' / sürücü':''); return vt.length>1 ? (az(last.price)+' <span>/ '+last.minNights+'+ gecə'+sfx+'</span>') : (az(vt[0].price)+' <span>/ gecə'+sfx+'</span>'); })()+'</div>'
     +(((x.minNights&&x.minNights>1)||x.maxNights)?'<div class="hint" style="margin:-4px 0 2px">'+(x.minNights>1?('Minimum '+x.minNights+' gecə'):'')+(x.minNights>1&&x.maxNights?' · ':'')+(x.maxNights?('Maksimum '+x.maxNights+' gecə'):'')+'</div>':'')
     +(x.minGuestRating?'<div class="hint" style="margin:-2px 0 2px;color:var(--warn)">Yalnız '+x.minGuestRating+'+ ulduz reytinqli qonaqlar bron edə bilər</div>':'')
     +(guestPolicyText(x)?'<div class="hint" style="margin:-2px 0 2px;color:var(--warn)">Yalnız bunlara icarəyə verilir: '+esc(guestPolicyText(x))+'</div>':'')
