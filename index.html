@@ -1835,7 +1835,7 @@ function openChatById(id){
      yalnız yazışmanın həqiqi tərəfi (qonaq və ya ev sahibi) özü açanda oxundu sayılır. */
   if(state.user && state.user.email===c.guestEmail) markChatRead(c, 'guest');
   else if(state.user && state.user.email===c.hostEmail) markChatRead(c, 'host');
-  else if(state.adminAuth) admMarkChatSeen(c);
+  if(state.adminAuth) admMarkChatSeen(c);
   renderChatModal(id, c);
   openModal('chatModal');
 }
@@ -1995,9 +1995,11 @@ var VIOL_LABELS={'phone':'telefon nömrəsi','link':'link / sosial şəbəkə / 
 function renderSanctions(){
   var el=document.getElementById('sanclist'); if(!el) return;
   var active=state.sanctions.filter(function(x){return x.status==='watch'||x.status==='banned';});
-  var repeat=active.filter(function(x){return x.status==='watch'&&x.repeatViolation;}).length;
+  /* Qırmızı say = hələ qərar gözləyən (nəzarətdə olan) istifadəçilər; bloklananlar artıq həll olunub, sayılmır. */
+  var watching=active.filter(function(x){return x.status==='watch';});
+  var repeat=watching.filter(function(x){return x.repeatViolation;}).length;
   var cEl=document.getElementById('sanccount');
-  if(cEl) cEl.textContent = active.length?('('+active.length+(repeat?(', ⚠'+repeat):'')+')'):'';
+  if(cEl) cEl.textContent = watching.length?('('+watching.length+(repeat?(', ⚠'+repeat):'')+')'):'';
   var order={watch:0,banned:1,cleared:2};
   var list=state.sanctions.slice().sort(function(a,b){
     var ra=(a.status==='watch'&&a.repeatViolation)?-1:order[a.status]; var rb=(b.status==='watch'&&b.repeatViolation)?-1:order[b.status];
@@ -2076,7 +2078,7 @@ function renderAdminMessages(){
       +'<div class="m">Qonaq: '+esc(c.guestName||'')+' ('+esc(c.guestEmail)+') · Ev sahibi: '+esc(c.hostName||'')+' ('+esc(c.hostEmail)+')</div>'
       +'<div class="m">'+(c.messages?c.messages.length:0)+' mesaj · son fəaliyyət: '+(c.lastAt?new Date(c.lastAt).toLocaleString('az-AZ'):'—')+'</div>'
       +'<div style="margin-top:6px">'+(sancTagHtml(c.hostEmail)?('Ev sahibi: '+sancTagHtml(c.hostEmail)+' '):'')+(sancTagHtml(c.guestEmail)?('Qonaq: '+sancTagHtml(c.guestEmail)):'')+'</div>'
-      +'</div><div class="act" style="display:grid;gap:8px;align-content:start"><button class="btn sm ghost" onclick="openChatById(\''+c.id+'\')">Bax</button>'
+      +'</div><div class="act" style="display:grid;gap:8px;align-content:start"><button class="btn sm ghost" onclick="admMarkChatSeen(findChat(\''+c.id+'\'));openChatById(\''+c.id+'\')">Bax</button>'
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="m" style="margin:0">Ev sahibi:</span>'+sancButtonsHtml(c.hostEmail)+'</div>'
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="m" style="margin:0">Qonaq:</span>'+sancButtonsHtml(c.guestEmail)+'</div>'
       +'</div></div>';
@@ -5534,7 +5536,9 @@ function renderHostsAdmin(){
   var hpE=document.getElementById('hostpager'); if(hpE) hpE.innerHTML=pagerHtml(HU.page,HU.per,huTotal,'huPage');
 
   var countEl=document.getElementById('hostscount');
-  if(countEl) countEl.textContent = all.length?('('+all.length+')'):'';
+  /* Qırmızı say = təsdiq gözləyən elanı olan ev sahibləri; elanlar təsdiq/rədd edildikcə azalır. */
+  var hostWait=all.filter(function(g){ return huCats(g).indexOf('pending')>=0; }).length;
+  if(countEl) countEl.textContent = hostWait?('('+hostWait+')'):'';
 
   var el=document.getElementById('hostslist'); if(!el) return;
   if(!all.length){ el.innerHTML='<div class="empty"><h3>Hələ heç bir ev sahibi yoxdur</h3><p>Ev sahibləri elan yerləşdirdikcə burada qruplaşdırılıb görünəcəklər.</p></div>'; return; }
@@ -6053,8 +6057,9 @@ function renderAdmin(){
     +'<div class="stat"><div class="k">Gözləyən komissiya</div><div class="v money">'+az2(pendCom)+'</div></div>'
     +'<div class="stat"><div class="k">Geri qaytarılıb</div><div class="v money">'+az2(refunded)+'</div></div>';
 
-  var flaggedCount=state.customers.filter(function(c){return c.status==='flagged';}).length;
-  document.getElementById('custcount').textContent = flaggedCount?('('+flaggedCount+' nəzarətdə)'):(state.customers.length?('('+state.customers.length+')'):'');
+  /* Qırmızı say = admin qərarı gözləyən müştərilər (yeni/yoxlanılır + şübhəli). Təsdiq və ya rədd edildikcə azalır. */
+  var custWait=state.customers.filter(function(c){return c.status==='pending'||c.status==='unverified'||c.status==='flagged'||!c.status;}).length;
+  document.getElementById('custcount').textContent = custWait?('('+custWait+')'):'';
   renderCustomers();
 
   var pend=state.custom.filter(function(x){return x.st==='pending' && !x.deletePending;});
@@ -6158,7 +6163,8 @@ function renderAdmin(){
      açıq brauzer bu sahələri yazdığı andan bütün admin cihazlarında eyni siyahı görünür. */
   var waNotifs = state.bookings.filter(function(b){ return b.notified24 && b.waLink; })
     .sort(function(a,b){ return (b.checkinAt||0)-(a.checkinAt||0); });
-  document.getElementById('notifcount').textContent = waNotifs.length?('('+waNotifs.length+')'):'';
+  var waPending=waNotifs.filter(function(n){return !n.waSent;}).length; /* göndərilməyənlər */
+  document.getElementById('notifcount').textContent = waPending?('('+waPending+')'):'';
   document.getElementById('notiflist').innerHTML = waNotifs.length ? waNotifs.map(function(n){
     return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
       +'<h4>'+esc(n.title)+'</h4>'
