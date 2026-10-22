@@ -3296,6 +3296,9 @@ function book(id){
     return;
   }
   var x=byId(id);
+  if(!fbAuth || !fbAuth.currentUser || String(fbAuth.currentUser.email||'').toLowerCase()!==String(state.user.email||'').toLowerCase()){
+    toast('Hesab sessiyası uyğun gəlmir. Zəhmət olmasa "Çıxış" edib müştəri hesabınızla yenidən daxil olun.'); return;
+  }
   var a=document.getElementById('b1').value,b=document.getElementById('b2').value,g=document.getElementById('bg').value;
   var n=nights(a,b);
   var gate=bookGate(x,a,b);
@@ -6175,6 +6178,16 @@ if(fbAuth){
         }
       });
     } else { state.isAdminUser=false; }
+    /* Yadda saxlanmış müştəri sessiyası (state.user) ilə Firebase-in real giriş hesabı fərqlidirsə
+       (məs. eyni brauzerdə admin Google hesabı ilə daxil olunub), bron və ödəniş SƏHVƏN o başqa hesabın
+       adına yaranardı və "Rezervasiyalarım" boş görünərdi. Belə halda köhnə müştəri sessiyasını bağlayırıq. */
+    if(u && state.user && String(state.user.email||'').toLowerCase()!==String(u.email||'').toLowerCase()){
+      var lm=document.getElementById('loginModal');
+      var loginOpen=lm && lm.classList.contains('open');
+      stopOwnCustomerListener(); stopUserChatSync(); stopSupportSync();
+      state.user=null; save(); renderAuth(); renderBookings(); renderHost();
+      if(!loginOpen) toast('Hesab sessiyası dəyişib. Zəhmət olmasa müştəri hesabınızla yenidən daxil olun.');
+    }
     /* localStorage-dan bərpa olunan bir istifadəçi sessiyası varsa, Firebase sessiyası da
        təsdiqlənəndə öz qeydiyyat sənədinin canlı dinləyicisini işə sal ki, admin sonradan
        təsdiq/rədd etsə, istifadəçi bunu dərhal görsün. */
