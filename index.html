@@ -541,8 +541,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <input id="g" type="number" min="1" max="50" step="1" value="2" onchange="if(!this.value||this.value<1)this.value=1;render()" oninput="render()">
         </div>
         <div class="f"><label for="gt">Qonaq tipi</label>
-          <select id="gt" required onchange="state.guestType=this.value||null;render()">
-            <option value="" disabled selected hidden>Seçin (məcburidir)</option>
+          <select id="gt" onchange="state.guestType=this.value||null;render()">
+            <option value="" selected>Qonaq tipini seçin</option>
             <option value="family">Ailə</option>
             <option value="couple">Cütlük</option>
             <option value="men">Kişi qrupu</option>
@@ -2386,7 +2386,7 @@ function today(){ return new Date().toISOString().slice(0,10); }
 function addDays(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10); }
 function nights(a,b){ if(!a||!b) return 0; var n=Math.round((new Date(b)-new Date(a))/86400000); return n>0?n:0; }
 function fmtDate(s){ if(!s) return "—"; var p=String(s).split('-'); return p[2]+"."+p[1]+"."+p[0]; }
-function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show')},3000); }
+function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(function(){t.classList.remove('show')},Math.min(9000,3000+String(m||'').length*45)); }
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 function checkIcon(ok){
@@ -2803,7 +2803,6 @@ function filtered(){
   var g=parseInt(document.getElementById('g').value,10)||1;
   var a=document.getElementById('d1').value, b=document.getElementById('d2').value;
   var datesOk = a && b && nights(a,b)>0;
-  if(!state.guestType) return [];
   var list=approved().filter(function(x){
     if(state.region!=='Hamısı' && regionOf(x.c)!==state.region) return false;
     if(state.type!=='Hamısı' && x.ty!==state.type) return false;
@@ -2811,7 +2810,7 @@ function filtered(){
     if(state.pool==='yox' && listingHasPool(x)) return false;
     if(x.g<g && !isDriverListing(x)) return false;
     if(q && (x.t+' '+x.c+' '+x.d+' '+x.ty).toLowerCase().indexOf(q)<0) return false;
-    if(!listingAcceptsGuestType(x,state.guestType)) return false;
+    if(state.guestType && !listingAcceptsGuestType(x,state.guestType)) return false;
     if(x.minGuestRating && state.user){
       var myAvg=guestRatingAvg(state.user.email);
       if(myAvg!==null && myAvg<x.minGuestRating) return false;
@@ -2828,7 +2827,27 @@ function filtered(){
   if(s==='asc') list.sort(function(a,b){return lowestNightlyRate(a)-lowestNightlyRate(b);});
   if(s==='desc') list.sort(function(a,b){return lowestNightlyRate(b)-lowestNightlyRate(a);});
   if(s==='rating') list.sort(function(a,b){return b.rt-a.rt;});
+  if(!s || s==='rec') list=recOrder(list);
   return list;
+}
+/* "Tövsiyə olunan" sıralama: hər səhifə yüklənəndə təsadüfi, amma bölgələr növbələşərək (bir bölgənin
+   evləri başda yığılmasın deyə). Təsadüfi nizam səhifə açıq olduğu müddətdə sabit qalır, filtr
+   dəyişəndə evlər yerini dəyişmir. */
+var _recRank={}, _recReg={};
+function recOrder(list){
+  var seen={};
+  var items=list.map(function(x){
+    if(_recRank[x.id]===undefined) _recRank[x.id]=Math.random();
+    return {x:x, r:regionOf(x.c)};
+  });
+  items.sort(function(a,b){ return _recRank[a.x.id]-_recRank[b.x.id]; });
+  items.forEach(function(it){
+    seen[it.r]=(seen[it.r]||0);
+    if(_recReg[it.r]===undefined) _recReg[it.r]=Math.random();
+    it.k=seen[it.r]++ + _recReg[it.r];
+  });
+  items.sort(function(a,b){ return a.k-b.k; });
+  return items.map(function(it){ return it.x; });
 }
 function cardPriceHtml(x){
   var a=document.getElementById('d1').value, b=document.getElementById('d2').value;
@@ -2851,13 +2870,8 @@ function loadMoreListings(){ gridShown+=GRID_PAGE_SIZE; render(false,true); }
 function render(scroll,keepPage){
   renderChips();
   if(!keepPage) gridShown=GRID_PAGE_SIZE;
-  if(!state.guestType){
-    document.getElementById('count').textContent="Əvvəlcə kim olduğunuzu seçin";
-    document.getElementById('grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><h3>Zəhmət olmasa əvvəlcə "Qonaq tipi" sahəsini seçin</h3><p>Axtarış nəticələrini göstərmək üçün ailə, kişi qrupu və ya qadın qrupu olduğunuzu qeyd etməlisiniz.</p></div>';
-    return;
-  }
   var full=filtered();
-  document.getElementById('count').textContent=full.length+" ev tapıldı";
+  document.getElementById('count').textContent=full.length+" ev tapıldı"+(!state.guestType?" · Sizə uyğun evləri görmək üçün tarixləri və qonaq tipini seçin":"");
   var list=full.slice(0,gridShown);
   document.getElementById('grid').innerHTML = (list.map(function(x){
     var thumb = x.cover ? '<img src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
@@ -2867,7 +2881,7 @@ function render(scroll,keepPage){
       +'<div class="loc">'+esc(x.c)+', '+esc(x.d)+' · '+esc(x.ty)+'</div>'
       +'<div class="meta">'+x.g+' qonaq · '+x.r+' otaq · '+x.b+' sanitar qovşaq</div>'
       +'<div class="price">'+cardPriceHtml(x)+(isDriverListing(x)?' <span>/ sürücü</span>':'')+'</div>'+spotsHtml(x)+'</div>';
-  }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Bu filtrlərlə ev tapılmadı</h3><p>Bölgəni dəyiş və ya filtrləri sıfırla.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>')
+  }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Seçdiyiniz filtrlərə uyğun ev tapılmadı</h3><p>Zəhmət olmasa tarixləri, bölgəni və ya digər filtrləri dəyişib yenidən cəhd edin.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>')
     + (full.length>gridShown ? '<div style="grid-column:1/-1;text-align:center;padding:12px 0"><button class="btn ghost" onclick="loadMoreListings()">Daha çox göstər ('+(full.length-gridShown)+' qalır)</button></div>' : '');
   loadSpots(list);
   if(scroll){ setTimeout(function(){ var tgt=document.querySelector('.sortrow')||document.getElementById('grid'); if(tgt) tgt.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
@@ -3023,8 +3037,8 @@ function openDetail(id,bookingCode){
     return;
   }
 
-  var d1=document.getElementById('d1').value||today();
-  var d2=document.getElementById('d2').value||addDays(today(),1);
+  var d1=document.getElementById('d1').value||'';
+  var d2=document.getElementById('d2').value||'';
   var g=document.getElementById('g').value||2;
 
   document.getElementById('detailBody').innerHTML=
@@ -3039,13 +3053,15 @@ function openDetail(id,bookingCode){
     +priceTiersTableHtml(x)
     +'<div class="fieldgrid"><div class="f"><label for="b1">Giriş</label><input type="hidden" id="b1" value="'+d1+'" onchange="calc()"><button type="button" class="dateBtn" id="b1-btn" onclick="toggleDatePicker(\'b1\',\''+today()+'\')">'+fmtAzDate(d1)+'</button></div>'
     +'<div class="f"><label for="b2">Çıxış</label><input type="hidden" id="b2" value="'+d2+'" onchange="calc()"><button type="button" class="dateBtn" id="b2-btn" onclick="toggleDatePicker(\'b2\',checkoutMinIso(\'b1\'))">'+fmtAzDate(d2)+'</button></div></div>'
+    +'<div class="fieldgrid one"><div class="f"><label for="bgt">Qonaq tipi</label><select id="bgt" onchange="detailGuestTypeChange(this.value)"><option value="">Qonaq tipini seçin</option>'
+      +['family','couple','men','women','mixed','drivers'].map(function(k){return '<option value="'+k+'"'+(state.guestType===k?' selected':'')+'>'+GUEST_TYPE_LABELS[k]+'</option>';}).join('')+'</select></div></div>'
     +(isDriverListing(x)
       ? '<input type="hidden" id="bg" value="1"><div class="hint" style="margin:0 0 4px">Hər sürücü ayrıca bron edir (1 sürücü = 1 yer). Qiymət hər sürücü üçündür.</div><div class="drvspot" id="drvdetail" data-lid="'+x.id+'" style="font-weight:800;font-size:14px;margin-bottom:4px"></div>'
       : '<div class="fieldgrid one"><div class="f"><label for="bg">Qonaq sayı</label><select id="bg" onchange="calc()">'
         +Array.apply(null,Array(x.g)).map(function(_,i){return '<option value="'+(i+1)+'"'+((i+1)==g?' selected':'')+'>'+(i+1)+' nəfər</option>';}).join('')+'</select></div></div>')
     +'<div class="calc" id="calcbox"></div>'
     +'<div><div style="font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px">Ödəniş üsulu</div><div class="payrow" id="banks" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>'
-    +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;document.getElementById(\'bookBtn\').disabled=!this.checked">'
+    +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;calc()">'
       +'<span>Ev qaydalarını oxudum və qəbul edirəm. Geri qaytarmanın yalnız şikayət yolu ilə mümkün olduğunu başa düşürəm.</span></label>'
     +'<button class="btn" id="bookBtn" disabled onclick="openSafetyModal('+x.id+')">Dərhal rezervasiya et</button>'
     +'<p class="note">Təsdiq gözləmədən dərhal bron olunur. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.</p>'
@@ -3182,16 +3198,34 @@ function priceOf(x,n){
   var gf=base*GUEST_FEE, hf=base*HOST_FEE;
   return {n:n,rate:rate,rent:rent,clean:clean,base:base,guestFee:gf,hostFee:hf,total:base+gf,hostGets:base-hf,platform:gf+hf};
 }
+function bookGate(x,a,b){
+  var n=nights(a,b), noType=!state.guestType, noDates=!(a&&b&&n>0);
+  if(noType && noDates) return {t:'ask',msg:'Rezervasiya üçün zəhmət olmasa gələcəyiniz giriş və çıxış tarixlərini, həmçinin qonaq tipini seçin.'};
+  if(noType) return {t:'ask',msg:'Davam etmək üçün zəhmət olmasa qonaq tipini seçin.'};
+  if(noDates) return {t:'ask',msg:'Davam etmək üçün zəhmət olmasa gələcəyiniz giriş və çıxış tarixlərini seçin.'};
+  if(!listingAcceptsGuestType(x,state.guestType)) return {t:'err',msg:'Bu ev "'+(GUEST_TYPE_LABELS[state.guestType]||'')+'" qonaq tipinə icarəyə verilmir (ev sahibi yalnız bunlara verir: '+guestPolicyText(x)+'). Zəhmət olmasa başqa ev seçin və ya əsas səhifədə qonaq tipini dəyişin.'};
+  if(n<(x.minNights||1) && !inOpenException(x,a,b)) return {t:'err',msg:'Bu ev ən azı '+(x.minNights||1)+' gecəlik icarəyə verilir. Zəhmət olmasa çıxış tarixini uzadın.'};
+  if(x.maxNights && n>x.maxNights) return {t:'err',msg:'Bu ev ən çoxu '+x.maxNights+' gecəlik icarəyə verilir. Zəhmət olmasa çıxış tarixini qısaldın.'};
+  if(!isListingFree(x.id,a,b)) return {t:'err',msg:'Bu ev seçdiyiniz tarixlərdə artıq bron olunub. Zəhmət olmasa başqa ev seçin və ya əsas səhifədə gələcəyiniz tarixləri və qonaq tipini seçin ki, həmin tarixlərdə filtrlərinizə uyğun evləri görəsiniz.'};
+  return null;
+}
+function detailGuestTypeChange(v){
+  state.guestType=v||null;
+  var m=document.getElementById('gt'); if(m) m.value=v||'';
+  render(false,true); calc();
+}
 function calc(){
   var x=byId(state.openId); if(!x) return;
   var a=document.getElementById('b1').value, b=document.getElementById('b2').value;
   var n=nights(a,b);
   var box=document.getElementById('calcbox');
   var bookBtn=document.getElementById('bookBtn');
-  if(n<=0){ box.innerHTML='<div class="hint">Girişi və çıxışı seç, hesablama burada görünəcək.</div>'; return; }
-  if(n<(x.minNights||1) && !inOpenException(x,a,b)){ box.innerHTML='<div class="hint" style="color:var(--nar);font-weight:700">Bu ev minimum '+(x.minNights||1)+' gecəyə verilir. Tarixləri uzat.</div>'; if(bookBtn) bookBtn.disabled=true; return; }
-  if(x.maxNights && n>x.maxNights){ box.innerHTML='<div class="hint" style="color:var(--nar);font-weight:700">Bu ev maksimum '+x.maxNights+' gecəyə qədər verilir. Tarixləri qısalt.</div>'; if(bookBtn) bookBtn.disabled=true; return; }
-  if(!isListingFree(x.id,a,b)){ box.innerHTML='<div class="hint" style="color:var(--nar);font-weight:700">Bu tarixlər üçün ev artıq bron olunub. Başqa tarix seç.</div>'; if(bookBtn) bookBtn.disabled=true; return; }
+  var gate=bookGate(x,a,b);
+  if(gate){
+    box.innerHTML='<div class="hint" style="color:'+(gate.t==='ask'?'var(--warn)':'var(--nar)')+';font-weight:700;line-height:1.5">'+esc(gate.msg)+'</div>';
+    if(bookBtn) bookBtn.disabled=true;
+    return;
+  }
   if(bookBtn) bookBtn.disabled=!state.accepted;
   if(isDriverListing(x) && fbOnline && fbFunctions){
     var _k=x.id+'|'+a+'|'+b, _sp=state.spots[_k];
@@ -3263,15 +3297,14 @@ function book(id){
   var x=byId(id);
   var a=document.getElementById('b1').value,b=document.getElementById('b2').value,g=document.getElementById('bg').value;
   var n=nights(a,b);
-  if(n<=0){ toast("Tarixləri düzgün seç"); return; }
-  if(n<(x.minNights||1) && !inOpenException(x,a,b)){ toast("Bu ev minimum "+(x.minNights||1)+" gecəyə verilir"); return; }
-  if(x.maxNights && n>x.maxNights){ toast("Bu ev maksimum "+x.maxNights+" gecəyə qədər verilir"); return; }
+  var gate=bookGate(x,a,b);
+  if(gate){ toast(gate.msg); return; }
   if(x.minGuestRating){
     var myAvg=guestRatingAvg(state.user.email);
     if(myAvg!==null && myAvg<x.minGuestRating){ toast("Bu ev sahibi ən azı "+x.minGuestRating+" ulduz reytinqi olan qonaqları qəbul edir. Sizin ortalamanız: "+myAvg.toFixed(1)); return; }
   }
   if(!state.accepted){ toast("Ev qaydalarını qəbul et"); return; }
-  if(!isListingFree(x.id,a,b)){ toast("Bu tarixlər üçün ev artıq bron olunub, başqa tarix seç"); return; }
+  if(!isListingFree(x.id,a,b)){ toast("Bu ev seçdiyiniz tarixlərdə artıq bron olunub. Zəhmət olmasa başqa tarix və ya başqa ev seçin."); return; }
   /* İkiqat-bron qarşısı: bron artıq client-də tərtib edilib birbaşa Firestore-a yazılmır — server
      tərəfdə ("createBooking" Cloud Function) bir Firestore TRANZAKSİYASI daxilində yenidən yoxlanılıb
      yaradılır. Əvvəllər yalnız yuxarıdakı "isListingFree" yoxlanması var idi ki, bu, İKİ qonaq eyni
@@ -6153,8 +6186,6 @@ if(fbAuth){
 /* ============ start ============ */
 load();
 startSharedSync();
-setDateValue('d1',today());
-setDateValue('d2',addDays(today(),1));
 fillRegions(); renderAuth(); autoRelease(); renderPendingRooms(); updateRoomKindUI(); renderPriceTiers();
 render(); renderBookings(); renderHost(); renderAdmin();
 checkAdminRoute();
