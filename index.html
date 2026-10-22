@@ -1676,6 +1676,7 @@ var bookingsSync = makeCollectionSync('bookings','bookings','code'); /* save/rem
    ictimai "busy" kolleksiyası dinlənilir (serverdəki mirrorBusy funksiyası yazır). */
 state.busy=[];
 var _bkUnsubs={guest:null,host:null,admin:null}, _bkParts={guest:[],host:[],admin:[]};
+var _bkErr={};
 function _mergeBookings(){
   var m={}; ['guest','host','admin'].forEach(function(k){ _bkParts[k].forEach(function(b){ m[b.code]=b; }); });
   state.bookings=Object.keys(m).map(function(k){return m[k];});
@@ -1685,7 +1686,7 @@ function _listenBookings(kind, query){
   if(_bkUnsubs[kind]){ _bkUnsubs[kind](); _bkUnsubs[kind]=null; }
   _bkUnsubs[kind]=query.onSnapshot(function(snap){
     var arr=[]; snap.forEach(function(d){ arr.push(d.data()); }); _bkParts[kind]=arr; _mergeBookings();
-  }, function(e){ console.error('bookings('+kind+') sinxronizasiya xətası:', e); });
+  }, function(e){ console.error('bookings('+kind+') sinxronizasiya xətası:', e); _bkErr[kind]=(e&&e.code)||'xəta'; if(kind==='guest'){ toast('Rezervasiyalar yüklənə bilmədi ('+_bkErr[kind]+')'); renderBookings(); } });
 }
 function _stopBookings(kind){
   if(_bkUnsubs[kind]){ _bkUnsubs[kind](); _bkUnsubs[kind]=null; }
@@ -3499,7 +3500,9 @@ function renderBookings(){
   var el=document.getElementById('mybookings');
   var mine = state.bookings.filter(function(b){ return state.user && b.email===state.user.email; });
   if(!mine.length){
-    el.innerHTML='<div class="empty"><h3>Hələ rezervasiyan yoxdur</h3><p>Evlərə bax, tarix seç və dərhal bron et.</p><button class="btn sm dark" onclick="go(\'kesf\')">Evlərə bax</button></div>'; return;
+    el.innerHTML='<div class="empty"><h3>Hələ rezervasiyan yoxdur</h3><p>Evlərə bax, tarix seç və dərhal bron et.</p><button class="btn sm dark" onclick="go(\'kesf\')">Evlərə bax</button>'
+      +(state.user?'<p style="font-size:11.5px;color:var(--muted);margin-top:14px;word-break:break-all">Hesab: '+esc(state.user.email)+' · server girişi: '+esc((typeof fbAuth!=='undefined'&&fbAuth&&fbAuth.currentUser&&fbAuth.currentUser.email)||'yoxdur')+' · sinxron: '+(_bkUnsubs.guest?'aktiv':'işləmir')+(_bkErr.guest?' · xəta: '+esc(_bkErr.guest):'')+'</p>':'')
+      +'</div>'; return;
   }
   el.innerHTML=mine.map(function(b){
     var R=b.rules||DEFAULT_RULES;
