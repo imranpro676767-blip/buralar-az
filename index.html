@@ -2558,12 +2558,12 @@ function finishLogin(){
      Real mühitdə tam KYC yoxlaması server tərəfli (Cloud Function + ASAN İmza kimi rəsmi provayder)
      olmalıdır. */
   /* KYC qərarını artıq SERVER verir (checkDuplicateCustomer funksiyası): client yalnız "pending" yaza bilir.
-     Server şəklin real ölçüsünü, FİN/şəkil təkrarını yoxlayıb statusu "verified" və ya "flagged" edir. */
+     Server FİN/şəkil təkrarını yoxlayıb şübhəlini "flagged" edir; "verified" yalnız ADMİN əl ilə təsdiqləyəndən sonra olur. */
   var flags=[];
   var status = 'pending';
   box.style.display='block';
   box.style.color = 'var(--ok)';
-  box.innerHTML = '✓ Qeydiyyat qəbul edildi, məlumatlar yoxlanılır...';
+  box.innerHTML = '✓ Qeydiyyat qəbul edildi, şəxsiyyət sənədiniz admin təsdiqinə göndərilir...';
 
   /* Şəxsiyyət vəsiqəsi şəkli Firestore sənədinə deyil, Storage-a yüklənir — yalnız link saxlanılır.
      Bu, həm sənəd ölçüsü limitini keçmə riskini aradan qaldırır, həm də hər sinxronizasiyada bu
@@ -2590,7 +2590,7 @@ function finishLogin(){
     save(); renderAuth(); renderBookings(); renderHost(); startOwnCustomerListener(e); startUserChatSync(e); startSupportSync(e);
     setTimeout(function(){
       closeModal('loginModal');
-      toast("Xoş gəldin, "+n.split(' ')[0]+"! Qeydiyyatın yoxlanılır, nəticə bir neçə saniyəyə görünəcək");
+      toast("Xoş gəldin, "+n.split(' ')[0]+"! Qeydiyyatın admin təsdiqinə göndərildi. Təsdiqdən sonra bron edə biləcəksən");
       if(state.pendingBook){ var pb=state.pendingBook; state.pendingBook=null; openDetail(pb); }
     }, flags.length?1400:700);
   }).catch(function(err){
