@@ -2922,6 +2922,16 @@ function toggleTierMore(btn){
   btn.setAttribute('aria-expanded',open?'true':'false');
   btn.innerHTML=open?'bağla ▴':'+'+box.children.length+' ▾';
 }
+/* Kiçik şəkil: elanın real üz şəkli (varsa), yoxdursa əvəzedici illüstrasiya */
+function listingThumb(x){
+  if(x && x.cover) return '<img src="'+x.cover+'" alt="'+esc(x.t||'')+'" style="width:100%;height:100%;object-fit:cover;display:block">';
+  return scene(x.sc,x.id);
+}
+function bookingThumb(b){
+  var l=null; try{ l=byId(b.lid); }catch(e){}
+  if(l && l.cover) return listingThumb(l);
+  return scene(b.sc,b.lid);
+}
 function cardPriceHtml(x){
   var a=document.getElementById('d1').value, b=document.getElementById('d2').value;
   var n=nights(a,b);
@@ -3648,7 +3658,7 @@ function renderBookings(){
   el.innerHTML=mine.map(function(b){
     var R=b.rules||DEFAULT_RULES;
     b.__viewerIsHost=false;
-    return '<div class="bk"><div class="th">'+scene(b.sc,b.lid)+'</div><div>'
+    return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div>'
       +'<h4>'+esc(b.title)+'</h4>'
       +'<div class="m">'+esc(b.city)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
       +'<div class="m">Kod: '+b.code+' · '+esc(b.bank)+' · giriş '+esc(R.cin)+'</div>'
@@ -4830,7 +4840,7 @@ function renderHost(){
   if(!mine.length){ el.innerHTML='<div class="empty"><h3>Hələ elanın yoxdur</h3><p>Formanı doldur, idarəetmə təsdiqindən sonra elan saytda görünəcək.</p></div>'; }
   else if(multiL && !shownListings.length){ el.innerHTML='<div class="empty"><h3>Evi seç</h3><p>Baxmaq, redaktə etmək və ya silmək üçün yuxarıdakı siyahıdan evlərindən birini seç.</p></div>'; }
   else el.innerHTML=shownListings.map(function(x){
-    return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div>'
+    return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ty)+' · '+x.g+' qonaq · '+az(x.p)+'/gecə</div>'
       +(isDriverListing(x)?spotsHtmlHost(x):'')
       +'<div class="m">VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban.slice(0,8))+'…</div>'
@@ -4864,7 +4874,7 @@ function renderHost(){
   if(!hb.length){ hel.innerHTML='<div class="empty"><h3>Hələ rezervasiya yoxdur</h3><p>Elanların təsdiqləndikcə buradakı siyahı dolacaq.</p></div>'; return; }
   hel.innerHTML = hb.map(function(b){
     b.__viewerIsHost=true;
-    return '<div class="bk"><div class="th">'+scene(b.sc,b.lid)+'</div><div>'
+    return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div>'
       +'<h4>'+esc(b.title)+'</h4>'
       +'<div class="m">Qonaq: '+esc(b.guest)+' · '+esc(b.phone)+'</div>'
       +'<div class="m">'+guestRatingBadgeHtml(b.email)+'</div>'
@@ -6109,19 +6119,19 @@ function modPendingCard(x){
 }
 function modApprovedCard(x){
         var okId=isEpointId(x.epointId);
-        return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
+        return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div><h4>'+esc(x.t)+'</h4>'
           +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
           +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
           +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
           +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button>'+'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDeleteListings(['+x.id+'])">Sil</button>'+'</div></div>';
 }
 function modDeletingCard(x){
-  return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
+  return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div><h4>'+esc(x.t)+'</h4>'
     +'<div class="m">'+esc(x.c)+' · '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'+delBannerHtml(x.deletePending)+'</div>'
     +'<div class="act"><button class="btn sm ok" onclick="restoreDelete(\'listing\','+x.id+')">Geri qaytar</button></div></div>';
 }
 function modRejectedCard(x){
-  return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div><h4>'+esc(x.t)+'</h4>'
+  return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div><h4>'+esc(x.t)+'</h4>'
     +'<div class="m">'+esc(x.c)+' · '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
     +'<div class="m">'+listingTag(x.st)+'</div></div><div class="act"><button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'+'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDeleteListings(['+x.id+'])">Sil</button>'+'</div></div>';
 }
@@ -6210,7 +6220,7 @@ function renderAdmin(){
   var open=cmp.filter(function(b){return b.complaint.st==='pending';});
   document.getElementById('cmpcount').textContent = open.length?('('+open.length+')'):'';
   document.getElementById('cmplist').innerHTML = cmp.length ? cmp.map(function(b){
-    return '<div class="bk"><div class="th">'+scene(b.sc,b.lid)+'</div><div>'
+    return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div>'
       +'<h4>'+esc(b.title)+'</h4>'
       +'<div class="m">Kod '+b.code+' · '+esc(b.guest||'—')+' · '+esc(b.phone||'—')+'</div>'
       +'<div class="m" style="color:var(--nar)">'+esc(b.complaint.reason)+'</div>'
@@ -6249,7 +6259,7 @@ function renderAdmin(){
     function row(label,oldV,newV){ return oldV===newV ? '' : '<div><span>'+label+'</span><b>'+esc(oldV)+' → '+esc(newV)+'</b></div>'; }
     var R=p.rules||DEFAULT_RULES;
     var rulesTxt = 'Uşaq:'+(R.kids?'bəli':'xeyr')+' Heyvan:'+(R.pets?'bəli':'xeyr')+' Siqaret:'+(R.smoke?'bəli':'xeyr')+' Tədbir:'+(R.party?'bəli':'xeyr');
-    return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div>'
+    return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">Cari qiymət: '+az(x.p)+'/gecə · min/maks gecə: '+(x.minNights||1)+' / '+(x.maxNights||'limitsiz')+' (dərhal tətbiq olunub)</div>'
       +'<div class="split">'
         +row('Başlıq',x.t,p.t)+row('Şəhər',x.c,p.c)+row('Ünvan',x.d,p.d)+row('Ev tipi',x.ty,p.ty)
@@ -6267,7 +6277,7 @@ function renderAdmin(){
   document.getElementById('delcount').textContent = delReqs.length?('('+delReqs.length+')'):'';
   document.getElementById('dellist').innerHTML = delReqs.length ? delReqs.map(function(x){
     var blocked=listingBlockingBookings(x.id);
-    return '<div class="bk"><div class="th">'+scene(x.sc,x.id)+'</div><div>'
+    return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ownerEmail||'')+'</div>'
       +'<div class="m" style="white-space:normal;font-weight:500">Silmə səbəbi: '+esc(x.deleteRequest.reason)+'</div>'
       +'<div class="m">Müraciət tarixi: '+new Date(x.deleteRequest.at).toLocaleString('az-AZ')+'</div>'
