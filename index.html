@@ -135,6 +135,12 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .card h3{font-size:15.5px;font-weight:700;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .loc,.card .meta{color:var(--muted);font-size:14px;font-weight:500}
 .card .price{font-weight:800}
+.bmopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #e5e0d4;border-radius:12px;margin-bottom:8px;cursor:pointer;line-height:1.4}
+.bmopt input{margin-top:4px;flex:none;width:auto}
+.bmopt small{color:var(--muted);font-weight:500;font-size:12.5px}
+.modechip{display:inline-block;font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;background:#E3F3EC;color:var(--ok)}
+.modechip.req{background:#FFF1D6;color:var(--warn)}
+.reqbox{background:#FFF8E8;border:1px solid #F0DDA8;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin:6px 0}
 .card .pricetag{position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.94);color:var(--nar);font-weight:900;font-size:18px;line-height:1;padding:7px 11px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:2}
 .card .pricetag small{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px}
 .card .minnight{font-size:13px;font-weight:700;color:var(--muted);margin-top:6px}
@@ -724,6 +730,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
       </div>
 
+      <div class="full" id="bm-create-box">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px">Rezervasiya rejimi (məcburi seçim)</div>
+        <label class="bmopt"><input type="radio" name="h-bookmode" value="instant" checked>
+          <span><b>⚡ Dərhal bron</b> — qonaq təsdiq gözləmədən dərhal ödəyib bron edir.<br>
+          <small>Üstünlüyü: daha çox və daha sürətli bron. <b>Məsuliyyət:</b> təqvimi daim yeniləməlisən. Kənardan (telefon, tanış və s.) bron alsan, dərhal "Təqvim"də həmin tarixləri bağla. Qonaq ödəniş edib gəlibsə və ev verilməyibsə, bu, ciddi pozuntu sayılır və sanksiyaya (xəbərdarlıq, müvəqqəti dayandırma, bloklama) səbəb ola bilər.</small></span></label>
+        <label class="bmopt"><input type="radio" name="h-bookmode" value="request">
+          <span><b>📩 Sorğu ilə bron</b> — qonaq əvvəlcə sorğu göndərir, sən təsdiqləyəndən sonra ödəyir.<br>
+          <small>Hər sorğuya <b>6 saat</b> ərzində cavab verməlisən (təsdiq və ya rədd). Cavab verilməsə sorğu avtomatik bağlanır. Təsdiqlədikdən sonra qonağın ödəniş üçün 1 saatı olur. Sorğu bitənə qədər həmin tarixlər başqa qonaqlara boş görünmür. Qonaq sorğunu istədiyi vaxt ləğv edə bilər.</small></span></label>
+        <p class="note" style="text-align:left;margin:6px 0 0">Rejimi sonra evin kartındakı <b>"Rejimi dəyiş"</b> düyməsi ilə bir kliklə dəyişə bilərsən. Sürücü evləri yalnız Dərhal bron ilə işləyir. Aktiv sorğun varkən dərhal bron rejiminə keçmək olmur.</p>
+      </div>
+
       <div class="full">
         <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px">Uzun qalmaya endirim (istəyə bağlı) — məsələn 1 gecə 100 ₼, 3+ gecə 90 ₼, 7+ gecə 75 ₼</div>
         <div class="tierrow">
@@ -1236,6 +1253,18 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div id="delListBody"></div>
     <button class="btn" style="background:var(--nar);color:#fff" onclick="confirmDelete()">Bəli, sil (48 saat sonra)</button>
     <button class="btn ghost" onclick="closeModal('delListModal')">Xeyr, imtina</button>
+  </div>
+</div>
+<div class="modal" id="bookModeModal" role="dialog" aria-modal="true" aria-label="Rezervasiya rejimi">
+  <div class="box" style="width:min(560px,100%)">
+    <h3 style="margin:0 0 4px">Rezervasiya rejimi</h3>
+    <p id="bmCurrent" class="note" style="text-align:left;margin:0 0 10px"></p>
+    <label class="bmopt"><input type="radio" name="bm-pick" value="instant">
+      <span><b>⚡ Dərhal bron</b> — qonaq dərhal ödəyib bron edir.<br><small>Daha çox bron, amma təqvimi daim yeniləməlisən: kənar bron alsan dərhal "Təqvim"də bağla. Qonaq ödəyib gəlibsə və ev verilməyibsə, bu ciddi pozuntudur və sanksiyaya səbəb ola bilər.</small></span></label>
+    <label class="bmopt"><input type="radio" name="bm-pick" value="request">
+      <span><b>📩 Sorğu ilə bron</b> — sən təsdiqləyəndən sonra qonaq ödəyir.<br><small>Hər sorğuya 6 saat ərzində cavab verməlisən, yoxsa sorğu bağlanır. Sorğu bitənə qədər həmin tarixlər başqalarına boş görünmür. Təsdiqdən sonra qonağın ödəniş üçün 1 saatı var.</small></span></label>
+    <button class="btn" onclick="confirmBookMode()">Yadda saxla</button>
+    <button class="btn ghost" onclick="closeModal('bookModeModal')">Bağla</button>
   </div>
 </div>
 <div class="modal" id="bkDetailModal" role="dialog" aria-modal="true" aria-label="Rezervasiya detalları">
@@ -3146,12 +3175,15 @@ function openDetail(id,bookingCode){
     +(isDriverListing(x)
       ? '<input type="hidden" id="bg" value="1"><div class="hint" style="margin:0 0 4px">Hər sürücü ayrıca bron edir (1 sürücü = 1 yer). Qiymət hər sürücü üçündür.</div><div class="drvspot" id="drvdetail" data-lid="'+x.id+'" style="font-weight:800;font-size:14px;margin-bottom:4px"></div>'
       : '<div class="fieldgrid one"><div class="f"><label for="bg">Qonaq sayı (maks. '+Math.min(x.g,100)+')</label><input type="number" id="bg" min="1" max="'+Math.min(x.g,100)+'" step="1" inputmode="numeric" value="'+Math.max(1,Math.min(parseInt(g,10)||1,x.g,100))+'" oninput="clampGuestInput(this,'+Math.min(x.g,100)+');calc()" onchange="clampGuestInput(this,'+Math.min(x.g,100)+',true);calc()"></div></div>')
+    +(isDriverListing(x)?'':(bookModeOf(x)==='request'
+        ? '<div class="reqbox"><b>📩 Sorğu ilə bron.</b> Bu ev dərhal bron olunmur: əvvəlcə sorğu göndərirsiniz, ev sahibi <b>6 saat</b> ərzində cavab verir. Təsdiqləsə, ödəniş üçün <b>1 saatınız</b> olur. Ödənişə qədər pul tutulmur və sorğunu istədiyiniz vaxt ləğv edə bilərsiniz. Sorğu gedərkən həmin tarixlər başqalarına boş görünmür.</div>'
+        : '<div class="hint" style="margin:4px 0"><b>⚡ Dərhal bron.</b> Təsdiq gözləmədən dərhal ödəyib bron edirsiniz.</div>'))
     +'<div class="calc" id="calcbox"></div>'
     +'<div><div style="font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px">Ödəniş üsulu</div><div class="payrow" id="banks" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>'
     +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;calc()">'
       +'<span>Ev qaydalarını oxudum və qəbul edirəm. Geri qaytarmanın yalnız şikayət yolu ilə mümkün olduğunu başa düşürəm.</span></label>'
-    +'<button class="btn" id="bookBtn" disabled onclick="openSafetyModal('+x.id+')">Dərhal rezervasiya et</button>'
-    +'<p class="note">Təsdiq gözləmədən dərhal bron olunur. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.</p>'
+    +'<button class="btn" id="bookBtn" disabled onclick="openSafetyModal('+x.id+')">'+bookBtnLabel(x)+'</button>'
+    +'<p class="note">'+(bookModeOf(x)==='request'&&!isDriverListing(x)?'Ev sahibi təsdiqləyəndən sonra ödəniş edilir. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.':'Təsdiq gözləmədən dərhal bron olunur. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.')+'</p>'
   +'</div></aside></div>';
   renderBanks(); calc();
   document.getElementById('overlay').classList.add('open');
@@ -3330,6 +3362,7 @@ function clampGuestInput(el,max,final){
   else if(v<1){ if(final) el.value=1; else el.value=1; }
   else if(String(el.value)!==String(v)) el.value=v;
 }
+function bookBtnLabel(x){ return (bookModeOf(x)==='request'&&!isDriverListing(x)) ? 'Sorğu göndər' : 'Dərhal rezervasiya et'; }
 function calc(){
   var x=byId(state.openId); if(!x) return;
   var a=document.getElementById('b1').value, b=document.getElementById('b2').value;
@@ -3440,6 +3473,11 @@ function book(id){
      yalnız "faktiki daxil edilən gecə/qonaq sayı" üçün istifadə olunur. */
   var btn=document.getElementById('bookBtn'); if(btn){ btn.disabled=true; btn.textContent='Göndərilir...'; }
   fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g, termsVersion:TERMS_VERSION}).then(function(res){
+    if(res.data && res.data.mode==='request'){
+      toast('Sorğunuz ev sahibinə göndərildi. Cavab 6 saat ərzində gözlənilir. Sorğunu Rezervasiyalarım bölməsindən izləyə və ləğv edə bilərsiniz');
+      closeDetail(); go('rez');
+      return new Promise(function(r){ r(); });
+    }
     toast("Ödəniş səhifəsinə yönləndirilirsən...");
     return payBooking(res.data.code);
   }).catch(function(err){
@@ -3447,7 +3485,7 @@ function book(id){
     var msg = (err && err.message) || "Rezervasiya serverə yazıla bilmədi, yenidən cəhd et";
     toast(msg);
   }).finally(function(){
-    if(btn){ btn.disabled=false; btn.textContent='Dərhal rezervasiya et'; }
+    if(btn){ btn.disabled=false; btn.textContent=bookBtnLabel(x); }
   });
 }
 /* Epoint ödəniş səhifəsinə yönləndirmə. Məbləği server bron sənədindən götürür. */
@@ -3598,29 +3636,40 @@ function resolveComplaint(code,ok){
 /* Ödəniş pəncərəsi: 3 dəqiqə (serverdəki PAYMENT_WINDOW_MS ilə eyni) */
 var PAY_WINDOW_MS=3*60*1000;
 /* Ödənilməmiş sayılır: vaxtı bitib/ləğv, gözləyir, uğursuz. Qalanı ödənilmiş (və ya ödənilmişdən sonrakı) bron sayılır. */
-function bkWasPaid(b){ return !(b.status==='expired' || ['pending','failed','expired'].indexOf(b.paymentStatus)>=0); }
+function bkWasPaid(b){ return ['hold','complaint','released','refunded'].indexOf(b.status)>=0 && ['pending','failed','expired'].indexOf(b.paymentStatus)<0; }
+function payDeadlineMs(b){ return b.payDeadline || ((b.createdAt||0)+PAY_WINDOW_MS); }
+function fmtCountdown(ms){
+  var t=Math.ceil(ms/1000), h=Math.floor(t/3600), m=Math.floor((t%3600)/60), sc=t%60;
+  var two=function(n){return (n<10?'0':'')+n;};
+  return h>0 ? (h+':'+two(m)+':'+two(sc)) : (two(m)+':'+two(sc));
+}
 function payCountdownHtml(b){
+  if(b.status==='requested' && b.requestExpiresAt) return ' <span class="m paycd" data-kind="req" style="font-weight:800;color:var(--warn)" data-exp="'+b.requestExpiresAt+'"></span>';
   if(!(b.status==='hold' && (b.paymentStatus==='pending'||b.paymentStatus==='failed') && b.createdAt)) return '';
-  return ' <span class="m paycd" style="font-weight:800;color:var(--warn)" data-exp="'+(b.createdAt+PAY_WINDOW_MS)+'"></span>';
+  return ' <span class="m paycd" data-kind="pay" style="font-weight:800;color:var(--warn)" data-exp="'+payDeadlineMs(b)+'"></span>';
 }
 function tickPayCountdowns(){
   var els=document.querySelectorAll('.paycd'); if(!els.length) return;
   for(var i=0;i<els.length;i++){
-    var el=els[i], ms=(+el.getAttribute('data-exp'))-Date.now();
+    var el=els[i], ms=(+el.getAttribute('data-exp'))-Date.now(), req=el.getAttribute('data-kind')==='req';
     var card=el.closest('.bk'), btns=card?card.querySelectorAll('.paybtn'):[];
     if(ms<=0){
-      el.textContent='Ödəniş vaxtı bitir…'; el.style.color='var(--nar)';
+      el.textContent=req?'Cavab müddəti bitir…':'Ödəniş vaxtı bitir…'; el.style.color='var(--nar)';
       for(var j=0;j<btns.length;j++) if(btns[j].getAttribute('data-pay')==='1') btns[j].disabled=true;
     } else {
-      var t=Math.ceil(ms/1000), m=Math.floor(t/60), sc=t%60;
-      el.textContent='Ödənişə '+(m<10?'0':'')+m+':'+(sc<10?'0':'')+sc+' qalıb';
+      el.textContent=(req?'Cavaba ':'Ödənişə ')+fmtCountdown(ms)+' qalıb';
     }
   }
 }
 setInterval(tickPayCountdowns,1000);
 function statusTag(s,b){
-  if(b && b.paymentStatus==='pending' && s==='hold') return '<span class="tag wait">Ödəniş gözlənilir</span>';
+  if(b && b.paymentStatus==='pending' && s==='hold') return b.payDeadline ? '<span class="tag wait">Sorğu təsdiqləndi · ödəniş gözlənilir</span>' : '<span class="tag wait">Ödəniş gözlənilir</span>';
   if(b && b.paymentStatus==='failed' && s==='hold') return '<span class="tag cancel">Ödəniş alınmadı</span>';
+  if(s==='requested') return '<span class="tag wait">Sorğu · ev sahibinin cavabı gözlənilir</span>';
+  if(s==='declined') return '<span class="tag cancel">Sorğu rədd edildi</span>';
+  if(s==='cancelled') return '<span class="tag cancel">Sorğu ləğv edildi</span>';
+  if(s==='expired' && b && b.requestExpired) return '<span class="tag cancel">Sorğuya cavab verilmədi</span>';
+  if(s==='hold' && b && b.paymentStatus==='pending' && b.payDeadline) return '<span class="tag wait">Sorğu təsdiqləndi · ödəniş gözlənilir</span>';
   if(s==='expired'){
     if(b && b.paymentCreateFailed) return '<span class="tag cancel">Ödəniş səhifəsi açılmadı</span>';
     if(b && b.cancelledByGuest) return '<span class="tag cancel">Ləğv edildi</span>';
@@ -3664,14 +3713,17 @@ function renderBookings(){
       +'<div class="m">Kod: '+b.code+' · '+esc(b.bank)+' · giriş '+esc(R.cin)+'</div>'
       +(b.status!=='refunded'?'<div class="m">Ev sahibi ('+esc(b.host)+') ilə əlaqə: '+hostContactHtml(b.lid,b)+'</div>':'')
       +'<div style="margin-top:8px">'+statusTag(b.status,b)+payCountdownHtml(b)+(b.status==='hold'&&!(b.paymentStatus==='pending'||b.paymentStatus==='failed')?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
+      +(b.status==='requested'?'<div class="reqbox">Ev sahibi sorğunuza <b>6 saat</b> ərzində cavab verəcək. Təsdiqləsə, ödəniş üçün <b>1 saatınız</b> olacaq. Ödənişə qədər heç bir məbləğ tutulmur. Sorğunu istədiyiniz vaxt ləğv edə bilərsiniz.</div>':'')
+      +(b.status==='hold'&&b.paymentStatus==='pending'&&b.payDeadline?'<div class="reqbox">Sorğunuz <b>təsdiqləndi</b>! Rezervasiyanın qüvvəyə minməsi üçün yuxarıdakı geri sayım bitməmiş <b>"Ödə"</b> düyməsi ilə ödəniş edin. Vaxt bitsə, tarixlər azad olur.</div>':'')
       +(b.complaint?'<div class="split"><div><span>Şikayət: '+esc(b.complaint.reason)+'</span><b>'+(b.complaint.st==='pending'?'yoxlanılır':(b.complaint.st==='approved'?'təsdiqləndi':'rədd edildi'))+'</b></div></div>':'')
       +(b.status==='hold'?'<div class="split"><div><span>Ev sahibinə çatacaq</span><b>'+az2(b.hostGets)+'</b></div><div><span>Platforma komissiyası</span><b>'+az2(b.platform)+'</b></div></div>':'')
       +(b.notified24&&b.exactAddress?'<div class="split"><div><span>Dəqiq ünvan</span><b>'+esc(b.exactAddress)+'</b></div></div>'+(b.mapsUrl?'<a href="'+b.mapsUrl+'" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:var(--nar)">Xəritədə göstər →</a>':''):'')
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.total)+'</div>'
       +((b.status==='hold'&&(b.paymentStatus==='pending'||b.paymentStatus==='failed'))
-        ? '<button class="btn sm dark paybtn" data-pay="1"'+((b.createdAt&&Date.now()>b.createdAt+PAY_WINDOW_MS)?' disabled':'')+' onclick="payBooking(\''+b.code+'\')">Ödə</button><button class="btn sm ghost paybtn" title="Bu bronu ləğv et və tarixləri azad et" onclick="cancelUnpaid(\''+b.code+'\')">✕ Ləğv et</button>'
-        : b.status==='expired' ? '<span class="m">Tarixlər azad edilib</span>'
+        ? '<button class="btn sm dark paybtn" data-pay="1"'+((b.createdAt&&Date.now()>payDeadlineMs(b))?' disabled':'')+' onclick="payBooking(\''+b.code+'\')">Ödə</button><button class="btn sm ghost paybtn" title="Bu bronu ləğv et və tarixləri azad et" onclick="cancelUnpaid(\''+b.code+'\')">✕ Ləğv et</button>'
+        : b.status==='requested' ? '<button class="btn sm ghost" onclick="cancelRequest(\''+b.code+'\')">✕ Sorğunu ləğv et</button>'
+        : (b.status==='expired'||b.status==='declined'||b.status==='cancelled') ? '<span class="m">Tarixlər azad edilib</span>'
         : b.status==='hold'
         ? '<button class="btn sm ghost" onclick="openDetail('+b.lid+',\''+b.code+'\')">Evə bax</button>'
           +'<button class="btn sm ghost" onclick="openComplaint(\''+b.code+'\')">Şikayət et</button>'
@@ -4516,6 +4568,7 @@ function addListing(e){
       id:id,t:v('h-title').slice(0,60),c:v('h-city'),d:v('h-addr').slice(0,50),ty:v('h-type'),
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
       r:parseInt(v('h-rooms'),10)||1,b:1,cl:parseInt(v('h-clean'),10)||0,
+      bookMode:(ck('h-gp-drivers')?'instant':((document.querySelector('input[name="h-bookmode"]:checked')||{}).value||'instant')),
       minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay;}),
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
@@ -4558,10 +4611,46 @@ function listingBlockingBookings(id){
     if(b.lid!=id) return false;
     if(b.status==='refunded') return false;
     if(b.status==='hold') return b.paymentStatus!=='failed';
+    if(b.status==='requested') return Date.now()<=(b.requestExpiresAt||0);
     if(b.status==='complaint') return true;
     if(b.status==='released') return (b.d2||'')>=t;
     return false;
   });
+}
+/* ============ rezervasiya rejimi: dərhal bron / sorğu ilə bron ============ */
+function bookModeOf(x){ return x && x.bookMode==='request' ? 'request' : 'instant'; }
+function bookModeChipHtml(x){
+  return bookModeOf(x)==='request' ? '<span class="modechip req">📩 Sorğu ilə bron</span>' : '<span class="modechip">⚡ Dərhal bron</span>';
+}
+function openBookMode(id){
+  var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  state.bookModeId=id;
+  var m=bookModeOf(x);
+  document.getElementById('bmCurrent').innerHTML='Hazırda: <b>'+(m==='request'?'📩 Sorğu ilə bron':'⚡ Dərhal bron')+'</b> — '+esc(x.t);
+  var r=document.querySelectorAll('input[name="bm-pick"]'); for(var i=0;i<r.length;i++) r[i].checked=(r[i].value===m);
+  openModal('bookModeModal');
+}
+function confirmBookMode(){
+  var id=state.bookModeId, x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  var pick=document.querySelector('input[name="bm-pick"]:checked'); if(!pick) return;
+  if(pick.value===bookModeOf(x)){ closeModal('bookModeModal'); return; }
+  if(!fbOnline||!fbFunctions){ toast('Server bağlantısı yoxdur'); return; }
+  fbFunctions.httpsCallable('setBookMode')({lid:id, mode:pick.value}).then(function(){
+    x.bookMode=pick.value; closeModal('bookModeModal'); renderHost(); render();
+    toast(pick.value==='request'?'Artıq sorğu ilə bron rejimindəsən. Sorğulara 6 saat ərzində cavab ver':'Artıq Dərhal bron rejimindəsən. Təqvimi daim yeniləməyi unutma');
+  }).catch(function(err){ toast((err&&err.message)||'Rejim dəyişdirilmədi'); });
+}
+function respondRequest(code, accept){
+  if(!fbOnline||!fbFunctions){ toast('Server bağlantısı yoxdur'); return; }
+  if(!confirm(accept?'Sorğunu təsdiqləyirsən? Qonağın ödəniş üçün 1 saatı olacaq.':'Sorğunu rədd edirsən? Tarixlər başqaları üçün azad olacaq.')) return;
+  fbFunctions.httpsCallable('respondBookingRequest')({code:code, accept:!!accept}).then(function(){
+    toast(accept?'Sorğu təsdiqləndi. Qonaq 1 saat ərzində ödəyəcək':'Sorğu rədd edildi');
+  }).catch(function(err){ toast((err&&err.message)||'Cavab göndərilmədi'); });
+}
+function cancelRequest(code){
+  if(!confirm('Sorğunu ləğv etmək istəyirsən? Heç bir məbləğ tutulmayıb, tarixlər azad olacaq.')) return;
+  fbFunctions.httpsCallable('cancelUnpaidBooking')({code:code}).then(function(){ toast('Sorğu ləğv edildi'); })
+    .catch(function(err){ toast((err&&err.message)||'Ləğv etmək alınmadı'); });
 }
 function removeListing(id){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
@@ -4848,8 +4937,9 @@ function renderHost(){
       +(x.st==='pending'?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
       +(x.deleteRequest?'<div class="m" style="color:var(--warn);font-weight:700;white-space:normal">Silmə müraciətiniz admin baxışındadır</div>':'')
       +(!x.deleteRequest&&x.deleteRejected?'<div class="m" style="color:var(--nar);font-weight:700;white-space:normal">Silmə müraciəti rədd edildi: '+esc(x.deleteRejected.reason)+'</div>':'')
-      +'<div style="margin-top:8px">'+listingTag(x.st)+(x.pendingEdit?' <span class="pendingbadge">Dəyişiklik admin təsdiqini gözləyir</span>':'')+'</div></div>'
+      +'<div style="margin-top:8px">'+listingTag(x.st)+(x.pendingEdit?' <span class="pendingbadge">Dəyişiklik admin təsdiqini gözləyir</span>':'')+' '+bookModeChipHtml(x)+'</div></div>'
       +'<div class="act"><div class="money" style="font-size:18px">'+az(x.p)+'</div>'
+      +(isDriverListing(x)?'':'<button class="btn sm ghost" onclick="openBookMode('+x.id+')">Rejimi dəyiş</button>')
       +(x.st==='approved'?'<button class="btn sm ghost" onclick="openDetail('+x.id+')">Bax</button>':'')
       +'<button class="btn sm ghost" onclick="openEdit('+x.id+')">Redaktə et</button>'
       +(x.deleteRequest?'':'<button class="btn sm ghost" onclick="removeListing('+x.id+')">Sil</button>')+'</div></div>';
@@ -4868,7 +4958,7 @@ function renderHost(){
     hsel.style.display = multi ? '' : 'none';
     hsel.innerHTML = mine.map(function(x){ return '<option value="'+x.id+'"'+(x.id===state.hostBkListingId?' selected':'')+'>'+esc(x.t)+'</option>'; }).join('');
   }
-  var hb = state.bookings.filter(function(b){ return b.lid===state.hostBkListingId && bkWasPaid(b); });
+  var hb = state.bookings.filter(function(b){ return b.lid===state.hostBkListingId && (bkWasPaid(b) || b.status==='requested' || (b.status==='hold' && b.payDeadline && b.paymentStatus==='pending')); });
   var hel = document.getElementById('hostbookings');
   state.hostBkCount = hb.length; applyHostBkToggle();
   if(!hb.length){ hel.innerHTML='<div class="empty"><h3>Hələ rezervasiya yoxdur</h3><p>Elanların təsdiqləndikcə buradakı siyahı dolacaq.</p></div>'; return; }
@@ -4876,12 +4966,15 @@ function renderHost(){
     b.__viewerIsHost=true;
     return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div>'
       +'<h4>'+esc(b.title)+'</h4>'
-      +'<div class="m">Qonaq: '+esc(b.guest)+' · '+esc(b.phone)+'</div>'
+      +'<div class="m">Qonaq: '+esc(b.guest)+((b.status==='requested'||b.paymentStatus==='pending')?'':' · '+esc(b.phone))+'</div>'
       +'<div class="m">'+guestRatingBadgeHtml(b.email)+'</div>'
-      +'<div class="m">'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə</div>'
-      +'<div style="margin-top:8px">'+statusTag(b.status,b)+'</div>'
+      +'<div class="m">'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
+      +'<div style="margin-top:8px">'+statusTag(b.status,b)+payCountdownHtml(b)+'</div>'
+      +(b.status==='requested'?'<div class="reqbox"><b>Bron sorğusu.</b> Cavab müddəti bitməmiş təsdiqləyin və ya rədd edin. Təsdiqləsəniz, qonağın ödəniş üçün 1 saatı olacaq. Cavab verməsəniz sorğu avtomatik bağlanır. Qonağın telefonu ödənişdən sonra görünəcək.</div>':'')
+      +(b.status==='hold'&&b.paymentStatus==='pending'&&b.payDeadline?'<div class="reqbox">Sorğunu təsdiqlədiniz. Qonaq ödəniş edənə qədər tarixlər ayrılıb. Vaxt bitərsə azad olur.</div>':'')
       +reviewBlock(b)
       +'</div><div class="act"><div class="money" style="font-size:18px">'+az2(b.hostGets)+'</div>'
+      +(b.status==='requested'?'<button class="btn sm ok" onclick="respondRequest(\''+b.code+'\',true)">Təsdiqlə</button><button class="btn sm" style="background:var(--nar);color:#fff" onclick="respondRequest(\''+b.code+'\',false)">Rədd et</button>':'')
       +(b.status==='released'?(reviewsFor('host',b.code).length?'<span class="m">Qiymətləndirmisiniz</span>':'<button class="btn sm dark" onclick="openRate(\''+b.code+'\',\'host\')">Qonağı qiymətləndir</button>'):'')
       +hostClaimButtonsHtml(b)
       +'</div></div>';
@@ -4901,7 +4994,7 @@ function toggleHostBookings(){ state.hostBkOpen=!state.hostBkOpen; applyHostBkTo
 /* ============ ev sahibi təqvimi ============ */
 function activeBookingsFor(id){
   return state.bookings.filter(function(b){
-    return b.lid==id && b.status!=='refunded' && (b.status==='hold'||b.status==='complaint'||b.status==='released');
+    return b.lid==id && b.status!=='refunded' && (b.status==='hold'||b.status==='complaint'||b.status==='released'||(b.status==='requested'&&Date.now()<=(b.requestExpiresAt||0)));
   }).sort(function(a,c){return a.d1<c.d1?-1:1;});
 }
 function blocksFor(id){
@@ -5145,6 +5238,7 @@ function mergeListingWithPendingEdit(x){
 }
 function resetListingFormToCreateMode(){
   state.editingListingId=null;
+  var _bmb=document.getElementById('bm-create-box'); if(_bmb) _bmb.style.display='';
   var form=document.getElementById('listingForm');
   if(form) form.reset();
   fillRegions(); resetRoomBuilderDraft(); resetPriceTiersDraft();
@@ -5178,6 +5272,7 @@ function openEdit(id){
   live.rooms = live.rooms || [];
 
   state.editingListingId=id;
+  var _bmb=document.getElementById('bm-create-box'); if(_bmb) _bmb.style.display='none'; /* rejim redaktədə yox, kartdakı "Rejimi dəyiş" ilə dəyişir */
 
   document.getElementById('h-title').value=live.t||'';
   document.getElementById('h-title-count').textContent=(live.t||'').length;
@@ -5774,8 +5869,10 @@ function downloadCsv(filename, headers, rows){
 
 /* ===== Rezervasiyalar: kateqoriya + tarix aralığı + axtarış + səhifələmə ===== */
 var REZ={cat:'all',q:'',basis:'created',from:'',to:'',page:1,per:25};
-var REZ_CATS=[['all','Hamısı'],['pending','Ödəniş gözlənilir'],['expired','Ödəniş vaxtı bitib'],['failed','Ödəniş alınmadı'],['hold','Təsdiqlənib (vəsait saxlanılır)'],['complaint','Şikayət'],['released','Ev sahibinə köçürülüb'],['refunded','Geri qaytarılıb']];
+var REZ_CATS=[['all','Hamısı'],['requested','Sorğu gözləyir'],['declined','Rədd/ləğv sorğu'],['pending','Ödəniş gözlənilir'],['expired','Ödəniş vaxtı bitib'],['failed','Ödəniş alınmadı'],['hold','Təsdiqlənib (vəsait saxlanılır)'],['complaint','Şikayət'],['released','Ev sahibinə köçürülüb'],['refunded','Geri qaytarılıb']];
 function rezCat(b){
+  if(b.status==='requested') return 'requested';
+  if(b.status==='declined'||b.status==='cancelled') return 'declined';
   if(b.status==='expired') return 'expired';
   if(b.status==='hold' && b.paymentStatus==='pending') return 'pending';
   if(b.status==='hold' && b.paymentStatus==='failed') return 'failed';
@@ -6027,6 +6124,7 @@ function guestBlockingBookings(email){
   return state.bookings.filter(function(b){
     if(String(b.email||'').toLowerCase()!==String(email||'').toLowerCase()) return false;
     if(b.status==='hold') return b.paymentStatus!=='failed' && b.paymentStatus!=='expired';
+    if(b.status==='requested') return Date.now()<=(b.requestExpiresAt||0);
     if(b.status==='complaint') return true;
     if(b.status==='released') return (b.d2||'')>=t;
     return false;
