@@ -142,6 +142,9 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .modechip.req{background:#FFF1D6;color:var(--warn)}
 .reqbox{background:#FFF8E8;border:1px solid #F0DDA8;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin:6px 0}
 .card .pricetag{position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.94);color:var(--nar);font-weight:900;font-size:18px;line-height:1;padding:7px 11px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:2}
+.modetag{position:absolute;left:10px;bottom:10px;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;line-height:1;padding:6px 10px;border-radius:999px;background:#FFC83D;color:#3a2a00;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.modetag.req{background:rgba(255,255,255,.94);color:var(--warn)}
+@media(max-width:640px){.modetag{font-size:10.5px;padding:5px 8px;left:7px;bottom:7px}}
 .card .pricetag small{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px}
 .card .minnight{font-size:13px;font-weight:700;color:var(--muted);margin-top:6px}
 .card .tierchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
@@ -2993,7 +2996,7 @@ function render(scroll,keepPage){
   document.getElementById('grid').innerHTML = (list.map(function(x){
     var thumb = x.cover ? '<img src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return '<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
-      +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+coverPriceHtml(x)+'</div>'
+      +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+modeTagHtml(x)+coverPriceHtml(x)+'</div>'
       +'<div class="row"><h3 title="'+esc(x.t)+'">'+esc(x.t)+'</h3><span class="rate"'+(x.rv?' onclick="event.stopPropagation();openListingReviews('+x.id+')" style="cursor:pointer;text-decoration:underline" title="Rəylərə bax"':'')+'>★ '+(x.rv?x.rt.toFixed(2):'Yeni')+'</span></div>'
       +'<div class="loc">'+esc(x.c)+', '+esc(x.d)+' · '+esc(x.ty)+'</div>'
       +'<div class="meta">'+x.g+' qonaq · '+x.r+' otaq · '+x.b+' sanitar qovşaq</div>'
@@ -4623,6 +4626,11 @@ function listingBlockingBookings(id){
   });
 }
 /* ============ rezervasiya rejimi: dərhal bron / sorğu ilə bron ============ */
+function modeTagHtml(x){
+  return bookModeOf(x)==='request'
+    ? '<span class="modetag req" title="Bu evi dərhal yox, ev sahibinin təsdiqi ilə bron etmək olur">✉ Sorğu ilə</span>'
+    : '<span class="modetag" title="Ödəniş etdiyiniz anda bron təsdiqlənir">⚡ Dərhal bron</span>';
+}
 function bookModeOf(x){ return x && x.bookMode==='request' ? 'request' : 'instant'; }
 function bookModeChipHtml(x){
   return bookModeOf(x)==='request' ? '<span class="modechip req">📩 Sorğu ilə bron</span>' : '<span class="modechip">⚡ Dərhal bron</span>';
