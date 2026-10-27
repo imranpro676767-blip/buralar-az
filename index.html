@@ -144,7 +144,7 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .card .pricetag{position:absolute;right:10px;bottom:10px;background:rgba(255,255,255,.94);color:var(--nar);font-weight:900;font-size:18px;line-height:1;padding:7px 11px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.2);z-index:2}
 .modetag{position:absolute;left:10px;bottom:10px;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;line-height:1;padding:6px 10px;border-radius:999px;background:#FFC83D;color:#3a2a00;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .modetag.req{background:rgba(255,255,255,.94);color:var(--warn)}
-@media(max-width:640px){.modetag{font-size:10.5px;padding:5px 8px;left:7px;bottom:7px}}
+@media(max-width:640px){.modetag{font-size:13px;padding:0;width:26px;height:26px;justify-content:center;left:7px;bottom:7px}.modetag .lbl{display:none}.card .vbadge .lbl{display:none}.card .vbadge{padding:4px 5px;top:7px;right:7px}.card .badge{max-width:calc(100% - 46px)}}
 .card .pricetag small{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px}
 .card .minnight{font-size:13px;font-weight:700;color:var(--muted);margin-top:6px}
 .card .tierchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
@@ -2484,7 +2484,7 @@ function shieldSvg(px){
   return '<svg width="'+px+'" height="'+px+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:'+px+'px;height:'+px+'px;flex:none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="m9 12 2 2 4-4"/></svg>';
 }
 function verifiedBadgeHtml(){
-  return '<span class="vbadge" title="Bu ev onlayn görüntülü zəng ilə təsdiqlənib">'+shieldSvg(12)+'Təsdiqlənib</span>';
+  return '<span class="vbadge" title="Bu ev onlayn görüntülü zəng ilə təsdiqlənib">'+shieldSvg(12)+'<span class="lbl">Təsdiqlənib</span></span>';
 }
 function verifiedLineHtml(){
   return '<div class="vline">'+shieldSvg(15)+'<span>Onlayn görüntülü təsdiqdən keçib</span></div>';
@@ -2994,7 +2994,7 @@ function render(scroll,keepPage){
   document.getElementById('count').textContent=full.length+" ev tapıldı"+(!state.guestType?" · Sizə uyğun evləri görmək üçün tarixləri və qonaq tipini seçin":"");
   var list=full.slice(0,gridShown);
   document.getElementById('grid').innerHTML = (list.map(function(x){
-    var thumb = x.cover ? '<img src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
+    var thumb = x.cover ? '<img loading="lazy" decoding="async" src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return '<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
       +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+modeTagHtml(x)+coverPriceHtml(x)+'</div>'
       +'<div class="row"><h3 title="'+esc(x.t)+'">'+esc(x.t)+'</h3><span class="rate"'+(x.rv?' onclick="event.stopPropagation();openListingReviews('+x.id+')" style="cursor:pointer;text-decoration:underline" title="Rəylərə bax"':'')+'>★ '+(x.rv?x.rt.toFixed(2):'Yeni')+'</span></div>'
@@ -4628,8 +4628,8 @@ function listingBlockingBookings(id){
 /* ============ rezervasiya rejimi: dərhal bron / sorğu ilə bron ============ */
 function modeTagHtml(x){
   return bookModeOf(x)==='request'
-    ? '<span class="modetag req" title="Bu evi dərhal yox, ev sahibinin təsdiqi ilə bron etmək olur">✉ Sorğu ilə</span>'
-    : '<span class="modetag" title="Ödəniş etdiyiniz anda bron təsdiqlənir">⚡ Dərhal bron</span>';
+    ? '<span class="modetag req" title="Bu evi dərhal yox, ev sahibinin təsdiqi ilə bron etmək olur"><span>✉</span><span class="lbl">Sorğu ilə</span></span>'
+    : '<span class="modetag" title="Ödəniş etdiyiniz anda bron təsdiqlənir"><span>⚡</span><span class="lbl">Dərhal bron</span></span>';
 }
 function bookModeOf(x){ return x && x.bookMode==='request' ? 'request' : 'instant'; }
 function bookModeChipHtml(x){
@@ -6213,7 +6213,7 @@ function modPendingCard(x){
     var R=x.rules||DEFAULT_RULES;
     var roomCount = x.rooms?x.rooms.length:0;
     var photoCount = allPhotosOf(x).length;
-    return '<div class="bk"><div class="th">'+(x.cover?'<img src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">':scene(x.sc,x.id))+'</div><div>'
+    return '<div class="bk"><div class="th">'+(x.cover?'<img loading="lazy" decoding="async" src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">':scene(x.sc,x.id))+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4>'
       +'<div class="m">'+esc(x.c)+' ('+regionOf(x.c)+') · '+esc(x.d)+' · '+esc(x.ty)+' · '+az(x.p)+'/gecə</div>'
       +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban)+'</div>'
