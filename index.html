@@ -2393,9 +2393,9 @@ function compressImageFile(file, maxDim, quality){
     img.src = url;
   });
 }
-function _uploadImageOnce(file, pathPrefix){
+function _uploadImageOnce(file, pathPrefix, opts){
   if(!fbOnline) return Promise.reject(new Error('Server bağlantısı yoxdur'));
-  return compressImageFile(file).then(function(out){
+  return compressImageFile(file, opts&&opts.maxDim, opts&&opts.quality).then(function(out){
     var isJpeg = out.type==='image/jpeg';
     var ext = isJpeg ? '.jpg' : ((file.name && /\.[a-z0-9]+$/i.test(file.name)) ? file.name.match(/\.[a-z0-9]+$/i)[0] : '');
     var safeName=Date.now()+'-'+Math.floor(Math.random()*1e6)+'-img'+ext;
@@ -2961,7 +2961,7 @@ function toggleTierMore(btn){
 }
 /* Kiçik şəkil: elanın real üz şəkli (varsa), yoxdursa əvəzedici illüstrasiya */
 function listingThumb(x){
-  if(x && x.cover) return '<img src="'+x.cover+'" alt="'+esc(x.t||'')+'" style="width:100%;height:100%;object-fit:cover;display:block">';
+  if(x && x.cover) return '<img src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t||'')+'" style="width:100%;height:100%;object-fit:cover;display:block">';
   return scene(x.sc,x.id);
 }
 function bookingThumb(b){
@@ -2994,7 +2994,7 @@ function render(scroll,keepPage){
   document.getElementById('count').textContent=full.length+" ev tapıldı"+(!state.guestType?" · Sizə uyğun evləri görmək üçün tarixləri və qonaq tipini seçin":"");
   var list=full.slice(0,gridShown);
   document.getElementById('grid').innerHTML = (list.map(function(x){
-    var thumb = x.cover ? '<img loading="lazy" decoding="async" src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
+    var thumb = x.cover ? '<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return '<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
       +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+modeTagHtml(x)+coverPriceHtml(x)+'</div>'
       +'<div class="row"><h3 title="'+esc(x.t)+'">'+esc(x.t)+'</h3><span class="rate"'+(x.rv?' onclick="event.stopPropagation();openListingReviews('+x.id+')" style="cursor:pointer;text-decoration:underline" title="Rəylərə bax"':'')+'>★ '+(x.rv?x.rt.toFixed(2):'Yeni')+'</span></div>'
@@ -4420,7 +4420,7 @@ function renderPendingRooms(){
 }
 function resetRoomBuilderDraft(){
   state.editingRoom=null;
-  state.coverData=null; state.coverFile=null; state.pendingRooms=[]; state.currentRoomPhotos=[]; state.currentRoomPhotoFiles=[];
+  state.coverData=null; state.coverThumbData=null; state.coverFile=null; state.pendingRooms=[]; state.currentRoomPhotos=[]; state.currentRoomPhotoFiles=[];
   document.getElementById('h-cover-preview').innerHTML='';
   document.getElementById('rm-kind').value='bedroom'; updateRoomKindUI();
   renderPendingRooms(); renderRoomPhotoGrid();
@@ -4455,14 +4455,14 @@ function lightboxNav(d){
 }
 
 /* Şəkil yükləmə: 60 san. vaxt aşımı + 2 təkrar cəhd (telefonda zəif şəbəkədə "sonsuz yüklənir" vəziyyətinin qarşısı) */
-function uploadImageToStorage(file, pathPrefix){
+function uploadImageToStorage(file, pathPrefix, opts){
   var attempt=0;
   function once(){
     attempt++;
     return new Promise(function(resolve,reject){
       var done=false;
       var timer=setTimeout(function(){ if(!done){ done=true; reject(new Error('Şəkil yükləmə vaxtı bitdi')); } }, 60000);
-      _uploadImageOnce(file, pathPrefix).then(function(u){ if(!done){ done=true; clearTimeout(timer); resolve(u); } },
+      _uploadImageOnce(file, pathPrefix, opts).then(function(u){ if(!done){ done=true; clearTimeout(timer); resolve(u); } },
         function(er){ if(!done){ done=true; clearTimeout(timer); reject(er); } });
     }).catch(function(er){
       if(attempt<3) return once();
@@ -4496,12 +4496,15 @@ function uploadListingMedia(id, rooms, btn){
       tasks.push(track(function(){ return files[pi] ? uploadImageToStorage(files[pi],'listings/'+id+'/rooms/'+r.id) : Promise.resolve(ph); }));
     });
   });
+  /* Kart üçün kiçik üz şəkli (800px). Yeni üz şəkli seçilməyibsə köhnə kiçik şəkil saxlanır. */
+  var thumbIdx=tasks.length;
+  tasks.push(function(){ return state.coverFile ? uploadImageToStorage(state.coverFile,'listings/'+id+'/coverthumb',{maxDim:800,quality:0.78}).catch(function(){ return null; }) : Promise.resolve(state.coverThumbData||null); });
   /* total əvvəlcədən məlum olsun deyə sayğacı hesablayırıq (track artıq total-ı artırıb) */
   if(btn) btn.textContent='Şəkillər yüklənir (0/'+total+')...';
   return runPool(tasks,3).then(function(urls){
     var arrays=rooms.map(function(){ return []; });
     map.forEach(function(m,i){ arrays[m[0]][m[1]]=urls[i+1]; });
-    return [urls[0], arrays];
+    return [urls[0], arrays, urls[thumbIdx]||null];
   });
 }
 
@@ -4583,7 +4586,7 @@ function addListing(e){
       rt:5,rv:0,sc:(id%6),host:v('h-name').slice(0,50),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen,iban:iban,bizCard:bizCard,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(), privacyVersion:PRIVACY_VERSION,
-      cover:coverUrl, rooms:roomsClean,
+      cover:coverUrl, coverThumb:(results[0]&&r3[0][2])||null, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
@@ -5320,6 +5323,7 @@ function openEdit(id){
   document.getElementById('h-desc').value=live.desc||'';
 
   state.coverData = live.cover||null;
+  state.coverThumbData = live.coverThumb||null;
   state.coverFile = null;
   document.getElementById('h-cover-preview').innerHTML = state.coverData ? ('<img src="'+state.coverData+'" alt="Evin üz şəkli">') : '';
 
@@ -5439,7 +5443,7 @@ function submitListingEdit(e){
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen, iban:iban, bizCard:bizCard, bank:v('h-bank'), whatsapp:whatsapp, lat:lat, lng:lng,
-      cover:coverUrl, rooms:roomsClean,
+      cover:coverUrl, coverThumb:results[2]||null, rooms:roomsClean,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
     return syncListing(x);
@@ -6213,7 +6217,7 @@ function modPendingCard(x){
     var R=x.rules||DEFAULT_RULES;
     var roomCount = x.rooms?x.rooms.length:0;
     var photoCount = allPhotosOf(x).length;
-    return '<div class="bk"><div class="th">'+(x.cover?'<img loading="lazy" decoding="async" src="'+x.cover+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">':scene(x.sc,x.id))+'</div><div>'
+    return '<div class="bk"><div class="th">'+(x.cover?'<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">':scene(x.sc,x.id))+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4>'
       +'<div class="m">'+esc(x.c)+' ('+regionOf(x.c)+') · '+esc(x.d)+' · '+esc(x.ty)+' · '+az(x.p)+'/gecə</div>'
       +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban)+'</div>'
