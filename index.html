@@ -590,10 +590,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   </div>
   <div class="wrap">
     <div class="filtergroup">
-      <button type="button" class="filterlabel" id="regionToggle" onclick="toggleRegionFilter()" style="cursor:pointer;background:none;border:0;padding:0;display:flex;align-items:center;gap:4px;font:inherit;color:inherit">Bölgəyə görə axtar <span id="regionToggleArrow">⌄</span></button>
-      <div class="filterbar" id="chipsRegion" style="display:none"></div>
-    </div>
-    <div class="filtergroup">
       <div class="filterlabel">Ev tipi</div>
       <div class="filterbar" id="chipsType"></div>
     </div>
@@ -2799,20 +2795,9 @@ function goSub(s){
 /* Bölgə seçimi defolt gizlidir — çoxu "Hara gedirsən?" qutusuna birbaşa yazıb axtarır, bölgə
    siyahısı yalnız "harasa" deyə gəzmək istəyənlər üçün əlavə (istəyə bağlı) bir vasitədir. Əgər
    konkret bir bölgə artıq seçilibsə, açıq saxlanılır ki, istifadəçi öz seçimini görsün. */
-function toggleRegionFilter(){
-  var box=document.getElementById('chipsRegion');
-  var open = box.style.display==='none';
-  box.style.display = open?'flex':'none';
-  document.getElementById('regionToggleArrow').textContent = open?'︿':'⌄';
-}
+function toggleRegionFilter(){ /* ləğv edildi */ }
 function renderChips(){
-  var hr='<button class="chip" aria-pressed="'+(state.region==='Hamısı')+'" onclick="setRegion(\'Hamısı\')">Bütün bölgələr</button>';
-  for(var r in REGIONS) hr+='<button class="chip" aria-pressed="'+(state.region===r)+'" onclick="setRegion(\''+r+'\')">'+r+'</button>';
-  document.getElementById('chipsRegion').innerHTML=hr;
-  if(state.region!=='Hamısı'){
-    document.getElementById('chipsRegion').style.display='flex';
-    document.getElementById('regionToggleArrow').textContent='︿';
-  }
+  /* "Bölgəyə görə axtar" bloku ləğv edildi: bölgə/şəhər axtarışı yuxarıdakı "Hara gedirsən?" sahəsi ilə aparılır. */
 
   var ht='<button class="chip" aria-pressed="'+(state.type==='Hamısı')+'" onclick="setType(\'Hamısı\')">Hamısı</button>';
   ['Mənzil','Həyət evi','A-Frame','Villa','Bağ evi','Otaq'].forEach(function(t){
