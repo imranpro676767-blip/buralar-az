@@ -2570,7 +2570,9 @@ function googleSignIn(){
     var u = result.user;
     document.getElementById('u-name').value = (u.displayName || '').slice(0,50);
     document.getElementById('u-email').value = u.email || '';
-    document.getElementById('loginStep2').style.display='grid';
+    /* Qeydiyyat formunu YALNIZ qeydiyyatın olmadığı təsdiqlənəndən sonra göstəririk
+       (əvvəl dərhal açılırdı və köhnə istifadəçi forma görüb təkrar qeydiyyat tələb olunduğunu düşünürdü). */
+    toast('Hesabın yoxlanılır...');
     /* Digər istifadəçilərin qeydiyyat məlumatları brauzerə ümumiyyətlə yüklənmir (məxfilik üçün) —
        yalnız bu hesabın ÖZ qeydiyyat sənədini server tərəfdə birbaşa yoxlayırıq (Firestore Rules
        yalnız sahibin öz sənədini oxumasına icazə verir). Qeydiyyat artıq mövcuddursa (status nə
@@ -2592,8 +2594,14 @@ function googleSignIn(){
           toast("Xoş gəldin, "+existing.name.split(' ')[0]);
         }
         if(state.pendingBook){ var pb=state.pendingBook; state.pendingBook=null; openDetail(pb); }
+      } else {
+        document.getElementById('loginStep2').style.display='grid';
       }
-    }).catch(function(e){ console.error('Qeydiyyat yoxlanışı xətası:', e); });
+    }).catch(function(e){
+      console.error('Qeydiyyat yoxlanışı xətası:', e);
+      /* Oxuma alınmadısa (şəbəkə/icazə), qeydiyyat formunu göstərmirik: köhnə istifadəçi səhvən təkrar qeydiyyata yönəlməsin. */
+      toast('Hesabın yoxlanıla bilmədi ('+((e&&e.code)||'xəta')+'). İnterneti yoxlayıb yenidən "Google ilə davam et" düyməsini bas.');
+    });
   }).catch(function(e){
     console.error('Google giriş xətası:', e);
     if(e && e.code==='auth/user-disabled') toast('Bu hesab bloklanıb. Etiraz üçün salam.buralar.az@gmail.com ünvanına yaz.');
