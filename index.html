@@ -3224,7 +3224,7 @@ function openDetail(id,bookingCode){
         ? '<div class="reqbox"><b>📩 Sorğu ilə bron.</b> Bu ev dərhal bron olunmur: əvvəlcə sorğu göndərirsiniz, ev sahibi <b>6 saat</b> ərzində cavab verir. Təsdiqləsə, ödəniş üçün <b>1 saatınız</b> olur. Ödənişə qədər pul tutulmur və sorğunu istədiyiniz vaxt ləğv edə bilərsiniz. Sorğu gedərkən həmin tarixlər başqalarına boş görünmür.</div>'
         : '<div class="hint" style="margin:4px 0"><b>⚡ Dərhal bron.</b> Təsdiq gözləmədən dərhal ödəyib bron edirsiniz.</div>'))
     +'<div class="calc" id="calcbox"></div>'
-    +'<div><div style="font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:6px">Ödəniş üsulu</div><div class="payrow" id="banks" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>'
+    +'<div style="display:flex;gap:10px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;color:var(--muted);line-height:1.45"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1C6B55" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg><span><b style="color:var(--text)">Ödəniş kartla, Epoint təhlükəsiz ödəniş səhifəsində edilir.</b> Bron etdikdən sonra ödəniş səhifəsinə yönləndiriləcəksən. Kart məlumatlarını saytımızda yazmırsan.</span></div>'
     +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;calc()">'
       +'<span>Ev qaydalarını oxudum və qəbul edirəm. Geri qaytarmanın yalnız şikayət yolu ilə mümkün olduğunu başa düşürəm.</span></label>'
     +'<button class="btn" id="bookBtn" disabled onclick="openSafetyModal('+x.id+')">'+bookBtnLabel(x)+'</button>'
@@ -3295,12 +3295,7 @@ function previewPendingEdit(id){
 function closeDetail(){ document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; state.openId=null; }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&state.openId) closeDetail(); });
 
-function renderBanks(){
-  var banks=["Kapital Bank","ABB","PAŞA Bank","m10","Birbank kart"];
-  document.getElementById('banks').innerHTML=banks.map(function(b){
-    return '<button class="chip" aria-pressed="'+(state.bank===b)+'" onclick="state.bank=\''+b+'\';renderBanks()">'+b+'</button>';
-  }).join('');
-}
+function renderBanks(){ /* Ödəniş yalnız Epoint vasitəsilədir; bank seçimi ləğv edildi (köhnə çağırışlar zərərsiz qalır) */ }
 /* ============ pilləli qiymət (uzun müddətə endirim) ============ */
 function priceTiersOf(x){
   var t=[{minNights:1,price:x.p}].concat((x.priceTiers||[]).map(function(pt){return {minNights:pt.minNights,price:pt.price};}));
