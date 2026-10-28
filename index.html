@@ -3060,9 +3060,11 @@ var YARDSIT_FEATURE_OPTIONS=["Oturma yeri","Stol","Stul","Çöl mətbəxi","Mət
 var YARD_FEATURE_OPTIONS=["Uşaq əyləncəsi ləvazimatı (karusel və s.)","Yaşıllıq","Gül-çiçək","Böyük ağaclar","Meyvə ağacları","Dekorativ ağaclar"];
 function roomAmenChecklistHtml(options, chosen){
   chosen = chosen || [];
-  return '<div class="roomamen">'+options.map(function(a){
-    var has = chosen.indexOf(a)>=0;
-    return '<div class="r">'+checkIcon(has)+'<span'+(has?'':' style="color:var(--muted)"')+'>'+esc(a)+'</span></div>';
+  /* Yalnız mövcud olan seçimlər göstərilir (yer az tutsun, qarışıq görünməsin). */
+  var have = options.filter(function(a){ return chosen.indexOf(a)>=0; });
+  if(!have.length) return '';
+  return '<div class="roomamen">'+have.map(function(a){
+    return '<div class="r">'+checkIcon(true)+'<span>'+esc(a)+'</span></div>';
   }).join('')+'</div>';
 }
 function gameAmenChecklistHtml(r){
@@ -3072,8 +3074,10 @@ function gameAmenChecklistHtml(r){
     ['Dartqın', !!r.dart], ['Hava hokkeyi', !!r.airhockey],
     ['PlayStation'+(r.ps&&r.psGen?' ('+r.psGen+')':''), !!r.ps]
   ];
+  items=items.filter(function(it){ return it[1]; });
+  if(!items.length) return '';
   return '<div class="roomamen">'+items.map(function(it){
-    return '<div class="r">'+checkIcon(it[1])+'<span'+(it[1]?'':' style="color:var(--muted)"')+'>'+esc(it[0])+'</span></div>';
+    return '<div class="r">'+checkIcon(true)+'<span>'+esc(it[0])+'</span></div>';
   }).join('')+'</div>';
 }
 function roomsHtmlFor(x){
@@ -3082,7 +3086,7 @@ function roomsHtmlFor(x){
     var lines=[], checklist='';
     if(r.kind==='bedroom'){
       lines.push('Yataq: '+r.bedType); lines.push('İsitmə: '+r.heating);
-      lines.push(r.privateBathroom?'Şəxsi sanuzeli var':'Şəxsi sanuzeli yoxdur');
+      if(r.privateBathroom) lines.push('Şəxsi sanuzeli var');
       checklist = roomAmenChecklistHtml(BEDROOM_AMENITY_OPTIONS, r.amenities);
     } else if(r.kind==='pool'){
       lines.push(r.poolType); lines.push('Ölçü: '+r.size); lines.push('Su: '+r.temp);
