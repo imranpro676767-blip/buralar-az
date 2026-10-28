@@ -203,6 +203,7 @@ label.bmopt{display:flex!important;flex-direction:row;align-items:flex-start;gap
 .rules{display:grid;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
 .rules .r{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600}
 .rules .r svg{flex:none;margin-top:3px}
+.rules .rgh{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}.rules .rgh:first-child{margin-top:0}
 .rules .txt{color:var(--muted);font-weight:500;font-size:14.5px;white-space:pre-line;border-top:1px solid var(--line);padding-top:10px}
 
 .booker{position:sticky;top:84px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:grid;gap:12px}
@@ -3058,6 +3059,30 @@ var GYM_EQUIPMENT_OPTIONS=["Qaçış zolağı","Stasionar velosiped","Eliptik tr
 var FOYER_OPTIONS=["Kondisioner","Divan / künc","Kreslo","Televizor","Qəhvə stolu","Ayaqqabılıq","Asılqan / soyunma şkafı","Güzgü","Kamin","Ventilyator"];
 var YARDSIT_FEATURE_OPTIONS=["Oturma yeri","Stol","Stul","Çöl mətbəxi","Mətbəx ləvazimatları","Manqal","Samovar","Şiş"];
 var YARD_FEATURE_OPTIONS=["Uşaq əyləncəsi ləvazimatı (karusel və s.)","Yaşıllıq","Gül-çiçək","Böyük ağaclar","Meyvə ağacları","Dekorativ ağaclar"];
+/* Ev qaydaları iki qrupda: "İcazə verilir" (✓) və "Qadağandır" (✗). Bu, ✓ işarəsinin qadağanın yanında
+   "icazə var" kimi başa düşülməsinin qarşısını alır və yer az tutur. */
+function rulesGroupedHtml(R){
+  var okL=[], noL=[];
+  (R.kids?okL:noL).push(R.kids?'Uşaqlarla qalmaq olar':'Uşaqlarla qalmaq olmaz');
+  (R.pets?okL:noL).push(R.pets?'Ev heyvanı gətirmək olar':'Ev heyvanı qəbul edilmir');
+  (R.smoke?okL:noL).push(R.smoke?'Evdə siqaret çəkmək olar':'Evdə siqaret çəkmək qadağandır');
+  (R.party?okL:noL).push(R.party?'Tədbir və qonaqlıq olar':'Tədbir və qonaqlıq qadağandır');
+  if(R.noshoes) noL.push('Evə ayaqqabı ilə girmək olmaz');
+  if(R.novisitors) noL.push('Kənar (rezervasiyada olmayan) qonaq qəbulu qadağandır'); else okL.push('Kənar qonaq qəbuluna icazə verilir');
+  if(R.quiet) noL.push('Sakitlik saatı: 23:00–08:00 (səs-küy olmaz)');
+  function grp(title,list,ok){
+    if(!list.length) return '';
+    return '<div class="rgh">'+title+'</div>'+list.map(function(t){ return '<div class="r">'+checkIcon(ok)+'<span>'+esc(t)+'</span></div>'; }).join('');
+  }
+  return '<div class="rules">'
+    +grp('İcazə verilir',okL,true)
+    +grp('Qadağandır',noL,false)
+    +'<div class="rgh">Məlumat</div>'
+    +'<div class="r">'+checkIcon(true)+'<span>Giriş '+esc(R.cin)+'-dan sonra · çıxış '+esc(R.cout)+'-a qədər</span></div>'
+    +'<div class="r">'+checkIcon(true)+'<span>'+(R.camera?'Evin bayır tərəfində müşahidə kamerası var':'Müşahidə kamerası yoxdur')+'</span></div>'
+    +(R.extra?'<div class="txt">'+esc(R.extra)+'</div>':'')
+  +'</div>';
+}
 function roomAmenChecklistHtml(options, chosen){
   chosen = chosen || [];
   /* Yalnız mövcud olan seçimlər göstərilir (yer az tutsun, qarışıq görünməsin). */
@@ -3137,18 +3162,7 @@ function leftInfoHtml(x){
       : '<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Evdə nələr var</h3><div class="amen">'+amen.map(function(a){return '<div>'+checkIcon(true)+a+'</div>';}).join('')+'</div>')
     +locationSectionHtml(x)
     +'<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Ev qaydaları</h3>'
-    +'<div class="rules">'
-      +'<div class="r">'+checkIcon(R.kids)+'<span>'+(R.kids?'Uşaqlarla qalmaq olar':'Uşaqlarla qalmaq olmaz')+'</span></div>'
-      +'<div class="r">'+checkIcon(R.pets)+'<span>'+(R.pets?'Ev heyvanı gətirmək olar':'Ev heyvanı qəbul edilmir')+'</span></div>'
-      +'<div class="r">'+checkIcon(R.smoke)+'<span>'+(R.smoke?'Evdə siqaret çəkmək olar':'Evdə siqaret çəkmək qadağandır')+'</span></div>'
-      +'<div class="r">'+checkIcon(R.party)+'<span>'+(R.party?'Tədbir və qonaqlıq olar':'Tədbir və qonaqlıq qadağandır')+'</span></div>'
-      +'<div class="r">'+checkIcon(R.quiet)+'<span>'+(R.quiet?'Sakitlik saatına (23:00–08:00) riayət tələb olunur':'Sakitlik saatı tələbi yoxdur')+'</span></div>'
-      +'<div class="r">'+checkIcon(!R.noshoes)+'<span>'+(R.noshoes?'Evə ayaqqabı ilə girmək olmaz':'Ayaqqabı ilə girmək məhdudiyyəti yoxdur')+'</span></div>'
-      +'<div class="r">'+checkIcon(!R.novisitors)+'<span>'+(R.novisitors?'Kənar (rezervasiyada olmayan) qonaq qəbulu qadağandır':'Kənar qonaq qəbuluna icazə verilir')+'</span></div>'
-      +'<div class="r">'+checkIcon(true)+'<span>'+(R.camera?'Evin bayır tərəfində müşahidə kamerası var':'Müşahidə kamerası yoxdur')+'</span></div>'
-      +'<div class="r">'+checkIcon(true)+'<span>Giriş '+esc(R.cin)+'-dan sonra · çıxış '+esc(R.cout)+'-a qədər</span></div>'
-      +(R.extra?'<div class="txt">'+esc(R.extra)+'</div>':'')
-    +'</div>'
+    +rulesGroupedHtml(R)
     +'<hr class="sep"><h3 style="margin-bottom:10px;font-size:18px">Ödəniş və geri qaytarma</h3>'
     +'<p style="margin:0;max-width:64ch;color:var(--muted);font-weight:500">Ödəniş kartla edilir və girişdən 24 saat sonra ev sahibinin hesabına köçürülür. Rezervasiya ləğv edildikdə məbləğ geri qaytarılmır. Yalnız ev elandakı evə uyğun gəlmədikdə və ya ev sahibi açarı təqdim etmədikdə şikayət göndərmək olar; idarəetmə təsdiqləyərsə məbləğin 100%-i qaytarılır.</p>'
   +'</div>';
