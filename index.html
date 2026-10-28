@@ -6054,9 +6054,21 @@ function openBkDetail(code){
   if(b.email) h+='<button class="btn sm ghost" style="width:auto" onclick="bkGo(\'cust\',\''+esc(b.email)+'\')">Qonağa bax</button>';
   if(b.hostEmail||b.host) h+='<button class="btn sm ghost" style="width:auto" onclick="bkGo(\'hosts\',\''+esc(b.hostEmail||b.host)+'\')">Ev sahibinə bax</button>';
   if(b.complaint) h+='<button class="btn sm ghost" style="width:auto" onclick="closeModal(\'bkDetailModal\');goSub(\'cmp\')">Şikayətə keç</button>';
+  if(['hold','complaint','released'].indexOf(b.status)>=0 && ['pending','failed','expired','amount_mismatch'].indexOf(b.paymentStatus)<0) h+='<button class="btn sm ghost" style="width:auto;color:var(--nar);border-color:var(--nar)" onclick="markRefundedManual(\''+esc(b.code)+'\')">Epoint-də geri qaytarılıb kimi qeyd et</button>';
+  if(b.status==='refunded' && b.refundNote) h+='<div class="m" style="width:100%">Geri qaytarma: '+esc(b.refundNote)+(b.refundedAt?' · '+dt(b.refundedAt):'')+'</div>';
   h+='</div></div>';
   document.getElementById('bkDetailBody').innerHTML=h;
   openModal('bkDetailModal');
+}
+/* Admin Epoint kabinetində pulu əl ilə geri qaytarıbsa, saytda da eyni statusu qeyd edir (tarixlər boşalır, statistika düzəlir). Epoint-ə heç nə göndərmir. */
+function markRefundedManual(code){
+  var b=state.bookings.filter(function(x){return x.code===code;})[0]; if(!b) return;
+  if(!confirm(code+' bronu üçün '+az2(b.total)+' məbləği Epoint kabinetində artıq geri qaytarmısınız?\n\nBəli desəniz, bron "geri qaytarılıb" olacaq, tarixlər yenidən boşalacaq və statistikadan çıxacaq. Bu düymə Epoint-də pul qaytarmır, yalnız saytda qeyd edir.')) return;
+  var prev={status:b.status,refundNote:b.refundNote,refundedAt:b.refundedAt};
+  b.status='refunded'; b.refundNote='Epoint kabinetində əl ilə'; b.refundedAt=Date.now();
+  if(b.complaint && b.complaint.st==='pending') b.complaint.st='approved';
+  bookingsSync.save(b).then(function(){ closeModal('bkDetailModal'); save(); renderAdmin(); renderBookings(); toast('Bron "geri qaytarılıb" kimi qeyd olundu'); })
+  .catch(function(e){ b.status=prev.status; b.refundNote=prev.refundNote; b.refundedAt=prev.refundedAt; toast('Qeyd olunmadı: '+((e&&e.message)||e)); });
 }
 function bkGo(sub,q){
   closeModal('bkDetailModal');
