@@ -2441,6 +2441,8 @@ function isEpointId(v){ return /^i?\d{5,12}$/.test(String(v||'').trim()); }
 
 /* ============ helpers ============ */
 function az(n){ return Math.round(n).toLocaleString('az-AZ')+"\u00A0₼"; }
+/* azr: tam ədəddirsə "5 ₼", kəsrlidirsə "5,50 ₼" (xüsusi qiymətlərdə faizli endirimdən sonra qəpiklər itməsin) */
+function azr(n){ var r=Math.round(n*100)/100; return (Math.abs(r-Math.round(r))<0.0001) ? az(r) : r.toLocaleString('az-AZ',{minimumFractionDigits:2,maximumFractionDigits:2})+"\u00A0₼"; }
 function az2(n){ return (Math.round(n*100)/100).toLocaleString('az-AZ',{minimumFractionDigits:2,maximumFractionDigits:2})+"\u00A0₼"; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 /* +994 sabit prefiksi olan telefon sahələri üçün: istifadəçi yalnız 9 rəqəmi yazır, biz avtomatik
@@ -3416,7 +3418,7 @@ function specialRatesHtml(x){
     + rs.slice(0,8).map(function(r){
         var last=addDays(r.d2,-1);
         var lbl=(r.d1===last)?fmtDate(r.d1):(fmtDate(r.d1)+' – '+fmtDate(last));
-        return '<div><span>'+lbl+'</span><b style="color:'+(r.price>x.p?'var(--nar)':'var(--ok)')+'">'+az(r.price)+' / gecə</b></div>';
+        return '<div><span>'+lbl+'</span><b style="color:'+(r.price>x.p?'var(--nar)':'var(--ok)')+'">'+azr(r.price)+' / gecə</b></div>';
       }).join('')
     + (rs.length>8?'<div><span>və daha '+(rs.length-8)+' aralıq</span><b></b></div>':'')
     + '</div>';
@@ -3476,7 +3478,7 @@ function calc(){
   }
   var c=priceOf(x,n,a,b);
   var rentRows = c.hasSpecial
-    ? c.groups.map(function(g){ return '<div><span>'+az(g.rate)+(g.special?' (xüsusi qiymət)':(g.rate!==x.p?' (endirimli qiymət)':''))+' × '+g.n+' gecə</span><b class="money">'+az2(g.rate*g.n)+'</b></div>'; }).join('')
+    ? c.groups.map(function(g){ return '<div><span>'+azr(g.rate)+(g.special?' (xüsusi qiymət)':(g.rate!==x.p?' (endirimli qiymət)':''))+' × '+g.n+' gecə</span><b class="money">'+az2(g.rate*g.n)+'</b></div>'; }).join('')
     : '<div><span>'+az(c.rate)+(c.rate!==x.p?' (endirimli qiymət)':'')+' × '+n+' gecə</span><b class="money">'+az2(c.rent)+'</b></div>';
   box.innerHTML=rentRows
     +(c.clean?'<div><span>Təmizlik haqqı</span><b class="money">'+az2(c.clean)+'</b></div>':'')
@@ -5149,7 +5151,8 @@ function toggleDeadGap(lid,d1,d2,wasOpen){
 }
 /* ===== Tarix aralığına xüsusi qiymət (Airbnb kimi): təqvimdə ilk və son günə klik et, qiyməti yaz ===== */
 state.calSel=state.calSel||{a:null,b:null};
-var RATE_MIN=15, RATE_MAX=3000, RATE_MAX_RANGES=60;
+var RATE_MIN=15, RATE_MIN_DRIVER=5, RATE_MAX=3000, RATE_MAX_RANGES=60;
+function rateMinFor(x){ return state.isAdminUser?1:(isDriverListing(x)?RATE_MIN_DRIVER:RATE_MIN); }
 function calSelRange(){
   var s=state.calSel||{}; if(!s.a) return null;
   var a=s.a, last=s.b||s.a; if(last<a){ var t=a; a=last; last=t; }
@@ -5172,7 +5175,7 @@ function calSelClear(){ state.calSel={a:null,b:null}; renderHostCalendar(); }
 function calPriceInput(v){ state.calPriceVal=v; }
 function calPriceQuick(pct){
   var x=state.custom.filter(function(l){return l.id===state.calListingId;})[0]; if(!x) return;
-  var v=Math.round(x.p*(1+pct/100)); state.calPriceVal=v;
+  var v=Math.round(x.p*(1+pct/100)*100)/100; state.calPriceVal=v;
   var inp=document.getElementById('calRatePrice'); if(inp) inp.value=v;
 }
 function applyDateRate(x,d1,d2,price){
@@ -5195,15 +5198,15 @@ function applyDateRate(x,d1,d2,price){
 function calPriceApply(){
   var x=state.custom.filter(function(l){return l.id===state.calListingId;})[0]; if(!x) return;
   var r=calSelRange(); if(!r){ toast('Əvvəlcə təqvimdə tarix aralığı seç'); return; }
-  var minP=state.isAdminUser?1:RATE_MIN;
-  var v=parseInt(document.getElementById('calRatePrice').value,10);
+  var minP=rateMinFor(x);
+  var v=Math.round(parseFloat(String(document.getElementById('calRatePrice').value).replace(',','.'))*100)/100;
   if(!(v>=minP) || v>RATE_MAX){ toast('Qiymət '+minP+' ilə '+RATE_MAX+' ₼ arasında olmalıdır'); return; }
   var next=applyDateRate(x,r.d1,r.d2,v);
   if(next.length>RATE_MAX_RANGES){ toast('Ən çoxu '+RATE_MAX_RANGES+' xüsusi qiymət aralığı ola bilər. Köhnələri sil.'); return; }
   var prev=x.dateRates; x.dateRates=next;
   syncListing(x).then(function(){
     state.calSel={a:null,b:null}; renderHostCalendar();
-    toast(r.n+' gecə üçün '+v+' ₼ qiymət qoyuldu');
+    toast(r.n+' gecə üçün '+azr(v)+' qiymət qoyuldu');
   }).catch(function(){ x.dateRates=prev; renderHostCalendar(); });
 }
 function calPriceReset(){
@@ -5233,7 +5236,7 @@ function renderRateEditor(x){
     +'<h4>'+esc(lbl)+' <span style="color:var(--muted);font-weight:700;font-size:13px">('+r.n+' gecə)</span></h4>'
     +(waiting?'<p class="note" style="text-align:left;margin:0">Bir gün seçildi. Aralıq üçün <b>son gecəyə</b> klik et, ya da yalnız bu gün üçün qiymət yaz.</p>':'')
     +'<div class="rrow"><label style="font-size:13px;font-weight:800">Gecəlik qiymət (₼)</label>'
-    +'<input type="number" id="calRatePrice" min="'+(state.isAdminUser?1:RATE_MIN)+'" max="'+RATE_MAX+'" value="'+val+'" oninput="calPriceInput(this.value)">'
+    +'<input type="number" step="0.01" id="calRatePrice" min="'+rateMinFor(x)+'" max="'+RATE_MAX+'" value="'+val+'" oninput="calPriceInput(this.value)">'
     +'<span style="color:var(--muted);font-size:12.5px;font-weight:700">əsas qiymət: '+az(x.p)+'</span></div>'
     +'<div class="rrow"><span style="font-size:12.5px;font-weight:700;color:var(--muted)">Tez seçim:</span>'
     +[-20,-10,10,20,30,50].map(function(pc){ return '<button type="button" class="ratechip" onclick="calPriceQuick('+pc+')">'+(pc>0?'+':'')+pc+'%</button>'; }).join('')+'</div>'
@@ -5249,7 +5252,7 @@ function renderRateList(x){
   if(!rs.length){ el.innerHTML=''; return; }
   el.innerHTML='<h4 style="margin:18px 0 6px">Xüsusi qiymətlər</h4>'+rs.map(function(r){
     var last=addDays(r.d2,-1), lbl=(r.d1===last)?fmtDate(r.d1):(fmtDate(r.d1)+' – '+fmtDate(last));
-    return '<div class="blockrow"><span>'+lbl+' <em>('+nights(r.d1,r.d2)+' gecə)</em> · <b style="color:'+(r.price>x.p?'var(--nar)':'var(--ok)')+'">'+az(r.price)+'</b></span>'
+    return '<div class="blockrow"><span>'+lbl+' <em>('+nights(r.d1,r.d2)+' gecə)</em> · <b style="color:'+(r.price>x.p?'var(--nar)':'var(--ok)')+'">'+azr(r.price)+'</b></span>'
       +'<button type="button" class="btn sm ghost" onclick="removeDateRate('+x.id+',\''+r.d1+'\',\''+r.d2+'\')">Sil</button></div>';
   }).join('');
 }
@@ -5407,14 +5410,14 @@ function renderHostCalendar(){
     var cls="calday", inner='<div class="dnum">'+day+'</div>';
     var eff=dateRateFor(x,ds), shown=(eff!=null?eff:x.p), pick=false;
     var inSel=!!(state.calSel && state.calSel.a && (state.calSel.b ? (ds>=state.calSel.a && ds<=state.calSel.b) : ds===state.calSel.a));
-    if(ds<tdy){ cls+=" past"; inner+='<div class="dprice">'+az(shown)+'</div>'; }
+    if(ds<tdy){ cls+=" past"; inner+='<div class="dprice">'+azr(shown)+'</div>'; }
     else if(occ && occ.type==='block'){ cls+=" blocked"; inner+='<div class="dguest">Bağlı</div><div class="dguest" style="opacity:.75">Kənar bron</div>'; }
     else if(occ){ cls+=" booked"; inner+='<div class="dguest">'+esc(occ.label)+'</div><div class="dguest" style="opacity:.75">'+occ.code+'</div>'; }
     else if(gap && !gap.opened){ cls+=" dead"; inner+='<div class="dprice">Min. '+ (x.minNights||1) +' gecə</div>'
       +'<button type="button" class="dpOpenBtn" onclick="toggleDeadGap('+x.id+',\''+gap.d1+'\',\''+gap.d2+'\',false)">Aç</button>'; }
-    else if(gap && gap.opened){ cls+=" free opened"+(eff!=null?" special":""); inner+='<div class="dprice">'+az(shown)+'</div>'
+    else if(gap && gap.opened){ cls+=" free opened"+(eff!=null?" special":""); inner+='<div class="dprice">'+azr(shown)+'</div>'
       +'<button type="button" class="dpOpenBtn" onclick="toggleDeadGap('+x.id+',\''+gap.d1+'\',\''+gap.d2+'\',true)">Bağla</button>'; }
-    else { cls+=" free pick"+(eff!=null?" special":"")+(inSel?" sel":""); inner+='<div class="dprice">'+az(shown)+'</div>'; pick=true; }
+    else { cls+=" free pick"+(eff!=null?" special":"")+(inSel?" sel":""); inner+='<div class="dprice">'+azr(shown)+'</div>'; pick=true; }
     cells+='<div class="'+cls+'"'+(pick?' onclick="calPick(\''+ds+'\')"':'')+'>'+inner+'</div>';
   }
   document.getElementById('calGrid').innerHTML=cells;
