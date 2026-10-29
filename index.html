@@ -2657,6 +2657,8 @@ function finishLogin(){
      Server FİN/şəkil təkrarını yoxlayıb şübhəlini "flagged" edir; "verified" yalnız ADMİN əl ilə təsdiqləyəndən sonra olur. */
   var flags=[];
   var status = 'pending';
+  if(state.regBusy) return; /* ikiqat klikdə ikinci yazma "update" sayılır və Rules tərəfindən rədd edilir */
+  state.regBusy=true;
   box.style.display='block';
   box.style.color = 'var(--ok)';
   box.innerHTML = '✓ Qeydiyyat qəbul edildi, şəxsiyyət sənədiniz admin təsdiqinə göndərilir...';
@@ -2675,6 +2677,13 @@ function finishLogin(){
   Promise.all([db.collection('customers').doc(e).get(), idPhotoUpload, idPhotoHash]).then(function(results){
     var snap=results[0], idPhotoUrl=results[1], photoHash=results[2];
     var existing = snap.exists ? snap.data() : null;
+    if(existing){
+      /* Sənəd artıq varsa (əvvəlki cəhd yazılıb), yenidən set() "update" sayılır və yalnız admin edə bilər.
+         Ona görə yenidən yazmırıq: mövcud qeydiyyatla davam edirik. */
+      if(existing.status==='banned') throw new Error('Bu hesab bloklanıb');
+      status = existing.status||'pending';
+      return;
+    }
     var rec = {
       email:e, name:n, phone:p, fin:f, idPhoto:idPhotoUrl, idPhotoHash:photoHash, uid:fbAuth.currentUser.uid,
       privacyVersion:PRIVACY_VERSION, privacyAcceptedAt:Date.now(),
@@ -2682,6 +2691,7 @@ function finishLogin(){
     };
     return customersSync.save(rec);
   }).then(function(){
+    state.regBusy=false;
     state.user={name:n,email:e,phone:p,fin:f,uid:fbAuth.currentUser.uid,verified:false,status:status,rejectionReason:null};
     save(); renderAuth(); renderBookings(); renderHost(); startOwnCustomerListener(e); startUserChatSync(e); startSupportSync(e);
     setTimeout(function(){
@@ -2690,6 +2700,7 @@ function finishLogin(){
       if(state.pendingBook){ var pb=state.pendingBook; state.pendingBook=null; openDetail(pb); }
     }, flags.length?1400:700);
   }).catch(function(err){
+    state.regBusy=false;
     console.error('Qeydiyyat xətası:', err);
     toast('Qeydiyyat serverə yazıla bilmədi: '+err.message);
   });
