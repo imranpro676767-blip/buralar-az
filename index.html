@@ -744,11 +744,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="full">
         <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px">Kimlərə icarəyə vermək istəyirsən? (heç birini seçməsən — hamıya aid olar)</div>
         <div class="togs full">
-          <div class="tog"><input type="checkbox" id="h-gp-family" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-family" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Ailələrə</label></div>
-          <div class="tog"><input type="checkbox" id="h-gp-men" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-men" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Kişi qrupuna</label></div>
-          <div class="tog"><input type="checkbox" id="h-gp-women" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-women" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qadın qrupuna</label></div>
-          <div class="tog"><input type="checkbox" id="h-gp-couple" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-couple" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Cütlüklərə</label></div>
-          <div class="tog"><input type="checkbox" id="h-gp-mixed" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-mixed" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qarışıq qrupa (iş/tələbə yoldaşları və s.)</label></div>
+          <div class="tog"><input type="checkbox" id="h-gp-family" onchange="driversToggle('other')" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-family" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Ailələrə</label></div>
+          <div class="tog"><input type="checkbox" id="h-gp-men" onchange="driversToggle('other')" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-men" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Kişi qrupuna</label></div>
+          <div class="tog"><input type="checkbox" id="h-gp-women" onchange="driversToggle('other')" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-women" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qadın qrupuna</label></div>
+          <div class="tog"><input type="checkbox" id="h-gp-couple" onchange="driversToggle('other')" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-couple" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Cütlüklərə</label></div>
+          <div class="tog"><input type="checkbox" id="h-gp-mixed" onchange="driversToggle('other')" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-mixed" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Qarışıq qrupa (iş/tələbə yoldaşları və s.)</label></div>
           <div class="tog"><input type="checkbox" id="h-gp-drivers" onchange="driversToggle()" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="h-gp-drivers" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Sürücülərə (hər sürücü ayrıca bron edir)</label></div>
         </div>
         <div id="h-drvcap-wrap" style="display:none;margin-top:10px">
@@ -1088,6 +1088,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="adm-grp">Analitika</div>
         <button data-sub="stats" aria-selected="false" onclick="goSub('stats')">Bazar statistikası</button>
         <button data-sub="fin" aria-selected="false" onclick="goSub('fin')">Maliyyə</button>
+        <div class="adm-grp" id="auditGrp" style="display:none">Komanda</div>
+        <button data-sub="audit" id="auditNavBtn" style="display:none" aria-selected="false" onclick="goSub('audit')">Fəaliyyət jurnalı</button>
         <button class="adm-out" onclick="adminLogout()">Admindən çıx</button>
       </nav>
       <div id="admHead"><h2>İcmal</h2><p>Bu gün nə gözləyir, gəlir və yaxınlaşan girişlər.</p></div>
@@ -1172,6 +1174,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
       <div class="sub" id="s-rep"><div class="blist" id="replist"></div></div>
       <div class="sub" id="s-notif"><div class="blist" id="notiflist"></div></div>
+      <div class="sub" id="s-audit">
+        <p class="note" style="text-align:left;margin:0 0 10px"><b>Yalnız sahib görür.</b> Hər admin hesabının nə vaxt daxil olduğunu və nə etdiyini göstərir (son 180 gün). Serverdə yazılır, ortaq admin onu görə və ya silə bilməz.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <select id="auditWho" onchange="loadAudit()" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600"><option value="">Bütün adminlər</option></select>
+          <button class="btn sm ghost" style="width:auto" onclick="loadAudit()">Yenilə</button>
+        </div>
+        <div id="auditSeen" class="stats" style="margin-bottom:12px"></div>
+        <div class="tblwrap"><table class="tbl"><thead><tr><th>Vaxt</th><th>Admin</th><th>Əməliyyat</th><th>Obyekt</th></tr></thead><tbody id="auditRows"><tr><td colspan="4" style="text-align:center;color:var(--muted)">Yüklənir...</td></tr></tbody></table></div>
+      </div>
       <div class="sub" id="s-hnotice">
         <p class="note" style="text-align:left;margin:0 0 10px"><b>Ev sahiblərinə bildiriş.</b> "Şərt yeniləməsi" göndərəndə bütün ev sahiblərinə e-poçt gedir, onlar paneldə təsdiq edir. Müddət bitəndən sonra təsdiq etməyənlərin elanları yeni bron qəbul etmir (ödənilmiş bronlar təsirlənmir). "Məlumat" isə sadəcə xəbərdarlıqdır ("Oxudum" düyməsi ilə).</p>
         <div class="split" style="margin-bottom:14px;padding:12px">
@@ -1633,6 +1644,36 @@ var firebaseConfig = {
 /* Admin e-poçtu artıq səhifənin kodunda YAZILMIR. Admin olub-olmamağı serverdən soruşuruq: yalnız admin
    "admin_ping" sənədini oxuya bilir (Firestore Rules). Real icazə həmişə serverdədir. */
 state.isAdminUser=false;
+/* Admin fəaliyyət jurnalı: yazan e-poçtu server token-dən götürür (client dəyişə bilməz). Xəta olsa sakitcə keçir. */
+function logAdmin(action,target,summary){
+  try{
+    if(!state.isAdminUser || !fbFunctions) return;
+    fbFunctions.httpsCallable('logAdminAction')({action:action,target:target?String(target):'',summary:summary?String(summary):''}).catch(function(){});
+  }catch(e){}
+}
+/* Admin paneli açılanda: giriş jurnala yazılır və sahib olub-olmadığımız yoxlanır (jurnal bölməsi yalnız sahibdə görünür). */
+function adminSessionStart(){
+  if(!state.isAdminUser || !fbFunctions) return;
+  if(!state._admSess){ state._admSess=true; logAdmin('session','', 'Admin panelinə giriş'); }
+  fbFunctions.httpsCallable('adminListAudit')({probe:true}).then(function(){
+    ['auditGrp','auditNavBtn'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display=''; });
+  }).catch(function(){});
+}
+function fmtAuditTime(t){ var d=new Date(t); function z(n){return (n<10?'0':'')+n;} return z(d.getDate())+'.'+z(d.getMonth()+1)+'.'+d.getFullYear()+' '+z(d.getHours())+':'+z(d.getMinutes()); }
+function loadAudit(){
+  var sel=document.getElementById('auditWho'), who=sel?sel.value:'';
+  var tb=document.getElementById('auditRows'); if(!fbFunctions||!tb) return;
+  fbFunctions.httpsCallable('adminListAudit')({email:who}).then(function(res){
+    var r=res.data||{}, items=r.items||[], seen=r.lastSeen||{};
+    if(sel && sel.options.length<=1){ Object.keys(seen).forEach(function(em){ var o=document.createElement('option'); o.value=em; o.textContent=em; sel.appendChild(o); }); sel.value=who; }
+    document.getElementById('auditSeen').innerHTML=Object.keys(seen).map(function(em){
+      return '<div class="stat"><div class="k">'+esc(em)+'</div><div class="v" style="font-size:15px">Son: '+fmtAuditTime(seen[em])+'</div></div>'; }).join('') || '';
+    tb.innerHTML=items.length ? items.map(function(i){
+      var sm=(i.meta&&i.meta.summary)?' <span style="color:var(--muted)">· '+esc(i.meta.summary)+'</span>':'';
+      return '<tr><td>'+fmtAuditTime(i.at)+'</td><td>'+esc(i.email)+'</td><td>'+esc(i.action)+sm+'</td><td>'+esc(i.target||'')+'</td></tr>';
+    }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Hələ qeyd yoxdur</td></tr>';
+  }).catch(function(e){ tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--nar)">Jurnal açılmadı: '+esc(e.message||'')+'</td></tr>'; });
+}
 function verifyAdminAccess(){
   if(!fbOnline || !db || !fbAuth || !fbAuth.currentUser){ state.isAdminUser=false; return Promise.resolve(false); }
   return db.collection('admin_ping').doc('check').get().then(function(){ state.isAdminUser=true; return true; })
@@ -1703,8 +1744,11 @@ function stopAdminListingsSync(){ if(_lsUnsubs.admin){ _lsUnsubs.admin(); _lsUns
 function syncListing(x){
   if(!x || !x.ownerEmail){ toast('Elanın tam məlumatı hələ yüklənməyib, bir az sonra yenidən cəhd et'); return Promise.reject(new Error('elan tam yüklənməyib')); }
   if(!fbOnline){ toast('Server bağlantısı yoxdur, dəyişiklik yalnız bu cihazda qalır'); return Promise.resolve(); }
-  return db.collection('listings').doc(String(x.id)).set(x).catch(function(e){
-    console.error('Elan yazma xətası:', e); toast('Elan serverə yazıla bilmədi: '+e.message);
+  return db.collection('listings').doc(String(x.id)).set(x).then(function(r){
+    if(state.isAdminUser && (!state.user || x.ownerEmail!==state.user.email)) logAdmin('db:listings:save', x.id, (x.st?('status='+x.st):'')+(x.epointId?' epointId='+x.epointId:''));
+    return r;
+  }).catch(function(e){
+    console.error('Elan yazma xətası:', e); toast('Elan serverə yazıla bilmədi: '+e.message+' [hesab: '+((typeof fbAuth!=='undefined'&&fbAuth&&fbAuth.currentUser)?fbAuth.currentUser.email:'giriş yoxdur')+']');
     throw e;
   });
 }
@@ -1738,14 +1782,20 @@ function makeCollectionSync(stateKey, collectionName, idField){
     },
     save: function(item){
       if(!fbOnline){ toast('Server bağlantısı yoxdur, dəyişiklik yalnız bu cihazda qalır'); return Promise.resolve(); }
-      return db.collection(collectionName).doc(String(item[idField])).set(item).catch(function(e){
+      return db.collection(collectionName).doc(String(item[idField])).set(item).then(function(r){
+        logAdmin('db:'+collectionName+':save', item[idField], item.status?('status='+item.status):'');
+        return r;
+      }).catch(function(e){
         console.error(collectionName+' yazma xətası:', e); toast('Serverə yazıla bilmədi ('+collectionName+'): '+e.message);
         throw e;
       });
     },
     remove: function(id){
       if(!fbOnline) return Promise.resolve();
-      return db.collection(collectionName).doc(String(id)).delete().catch(function(e){
+      return db.collection(collectionName).doc(String(id)).delete().then(function(r){
+        logAdmin('db:'+collectionName+':delete', id, '');
+        return r;
+      }).catch(function(e){
         console.error(collectionName+' silmə xətası:', e);
       });
     }
@@ -2702,7 +2752,7 @@ function finishLogin(){
   }).catch(function(err){
     state.regBusy=false;
     console.error('Qeydiyyat xətası:', err);
-    toast('Qeydiyyat serverə yazıla bilmədi: '+err.message);
+    toast('Qeydiyyat serverə yazıla bilmədi: '+err.message+' [hesab: '+((fbAuth&&fbAuth.currentUser)?fbAuth.currentUser.email:'giriş yoxdur')+']');
   });
 }
 function logout(){
@@ -2766,6 +2816,7 @@ function adminGoogleLogin(){
       startAdminChatSync();
       startAdminSupportSync();
       renderAdmin();
+      adminSessionStart();
       toast("Admin panelinə xoş gəldin");
     });
   }).catch(function(e){
@@ -2787,6 +2838,7 @@ function adminLogout(){
 }
 var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','hnotice','dmg','msg','support','sanc','fin'];
 var ADM_HEAD={
+  audit:['Fəaliyyət jurnalı','Admin hesablarının girişləri və əməliyyatları (yalnız sahib).'],
   dash:['İcmal','Bu gün nə gözləyir, gəlir və yaxınlaşan girişlər.'],
   rezall:['Rezervasiyalar','Bütün bronlar: status, tarix aralığı və axtarışla süz.'],
   cmp:['Rezervasiya şikayətləri','Qonaqların şikayətləri və geri qaytarma qərarları.'],
@@ -2809,6 +2861,7 @@ function goSub(s){
   state.sub=s;
   if(s==='hnotice') setTimeout(loadAdminNotices,0);
   if(s==='dmg') setTimeout(loadAdminClaims,0);
+  if(s==='audit') setTimeout(loadAudit,0);
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
   var pane=document.getElementById('s-'+s); if(pane) pane.classList.add('active');
   document.querySelectorAll('.adm-nav button[data-sub]').forEach(function(b){ b.setAttribute('aria-selected', b.getAttribute('data-sub')===s?'true':'false'); });
@@ -2860,9 +2913,11 @@ function isDriverListing(x){ return !!(x && x.guestPolicy && x.guestPolicy.index
 function driversToggle(src){
   var d=document.getElementById('h-gp-drivers'); if(!d) return;
   var others=['family','men','women','couple','mixed'];
-  if(src==='other'){ /* digər qrup seçilərsə sürücü seçimi söndürülür */ }
-  if(d.checked){ others.forEach(function(k){ var c=document.getElementById('h-gp-'+k); if(c){ c.checked=false; c.disabled=true; } }); }
-  else { others.forEach(function(k){ var c=document.getElementById('h-gp-'+k); if(c) c.disabled=false; }); }
+  var anyOther=others.some(function(k){ var c=document.getElementById('h-gp-'+k); return c && c.checked; });
+  /* Sürücü evi yalnız sürücülər üçündür: sürücü seçilibsə digərləri söndürülür, digərlərindən biri seçilibsə sürücü xanası söndürülür.
+     Səhvən seçilənin işarəsi götürülsə, digər xanalar yenidən aktiv olur. */
+  if(d.checked){ others.forEach(function(k){ var c=document.getElementById('h-gp-'+k); if(c){ c.checked=false; c.disabled=true; } }); d.disabled=false; }
+  else { others.forEach(function(k){ var c=document.getElementById('h-gp-'+k); if(c) c.disabled=false; }); d.disabled=anyOther; }
   var w=document.getElementById('h-drvcap-wrap'); if(w) w.style.display=d.checked?'':'none';
 }
 /* Sürücü evlərində boş yer sayı: server hesablayır (bronlar şəxsi olduğu üçün client görə bilmir) */
@@ -5899,7 +5954,7 @@ function renderCustomers(){
         +'<div style="display:grid;gap:8px;margin-top:8px;max-height:340px;overflow:auto">'+staysRows+'</div></details>';
     }
     return '<div class="bk" style="grid-template-columns:84px 1fr auto">'
-      +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></a>'
+      +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" onclick="logAdmin(\'view:idPhoto\',\''+esc(c.email||'')+'\',\'Şəxsiyyət şəklinə baxdı\')" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></a>'
       +'<div><h4>'+esc(c.name)+'</h4>'
       +'<div class="m">'+esc(c.email)+' · '+esc(c.phone)+' · FİN '+esc(c.fin)+'</div>'
       +'<div class="m">Qeydiyyat: '+new Date(c.registeredAt).toLocaleDateString('az-AZ')+' · '+cntText+'</div>'
@@ -6683,6 +6738,7 @@ if(fbAuth){
           startAdminChatSync();
           startAdminSupportSync();
           renderAdmin();
+          adminSessionStart();
         }
       });
     } else { state.isAdminUser=false; }
