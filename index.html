@@ -5893,6 +5893,53 @@ function approveListing(id,ok){
   syncListing(x); renderAdmin(); renderHost(); render();
   toast(ok?"Elan təsdiqləndi və saytda göründü":"Elan rədd edildi");
 }
+/* Eyni ev sahibinin digər elanlarında artıq yazılmış Epoint ID-lər: yeni elana bir kliklə tətbiq etmək üçün. */
+function siblingEpointIds(x){
+  var em=String(x.ownerEmail||'').toLowerCase(); if(!em) return [];
+  var seen={}, out=[];
+  state.custom.forEach(function(l){
+    if(l.id===x.id || String(l.ownerEmail||'').toLowerCase()!==em) return;
+    var v=String(l.epointId||'').trim().toLowerCase();
+    if(isEpointId(v) && !seen[v]){ seen[v]=1; out.push(v); }
+  });
+  return out;
+}
+/* Eyni Epoint ID başqa e-poçtlu ev sahibinin elanında da varsa admin xəbərdar olunur (qadağa deyil: ər-arvad/şirkət ola bilər). */
+function otherOwnersIdHtml(x){
+  var em=String(x.ownerEmail||'').toLowerCase();
+  var mine=[String(x.epointId||'').trim().toLowerCase(), String(x.epointIdRequest||'').trim().toLowerCase()].filter(isEpointId);
+  if(!mine.length) return '';
+  var hits={};
+  state.custom.forEach(function(l){
+    if(l.id===x.id) return;
+    var lo=String(l.ownerEmail||'').toLowerCase(); if(!lo||lo===em) return;
+    var v=String(l.epointId||'').trim().toLowerCase();
+    if(mine.indexOf(v)>=0) hits[lo]=v;
+  });
+  var ks=Object.keys(hits); if(!ks.length) return '';
+  return '<div class="m" style="margin-top:6px;color:var(--nar);font-weight:700;white-space:normal">⚠ Bu Epoint ID başqa hesabda da işlənir: '+ks.map(function(k){return esc(k)+' ('+esc(hits[k])+')';}).join(', ')+'. Eyni şəxs/şirkət olduğunu yoxla.</div>';
+}
+function siblingIdHtml(x,prefix){
+  var other=otherOwnersIdHtml(x);
+  return other+siblingIdHtml2(x,prefix);
+}
+function siblingIdHtml2(x,prefix){
+  var ids=siblingEpointIds(x); if(!ids.length) return '';
+  var cur=String(x.epointId||'').trim().toLowerCase();
+  if(isEpointId(cur)){
+    if(ids.length===1 && ids[0]===cur) return '<div class="m" style="margin-top:6px;color:var(--ok);font-weight:700">✓ Bu sahibin digər evi ilə eyni Epoint ID</div>';
+    if(ids.indexOf(cur)<0) return '<div class="m" style="margin-top:6px;color:var(--warn);font-weight:700;white-space:normal">⚠ Bu sahibin digər evlərindəki ID: '+ids.map(esc).join(', ')+'. Burada fərqli ID var, əmin ol.</div>';
+    return '';
+  }
+  if(ids.length>1) return '<div class="m" style="margin-top:6px;color:var(--warn);font-weight:700;white-space:normal">⚠ Bu sahibin evlərində fərqli ID-lər var: '+ids.map(esc).join(', ')+'. Doğrusunu Epoint kabinetində yoxla.</div>';
+  var req=String(x.epointIdRequest||'').trim().toLowerCase();
+  var warn=(req && isEpointId(req) && req!==ids[0]) ? '<div class="m" style="margin-top:4px;color:var(--warn);font-weight:700;white-space:normal">⚠ Ev sahibinin bu elana yazdığı ID ('+esc(req)+') digər evindəki ID-dən fərqlidir.</div>' : '';
+  return '<div class="m" style="margin-top:6px"><button type="button" class="btn sm ghost" style="width:auto" onclick="useSiblingEpointId('+x.id+',\''+prefix+'\',\''+esc(ids[0])+'\')">Digər evindəki ID-ni tətbiq et: '+esc(ids[0])+'</button> <span style="color:var(--muted);font-size:12.5px">Xanaya yazılır, saxlamaq üçün ayrıca basmalısan.</span></div>'+warn;
+}
+function useSiblingEpointId(id,prefix,val){
+  var inp=document.getElementById(prefix+id); if(!inp) return;
+  inp.value=val; inp.focus(); toast('ID xanaya yazıldı: '+val+'. İndi saxla.');
+}
 function saveEpointId(id){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
   var inp=document.getElementById('epa-'+id);
@@ -6496,6 +6543,7 @@ function modPendingCard(x){
       +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
       +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
       +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
+      +siblingIdHtml(x,'ep-')
       +'</div><div class="act">'
       +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
       +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
@@ -6507,6 +6555,7 @@ function modApprovedCard(x){
           +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
           +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
           +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
+          +siblingIdHtml(x,'epa-')
           +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button>'+'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDeleteListings(['+x.id+'])">Sil</button>'+'</div></div>';
 }
 function modDeletingCard(x){
