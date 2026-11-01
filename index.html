@@ -6,6 +6,26 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E2F2A'/%3E%3Cpath d='M32 12c-8.8 0-15 6.3-15 14.4C17 37 32 52 32 52s15-15 15-25.6C47 18.3 40.8 12 32 12z' fill='%23A4213B'/%3E%3Ccircle cx='32' cy='27' r='6' fill='%23F4EFE4'/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Buralar.az — Azərbaycanda gündəlik kirayə evlər</title>
+<meta name="description" content="Buralar.az — Azərbaycanda gündəlik kirayə ev, villa və bağ evləri. Ödəniş əvvəlcədən təhlükəsizdir, rəsmi və vergi uçotlu icarə, ev sahibi ilə birbaşa əlaqə.">
+<meta name="theme-color" content="#0E2F2A">
+<link rel="canonical" href="https://buralar.az/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Buralar.az">
+<meta property="og:locale" content="az_AZ">
+<meta property="og:title" content="Buralar.az — Azərbaycanda gündəlik kirayə evlər">
+<meta property="og:description" content="Azərbaycanın hər yerində gündəlik kirayə evlər: təhlükəsiz ödəniş, rəsmi icarə, ev sahibi ilə birbaşa əlaqə.">
+<meta property="og:url" content="https://buralar.az/">
+<meta property="og:image" content="https://buralar.az/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Buralar.az — Azərbaycanda gündəlik kirayə evlər">
+<meta name="twitter:description" content="Təhlükəsiz ödəniş, rəsmi icarə, ev sahibi ilə birbaşa əlaqə.">
+<meta name="twitter:image" content="https://buralar.az/og-image.png">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Buralar.az","url":"https://buralar.az/","logo":"https://buralar.az/buralar-logo-light-bg.png","email":"salam.buralar.az@gmail.com","areaServed":"AZ"},{"@type":"WebSite","name":"Buralar.az","url":"https://buralar.az/","inLanguage":"az"}]}</script>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -3050,7 +3070,7 @@ function toggleTierMore(btn){
 }
 /* Kiçik şəkil: elanın real üz şəkli (varsa), yoxdursa əvəzedici illüstrasiya */
 function listingThumb(x){
-  if(x && x.cover) return '<img src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t||'')+'" style="width:100%;height:100%;object-fit:cover;display:block">';
+  if(x && x.cover) return '<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t||'')+'" style="width:100%;height:100%;object-fit:cover;display:block">';
   return scene(x.sc,x.id);
 }
 function bookingThumb(b){
@@ -3112,7 +3132,7 @@ function galleryHtmlFor(x){
       + '<div class="cover" onclick="openLightbox(allPhotosOf(byId('+x.id+')),0)"><img src="'+x.cover+'" alt="'+esc(x.t)+' — üz şəkli"></div>'
       + '<div class="side">'+rest.map(function(ph,i){
           var isLast = i===rest.length-1 && extra>0;
-          return '<div onclick="openLightbox(allPhotosOf(byId('+x.id+')),'+(i+1)+')"><img src="'+ph+'" alt="Şəkil '+(i+2)+'">'+(isLast?'<span class="more">+'+extra+'</span>':'')+'</div>';
+          return '<div onclick="openLightbox(allPhotosOf(byId('+x.id+')),'+(i+1)+')"><img loading="lazy" decoding="async" src="'+ph+'" alt="Şəkil '+(i+2)+'">'+(isLast?'<span class="more">+'+extra+'</span>':'')+'</div>';
         }).join('')+'</div></div>';
   }
   return '<div class="gallery"><div>'+scene(x.sc,x.id)+'</div><div class="side"><div>'+scene((x.sc+4)%6,x.id+9)+'</div><div>'+scene((x.sc+2)%6,x.id+3)+'</div></div></div>';
@@ -3204,7 +3224,7 @@ function roomsHtmlFor(x){
       checklist = roomAmenChecklistHtml(YARD_FEATURE_OPTIONS, r.yardFeatures);
     }
     return '<div class="roomcard">'
-      +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img src="'+r.photos[0]+'" alt="'+esc(roomLabel(r))+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
+      +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img loading="lazy" decoding="async" src="'+r.photos[0]+'" alt="'+esc(roomLabel(r))+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
       +'<div><h4 style="font-size:15px">'+esc(roomLabel(r))+'</h4>'
       +(lines.length?'<div class="m" style="color:var(--muted);font-size:13.5px;font-weight:600">'+lines.map(esc).join(' · ')+'</div>':'')
       +checklist
@@ -5759,6 +5779,12 @@ function renderCatStars(){
 }
 function setCatStars(k,n){ state.catStars[k]=n; renderCatStars(); }
 function avgOf(obj){ var vals=Object.keys(obj).map(function(k){return obj[k];}); return vals.reduce(function(s,v){return s+v;},0)/vals.length; }
+/* İctimai rəydə tam ad göstərilmir: "Elnur M." */
+function shortPersonName(n){
+  var p=String(n||'').trim().split(/\s+/).filter(Boolean);
+  if(!p.length) return 'İstifadəçi';
+  return (p[0]+(p.length>1?' '+p[p.length-1].charAt(0)+'.':'')).slice(0,40);
+}
 function submitReview(){
   var ctx=state.rateCtx; if(!ctx) return;
   var b=state.bookings.filter(function(x){return x.code===ctx.code;})[0]; if(!b) return;
@@ -5770,8 +5796,7 @@ function submitReview(){
     /* ID məcburi "BRON_KODU_rol" formatındadır (firestore.rules-da tələb olunur) — bu, eyni
        bronun eyni tərəfdən İKİ DƏFƏ qiymətləndirilməsinin qarşısını server tərəfdə də bağlayır. */
     id:b.code+'_'+ctx.role, bookingCode:b.code, lid:b.lid,
-    from: ctx.role==='guest'?b.guest:b.host, fromRole: ctx.role,
-    about: ctx.role==='guest'?b.host:b.guest,
+    from: shortPersonName(ctx.role==='guest'?b.guest:b.host), fromRole: ctx.role,
     categories: Object.assign({},state.catStars), catLabels: ctx.cats,
     stars: Math.round(avg), starsExact: avg, text:text, date:today(), visible:true, reportStatus:null
   };
