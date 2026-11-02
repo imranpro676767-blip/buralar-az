@@ -826,13 +826,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div></div>
 
         <div id="rm-bedroom" class="rm-block">
-          <label>Yatağın növü
-            <select id="rm-bedtype">
-              <option>Tək yataq (Single)</option><option>Cüt yataq (Double)</option>
-              <option>Queen size</option><option>King size</option>
-              <option>İki ayrı yataq (Twin)</option><option>İkiyaruslu çarpayı (Bunk bed)</option>
-            </select>
-          </label>
+          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Bu otaqdakı yataqların sayı (hamısını doldur, olmayanı 0 burax)</div>
+          <label>Tək yataq (1 nəfərlik)<input id="rm-bed-single" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
+          <label>Cüt yataq (Double / Queen / King, 2 nəfərlik)<input id="rm-bed-double" type="number" min="0" max="10" value="1" inputmode="numeric" oninput="bedSleepsHint()"></label>
+          <label>İkimərtəbəli çarpayı (2 nəfərlik)<input id="rm-bed-bunk" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
+          <label>Açılan divan (2 nəfərlik)<input id="rm-bed-sofa" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
+          <div class="full" id="rm-bed-hint" style="font-size:13px;font-weight:800;color:var(--ok)"></div>
           <label>İsitmə sistemi
             <select id="rm-b-heat">
               <option>Mərkəzi isitmə</option><option>Konvektor</option>
@@ -1031,23 +1030,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <label>Çıxış saatı<input id="r-out" value="12:00" maxlength="5"></label>
       <label class="full">Digər qaydalar<textarea id="r-extra" maxlength="100" placeholder="Məs: Saat 23:00-dan sonra səs-küy olmaz. Ayaqqabı ilə girilmir. Qonşulara hörmətlə yanaşın."></textarea></label>
 
-      <h4>Rəsmi və ödəniş məlumatları</h4>
+      <h4>Rəsmi məlumatlar</h4>
       <label>VÖEN<input id="h-voen" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" placeholder="10 rəqəm" title="VÖEN 10 rəqəmdən ibarət olmalıdır"></label>
       <label>Ad, Soyad / Şirkət adı<input id="h-name" required maxlength="50" placeholder="Elnur Məmmədov"></label>
-      <label>Bank<select id="h-bank"><option>Kapital Bank</option><option>ABB</option><option>PAŞA Bank</option><option>Bank Respublika</option><option>Unibank</option><option>Rabitəbank</option><option>AccessBank</option></select></label>
-      <label>Hesab nömrəsi (IBAN)<input id="h-iban" required maxlength="28" autocomplete="off" oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,28)" placeholder="AZ00XXXX00000000000000000000"></label>
-      <div class="full" style="border-top:1px solid var(--line,#e5e5e5);padding-top:12px">
-        <div style="font-size:15px;font-weight:800;margin-bottom:8px">Biznes kartınız</div>
-        <label>Biznes kartınızın üzərindəki 16 rəqəmli kod<input id="h-bizcard" required pattern="[0-9]{16}" maxlength="16" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,16)" placeholder="16 rəqəm" title="Kart kodu 16 rəqəmdən ibarət olmalıdır"></label>
-        <p class="note" style="text-align:left;margin:6px 0 0">Yalnız 16 rəqəmli kodu yaz. Kartın bitmə tarixini və arxasındakı 3 rəqəmli CVV kodunu heç vaxt yazma.</p>
-      </div>
+      <p class="note full" style="text-align:left;margin:0">Bank hesabı və ya kart məlumatı <b>tələb olunmur</b>: ödənişlər birbaşa Epoint vasitəsilə sənin Epoint hesabına köçürülür, bank rekvizitlərinə Epoint özü baxır.</p>
       <label>WhatsApp əlaqə nömrəsi
         <div class="phoneinput"><span>+994</span><input id="h-whatsapp" required inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
       </label>
       <p class="note full" style="text-align:left;margin:-4px 0 0;color:var(--warn);font-weight:700">⚠ Bu nömrəni mütləq düzgün qeyd et — elanın təsdiqi üçün səninlə bu WhatsApp nömrəsi vasitəsilə görüntülü əlaqə saxlanılacaq və şəxsiyyət yoxlanılacaq.</p>
       <h4>Epoint ödəniş hesabı</h4>
       <p class="note full" style="text-align:left;margin:0">Müştərinin ödədiyi məbləğin sənə düşən hissəsi (komissiya çıxılmaqla) <b>Epoint vasitəsilə avtomatik hesabına köçürülür</b>. Bunun üçün Epoint-də tacir kimi qeydiyyatdan keçməlisən. <span id="epRegLinkWrap"></span> Qeydiyyatdan sonra aldığın <b>tacir ID-sini</b> aşağıya yaz. ID-ni yazmasan da elan göndərilir, amma ID təsdiqlənmədən elan saytda görünməyəcək.</p>
-      <label class="full">Epoint tacir ID-n (məs. 12345 və ya i000123456)<input id="h-epoint" placeholder="12345 / i000123456" autocomplete="off" maxlength="13"></label>
+      <label class="full">Epoint tacir ID-n (məs. 123456)<input id="h-epoint" placeholder="123456" autocomplete="off" inputmode="numeric" maxlength="8"></label>
       <label class="full" style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;cursor:pointer">
         <input type="checkbox" id="h-terms" style="margin-top:3px;width:18px;height:18px;flex:none">
         <span><a href="#" onclick="openModal('tosModal');return false" style="color:var(--nar);font-weight:700">İstifadə Şərtlərini</a> oxudum və qəbul edirəm. Evin təhlükəsiz olmasına (hovuz, balkon, pilləkən, qaz, elektrik və s.), elan məlumatlarının doğruluğuna və qonaqlarla münasibətlərə görə məsuliyyət daşıdığımı, Buralar.az-ın isə yalnız vasitəçi olduğunu təsdiq edirəm.</span>
@@ -1493,6 +1486,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>1. Platformanın rolu.</b> Buralar.az qonaqları və ev sahiblərini bir araya gətirən vasitəçi (marketplace) platformadır. Buralar.az evlərin sahibi, icarədarı, idarəçisi və ya operatoru deyil. İcarə münasibəti yalnız qonaq ilə ev sahibi arasında yaranır. Buralar.az bu münasibətin tərəfi deyil və evin vəziyyətinə, təsvirin dəqiqliyinə, təhlükəsizliyinə və xidmət keyfiyyətinə görə cavabdeh deyil.</p>
       <p><b>2. Hesab və doğrulama.</b> Rezervasiya etmək üçün qeydiyyat və şəxsiyyət doğrulaması (KYC) məcburidir. Admin saxta məlumat, şübhəli sənəd və ya təkrar qeydiyyat aşkar etdikdə hesabı rədd və ya blok edə bilər. Doğrulamanın keçməsi qonağın və ya ev sahibinin etibarlı və ya təhlükəsiz olmasına zəmanət demək deyil.</p>
       <p><b>3. Rezervasiya və ödəniş.</b> Ödəniş Epoint ödəniş sistemi vasitəsilə onlayn həyata keçirilir. Rezervasiya yalnız ödəniş uğurla alındıqdan sonra təsdiqlənir. Ev sahibinin payı və platformanın xidmət haqqı rezervasiya zamanı göstərilən məbləğlərə uyğun bölünür. Ödəniş edilməyən rezervasiya 10 dəqiqədən sonra avtomatik ləğv olunur.</p>
+       <p><b>3.1. Bank və kart məlumatları.</b> Buralar.az ev sahibinin bank hesabı (IBAN), bank kartı və ya digər ödəniş rekvizitlərini tələb etmir, toplamır və saxlamır. Ev sahibinin payı Epoint tərəfindən onun Epoint hesabına köçürülür; hesabın açılması, rekvizitlərin yoxlanılması və vəsaitin bankdakı hesaba çıxarılması Epoint-in öz qaydalarına uyğun həyata keçirilir və bu mərhələlərə görə Buralar.az məsuliyyət daşımır.</p>
       <p><b>4. Şikayət və geri qaytarma.</b> Ev elandakı təsvirə tamamilə uyğun gəlmədikdə və ya ev sahibi girişi təmin etmədikdə qonaq şikayət göndərə bilər. Admin araşdırıb ödənişin geri qaytarılması barədə qərar verə bilər. Bu qərar yalnız ödənişin taleyinə aiddir və platformanın başqa heç bir məsuliyyəti yaratmır. Qonaq fikrini dəyişdiyinə görə geri qaytarma tələb edə bilməz.</p>
       <p><b>5. Davranış qaydaları.</b> Saxta rəy və saxta sənəd təqdim etmək, başqasının hesabına icazəsiz müdaxilə etmək, platformanı yan keçərək birbaşa ödəniş təklif etmək qadağandır və hesabın bloklanmasına səbəb ola bilər. Yazışmalarda telefon nömrəsi, e-poçt, sosial şəbəkə (məs. Instagram, TikTok, Facebook), mesajlaşma tətbiqi (məs. WhatsApp, Telegram) və ya hər hansı xarici link paylaşmaq qadağandır: bu cür mesajlar sistem tərəfindən avtomatik dayandırılır və cəhd qeydə alınır. Qaydanı pozan istifadəçiyə son xəbərdarlıq verilə və hesabı nəzarətə götürülə bilər; təkrar pozuntu halında hesab həmişəlik bloklanır. Bloklanmış şəxs FİN, şəxsiyyət sənədi, bank (IBAN) və vergi (VÖEN) məlumatları əsasında tanınır və yeni hesab açmaq cəhdi avtomatik rədd edilir.</p>
       <p><b>6. Ev sahibinin öhdəlikləri.</b> Ev sahibi: (a) elan məlumatlarının, şəkillərin və qaydaların doğru olduğunu; (b) evi icarəyə vermək üçün qanuni hüququ və lazımi icazələri olduğunu; (c) evin yaşayış üçün təhlükəsiz olduğunu, o cümlədən hovuz, su hövzəsi, balkon, pilləkən, qaz, elektrik, isitmə və yanğın təhlükəsizliyi tələblərinin yerinə yetirildiyini; (d) risk mənbələri barədə (məsələn, hovuzun dərinliyi, hasarsız sahələr) qonaqları qabaqcadan xəbərdar etdiyini; (e) fərdi sığorta və ya mülki məsuliyyət sığortası barədə özü qərar verdiyini və Buralar.az-ın sığorta təmin etmədiyini bəyan və təsdiq edir. Evdə baş verən bütün hadisələr və itkilər üzrə birinci məsuliyyət ev sahibinə aiddir.</p>
@@ -2506,8 +2500,8 @@ function approved(){ return all().filter(function(x){return x.st==='approved' &&
 var EPOINT_REG_URL='https://epoint.az/az/registration?hunter=10438';
 (function(){ var w=document.getElementById('epRegLinkWrap'); if(!w) return;
   w.innerHTML = EPOINT_REG_URL ? '<a href="'+EPOINT_REG_URL+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">Epoint qeydiyyat linki ↗</a>' : '<i>Qeydiyyat linki üçün bizimlə əlaqə saxla.</i>'; })();
-function readEpointRequest(){ var el=document.getElementById('h-epoint'); var val=String(el&&el.value||'').trim().toLowerCase(); if(val && !isEpointId(val)){ toast('Epoint ID düzgün deyil. Nümunə: 12345 və ya i000123456'); return false; } return val; }
-function isEpointId(v){ return /^i?\d{5,12}$/.test(String(v||'').trim()); }
+function readEpointRequest(){ var el=document.getElementById('h-epoint'); var val=String(el&&el.value||'').trim().toLowerCase(); if(val && !isEpointId(val)){ toast('Epoint ID düzgün deyil. Yalnız rəqəmlər (5–8 rəqəm), məs. 123456'); return false; } return val; }
+function isEpointId(v){ return /^\d{5,8}$/.test(String(v||'').trim()); }
 
 /* ============ helpers ============ */
 function az(n){ return Math.round(n).toLocaleString('az-AZ')+"\u00A0₼"; }
@@ -3199,7 +3193,7 @@ function roomsHtmlFor(x){
   return x.rooms.map(function(r){
     var lines=[], checklist='';
     if(r.kind==='bedroom'){
-      lines.push('Yataq: '+r.bedType); lines.push('İsitmə: '+r.heating);
+      lines.push('Yataq: '+(r.beds?bedSummaryText(bedCounts(r))+' ('+bedSleeps(bedCounts(r))+' nəfərlik yer)':r.bedType)); lines.push('İsitmə: '+r.heating);
       if(r.privateBathroom) lines.push('Şəxsi sanuzeli var');
       checklist = roomAmenChecklistHtml(BEDROOM_AMENITY_OPTIONS, r.amenities);
     } else if(r.kind==='pool'){
@@ -3337,7 +3331,7 @@ function openAdminDetail(id){
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ev sahibi</span>'+esc(x.host)+' · '+esc(x.ownerEmail||'—')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Görüntülü təsdiq üçün WhatsApp</span>'+(x.whatsapp?('<a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+' →</a>'):'<span style="color:var(--nar)">Qeyd edilməyib</span>')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">VÖEN</span>'+esc(x.voen||'—')+'</div>'
-      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Bank / IBAN</span>'+esc(x.bank||'—')+' · '+esc(x.iban||'—')+'</div>'
+      +(x.iban?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Bank / IBAN (köhnə qeyd)</span>'+esc(x.bank||'—')+' · '+esc(x.iban)+'</div>':'')
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ünvan (dəqiq)</span>'+esc(x.d)+', '+esc(x.c)+(x.lat!=null?' ('+x.lat+', '+x.lng+')':'')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Təmizlik haqqı</span>'+az(x.cl||0)+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Min/Maks gecə</span>'+(x.minNights||1)+' / '+(x.maxNights||'limitsiz')+'</div>'
@@ -3347,7 +3341,7 @@ function openAdminDetail(id){
     +'</div>'
     +'<hr class="sep" style="margin:6px 0">'
     +(x.st==='pending'
-      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
+      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
       : '<p class="note">Bu elan artıq baxılıb ('+(x.st==='approved'?'təsdiqlənib':'rədd edilib')+').</p>')
   +'</div></aside>';
   document.getElementById('detailBody').innerHTML = galleryHtmlFor(x) + '<div class="detail">' + leftInfoHtml(x) + adminAside + '</div>';
@@ -3368,7 +3362,7 @@ function previewPendingEdit(id){
     +'<div style="display:grid;gap:8px;font-size:14.5px;font-weight:600;margin-top:10px">'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ev sahibi</span>'+esc(merged.host)+' · '+esc(merged.ownerEmail||'—')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">VÖEN</span>'+esc(merged.voen||'—')+'</div>'
-      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Bank / IBAN</span>'+esc(merged.bank||'—')+' · '+esc(merged.iban||'—')+'</div>'
+      +(merged.iban?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Bank / IBAN (köhnə qeyd)</span>'+esc(merged.bank||'—')+' · '+esc(merged.iban)+'</div>':'')
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">WhatsApp</span>'+esc(merged.whatsapp||'—')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ünvan (dəqiq)</span>'+esc(merged.d)+', '+esc(merged.c)+(merged.lat!=null?' ('+merged.lat+', '+merged.lng+')':'')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Təmizlik haqqı</span>'+az(merged.cl||0)+'</div>'
@@ -4108,6 +4102,41 @@ var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',ga
 var KITCHEN_OPTIONS=["Ocaq / plitə","Soba (duxovka)","Mikrodalğalı soba","Soyuducu","Dondurucu","Qabyuyan","Çaydan / elektrik çaydan","Qəhvə maşını","Toster","Blender","Qazan-qab","Boşqab, stəkan, çəngəl-bıçaq","Havalandırma (aspirator)","Yemək masası","Su qabı / içməli su"];
 var KITCHEN_MAP=[["stove", "Ocaq / plitə"], ["oven", "Soba (duxovka)"], ["micro", "Mikrodalğalı soba"], ["fridge", "Soyuducu"], ["freezer", "Dondurucu"], ["dish", "Qabyuyan"], ["kettle", "Çaydan / elektrik çaydan"], ["coffee", "Qəhvə maşını"], ["toaster", "Toster"], ["blender", "Blender"], ["pots", "Qazan-qab"], ["plates", "Boşqab, stəkan, çəngəl-bıçaq"], ["hood", "Havalandırma (aspirator)"], ["table", "Yemək masası"], ["water", "Su qabı / içməli su"]];
 var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
+/* ===== Otaqda yataq sayları: tək / cüt / ikimərtəbəli / açılan divan → yatacaq sayı ===== */
+function bedCounts(r){
+  if(r && r.beds) return {single:+r.beds.single||0,double:+r.beds.double||0,bunk:+r.beds.bunk||0,sofa:+r.beds.sofa||0};
+  var t=String((r&&r.bedType)||'');
+  if(/Single/i.test(t)) return {single:1,double:0,bunk:0,sofa:0};
+  if(/Twin/i.test(t)) return {single:2,double:0,bunk:0,sofa:0};
+  if(/Bunk/i.test(t)) return {single:0,double:0,bunk:1,sofa:0};
+  return {single:0,double:1,bunk:0,sofa:0}; /* köhnə qeydlər: Double/Queen/King */
+}
+function bedSleeps(b){ return b.single+2*b.double+2*b.bunk+2*b.sofa; }
+function bedSummaryText(b){
+  var a=[];
+  if(b.single) a.push(b.single+' tək yataq');
+  if(b.double) a.push(b.double+' cüt yataq');
+  if(b.bunk) a.push(b.bunk+' ikimərtəbəli çarpayı');
+  if(b.sofa) a.push(b.sofa+' açılan divan');
+  return a.join(' + ')||'—';
+}
+function readBedCounts(){
+  var g=function(id){ var n=parseInt(document.getElementById(id).value,10); return (isNaN(n)||n<0)?0:Math.min(n,10); };
+  return {single:g('rm-bed-single'),double:g('rm-bed-double'),bunk:g('rm-bed-bunk'),sofa:g('rm-bed-sofa')};
+}
+function bedSleepsHint(){
+  var el=document.getElementById('rm-bed-hint'); if(!el) return;
+  var b=readBedCounts(), n=bedSleeps(b);
+  el.textContent=n?('Bu otaqda yatacaq yer: '+n+' nəfər'):'Ən azı bir yataq yaz';
+}
+function setBedCounts(b){
+  document.getElementById('rm-bed-single').value=b.single; document.getElementById('rm-bed-double').value=b.double;
+  document.getElementById('rm-bed-bunk').value=b.bunk; document.getElementById('rm-bed-sofa').value=b.sofa; bedSleepsHint();
+}
+/* Elanın ümumi yatacaq sayı (yataq otaqları üzrə) — qonaq tutumundan az ola bilməz */
+function totalSleepsOf(rooms){
+  return (rooms||[]).filter(function(r){return r.kind==='bedroom';}).reduce(function(s,r){return s+bedSleeps(bedCounts(r));},0);
+}
 function addRoomToPending(){
   var kind=document.getElementById('rm-kind').value;
   if(!state.currentRoomPhotos.length){ toast("Bu sahə üçün ən azı 1 şəkil yüklə"); return; }
@@ -4115,7 +4144,9 @@ function addRoomToPending(){
   var room={id:_ed?_ed.room.id:('RM-'+Math.floor(1e5+Math.random()*9e5)), kind:kind, photos:state.currentRoomPhotos.slice(), photoFiles:state.currentRoomPhotoFiles.slice()};
   var ck=function(id){return document.getElementById(id).checked;}, v=function(id){return document.getElementById(id).value;};
   if(kind==='bedroom'){
-    room.bedType=v('rm-bedtype'); room.heating=v('rm-b-heat'); room.privateBathroom=ck('rm-b-bath');
+    var _bc=readBedCounts();
+    if(!bedSleeps(_bc)){ toast("Bu otaqda ən azı bir yataq yaz (tək, cüt, ikimərtəbəli və ya açılan divan)"); return; }
+    room.beds=_bc; room.sleeps=bedSleeps(_bc); room.bedType=bedSummaryText(_bc); room.heating=v('rm-b-heat'); room.privateBathroom=ck('rm-b-bath');
     room.amenities=[];
     if(ck('rm-b-ac')) room.amenities.push('Kondisioner');
     if(ck('rm-b-wardrobe')) room.amenities.push('Paltar dolabı');
@@ -4205,6 +4236,7 @@ function addRoomToPending(){
   document.getElementById('rm-b-iron').checked=false; document.getElementById('rm-b-tv').checked=false;
   document.getElementById('rm-b-desk').checked=false; document.getElementById('rm-b-safe').checked=false;
   document.getElementById('rm-b-fan').checked=false; document.getElementById('rm-b-bath').checked=false;
+  setBedCounts({single:0,double:1,bunk:0,sofa:0});
   document.getElementById('rm-g-domino').checked=false; document.getElementById('rm-g-nard').checked=false;
   document.getElementById('rm-g-billiard').checked=false; document.getElementById('rm-g-tennis').checked=false;
   document.getElementById('rm-g-foosball').checked=false; document.getElementById('rm-g-dart').checked=false;
@@ -4531,7 +4563,7 @@ function loadRoomIntoBuilder(r){
   var cm=ROOM_CHECK_MAPS[r.kind];
   if(cm){ var have=r[cm.field]||[]; cm.pairs.forEach(function(p){ var e=$(p[1]); if(e) e.checked=have.indexOf(p[0])>=0; }); }
   if(r.kind==='kitchen'){ var kh=r.kitchenItems||[]; KITCHEN_MAP.forEach(function(m){ var e=$('rm-k-'+m[0]); if(e) e.checked=kh.indexOf(m[1])>=0; }); }
-  if(r.kind==='bedroom'){ if(r.bedType) $('rm-bedtype').value=r.bedType; if(r.heating) $('rm-b-heat').value=r.heating; $('rm-b-bath').checked=!!r.privateBathroom; }
+  if(r.kind==='bedroom'){ setBedCounts(bedCounts(r)); if(r.heating) $('rm-b-heat').value=r.heating; $('rm-b-bath').checked=!!r.privateBathroom; }
   if(r.kind==='pool'){ if(r.temp) $('rm-p-temp').value=r.temp; if(r.size) $('rm-p-size').value=r.size; if(r.poolType) $('rm-p-type').value=r.poolType; }
   if(r.kind==='game'){
     ['domino','nard','billiard','tennis','foosball','dart','airhockey','ps'].forEach(function(k){ var e=$('rm-g-'+k); if(e) e.checked=!!r[k]; });
@@ -4684,10 +4716,6 @@ function addListing(e){
   var ck=function(id){return document.getElementById(id).checked;};
   var voen=v('h-voen').replace(/\D/g,'');
   if(voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
-  var iban=v('h-iban').replace(/\s/g,'').toUpperCase();
-  var bizCard=v('h-bizcard').replace(/\D/g,'');
-  if(bizCard.length!==16){ toast("Biznes kartının üzərindəki kod 16 rəqəmdən ibarət olmalıdır"); return; }
-  if(iban.length!==28 || iban.slice(0,2)!=='AZ'){ toast("IBAN AZ ilə başlamalı və tam 28 simvoldan ibarət olmalıdır"); return; }
   var lat=parseFloat(v('h-lat')), lng=parseFloat(v('h-lng'));
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
@@ -4700,6 +4728,10 @@ function addListing(e){
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
   if(state.editingRoom){ toast("Redaktə etdiyin otağı əlavə et və ya ləğv et"); return; }
   if(!state.pendingRooms.some(function(r){return r.kind==='bedroom';})){ toast("Ən azı bir yataq otağı əlavə etməlisən"); return; }
+  if(!ck('h-gp-drivers') && state.pendingRooms.some(function(r){return r.kind==='bedroom';})){
+    var _sl=totalSleepsOf(state.pendingRooms), _gs=parseInt(v('h-guests'),10)||1;
+    if(_gs>_sl){ toast("Qonaq tutumu ("+_gs+") yataqların yatacaq sayından ("+_sl+") çoxdur. Otaqlarda yataq sayını düzəlt və ya qonaq tutumunu azalt"); return; }
+  }
   var minStay=parseInt(v('h-minstay'),10)||1;
   var maxStayRaw=v('h-maxstay').trim();
   var maxStay=maxStayRaw?parseInt(maxStayRaw,10):null;
@@ -4754,7 +4786,7 @@ function addListing(e){
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       rt:5,rv:0,sc:(id%6),host:v('h-name').slice(0,50),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen,iban:iban,bizCard:bizCard,bank:v('h-bank'),whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(), privacyVersion:PRIVACY_VERSION,
+      voen:voen,whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(), privacyVersion:PRIVACY_VERSION,
       cover:coverUrl, coverThumb:(results[0]&&r3[0][2])||null, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
@@ -5117,7 +5149,7 @@ function renderHost(){
     return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ty)+' · '+x.g+' qonaq · '+az(x.p)+'/gecə</div>'
       +(isDriverListing(x)?spotsHtmlHost(x):'')
-      +'<div class="m">VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban.slice(0,8))+'…</div>'
+      +'<div class="m">VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(String(x.iban).slice(0,8))+'…':'')+'</div>'
       +(x.st==='approved'&&!isEpointId(x.epointId)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
       +(x.st==='pending'?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
       +(x.deleteRequest?'<div class="m" style="color:var(--warn);font-weight:700;white-space:normal">Silmə müraciətiniz admin baxışındadır</div>':'')
@@ -5630,9 +5662,6 @@ function openEdit(id){
 
   document.getElementById('h-voen').value=live.voen||'';
   document.getElementById('h-name').value=live.host||'';
-  document.getElementById('h-bank').value=live.bank||'Kapital Bank';
-  document.getElementById('h-iban').value=live.iban||'';
-  document.getElementById('h-bizcard').value=live.bizCard||'';
   var waDigits=(live.whatsapp||'').replace(/\D/g,'').replace(/^994/,'').slice(0,9);
   document.getElementById('h-whatsapp').value=waDigits;
   formatAzPhone(document.getElementById('h-whatsapp'));
@@ -5663,10 +5692,6 @@ function submitListingEdit(e){
   var ck=function(id){return document.getElementById(id).checked;};
   var voen=v('h-voen').replace(/\D/g,'');
   if(voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
-  var iban=v('h-iban').replace(/\s/g,'').toUpperCase();
-  var bizCard=v('h-bizcard').replace(/\D/g,'');
-  if(bizCard.length!==16){ toast("Biznes kartının üzərindəki kod 16 rəqəmdən ibarət olmalıdır"); return; }
-  if(iban.length!==28 || iban.slice(0,2)!=='AZ'){ toast("IBAN AZ ilə başlamalı və tam 28 simvoldan ibarət olmalıdır"); return; }
   var lat=parseFloat(v('h-lat')), lng=parseFloat(v('h-lng'));
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
@@ -5677,6 +5702,10 @@ function submitListingEdit(e){
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
   if(state.editingRoom){ toast("Redaktə etdiyin otağı əlavə et və ya ləğv et"); return; }
   if(!state.pendingRooms.some(function(r){return r.kind==='bedroom';})){ toast("Ən azı bir yataq otağı əlavə etməlisən"); return; }
+  if(!ck('h-gp-drivers') && state.pendingRooms.some(function(r){return r.kind==='bedroom';})){
+    var _sl=totalSleepsOf(state.pendingRooms), _gs=parseInt(v('h-guests'),10)||1;
+    if(_gs>_sl){ toast("Qonaq tutumu ("+_gs+") yataqların yatacaq sayından ("+_sl+") çoxdur. Otaqlarda yataq sayını düzəlt və ya qonaq tutumunu azalt"); return; }
+  }
   var minStay=parseInt(v('h-minstay'),10)||1;
   var maxStayRaw=v('h-maxstay').trim();
   var maxStay=maxStayRaw?parseInt(maxStayRaw,10):null;
@@ -5721,7 +5750,7 @@ function submitListingEdit(e){
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen, iban:iban, bizCard:bizCard, bank:v('h-bank'), whatsapp:whatsapp, lat:lat, lng:lng,
+      voen:voen, whatsapp:whatsapp, lat:lat, lng:lng,
       cover:coverUrl, coverThumb:results[2]||null, rooms:roomsClean,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
@@ -5913,7 +5942,7 @@ function approveListing(id,ok){
   if(ok){
     var inp=document.getElementById('ep-'+id)||document.getElementById('ep-d-'+id);
     var val=String(inp&&inp.value?inp.value:(x.epointId||'')).trim().toLowerCase();
-    if(!isEpointId(val)){ toast('Təsdiq üçün ev sahibinin Epoint tacir ID-sini yaz (məs. 12345 və ya i000123456)'); return false; }
+    if(!isEpointId(val)){ toast('Təsdiq üçün ev sahibinin Epoint tacir ID-sini yaz (məs. 123456)'); return false; }
     x.epointId = val;
   }
   x.st = ok?'approved':'rejected';
@@ -5971,7 +6000,7 @@ function saveEpointId(id){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
   var inp=document.getElementById('epa-'+id);
   var val=String(inp&&inp.value||'').trim().toLowerCase();
-  if(!isEpointId(val)){ toast('Epoint ID düzgün deyil (məs. 12345 və ya i000123456)'); return; }
+  if(!isEpointId(val)){ toast('Epoint ID düzgün deyil (yalnız 5–8 rəqəm, məs. 123456)'); return; }
   x.epointId=val;
   syncListing(x).then(function(){ toast('Epoint ID saxlandı'); renderAdmin(); render(); });
 }
@@ -6152,7 +6181,7 @@ function renderHostsAdmin(){
     return '<div class="bk" style="grid-template-columns:1fr">'
       +'<div><h4>'+esc(g.host||'—')+(isSup?' <span class="badge" style="position:static;display:inline-block;margin-left:6px">Seçilmiş ev sahibi</span>':'')+'</h4>'
       +'<div class="m">'+esc(g.email||'—')+' · VÖEN '+esc(g.voen||'—')+'</div>'
-      +'<div class="m">'+esc(g.bank||'—')+' · '+(g.iban?esc(g.iban.slice(0,8))+'…':'—')+'</div>'
+      +(g.iban?'<div class="m">'+esc(g.bank||'—')+' · '+esc(String(g.iban).slice(0,8))+'…</div>':'')
       +'<div class="m">'+(g.whatsapp?('WhatsApp: <a href="https://wa.me/'+esc(g.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(g.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
       +'<div class="m"><b>'+g.listings.length+'</b> elan · '+breakdown+'</div>'
       +hostMetricsHtml(g)+hostDelHtml(g)
@@ -6556,6 +6585,14 @@ function mdCat(x){
 }
 function mdSet(k,v){ MD[k]=v; MD.page=1; renderMod(); }
 function mdPage(n){ MD.page=n; renderMod(); }
+/* Elanı göndərən hesabın şəxsiyyət yoxlaması vəziyyəti (admin təsdiqdən əvvəl görsün) */
+function ownerKycLineHtml(x){
+  var em=String(x.ownerEmail||'').toLowerCase();
+  var c=(state.customers||[]).filter(function(k){return String(k.email||'').toLowerCase()===em;})[0];
+  if(!c) return '<div class="m" style="color:var(--nar);font-weight:800">⚠ Bu hesabın müştəri qeydiyyatı və şəxsiyyət vəsiqəsi YOXDUR. Təsdiq etmə.</div>';
+  if(c.status==='verified'||c.status==='approved') return '<div class="m" style="color:var(--ok);font-weight:800">✓ Hesabın şəxsiyyəti təsdiqlənib</div>';
+  return '<div class="m" style="color:var(--warn);font-weight:800">⚠ Hesabın şəxsiyyət statusu: '+esc(c.status||'gözləyir')+(c.idPhoto?'':' · vəsiqə şəkli yoxdur')+'. Əvvəl Müştərilər bölməsində yoxla.</div>';
+}
 function modPendingCard(x){
     var R=x.rules||DEFAULT_RULES;
     var roomCount = x.rooms?x.rooms.length:0;
@@ -6563,13 +6600,14 @@ function modPendingCard(x){
     return '<div class="bk"><div class="th">'+(x.cover?'<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">':scene(x.sc,x.id))+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4>'
       +'<div class="m">'+esc(x.c)+' ('+regionOf(x.c)+') · '+esc(x.d)+' · '+esc(x.ty)+' · '+az(x.p)+'/gecə</div>'
-      +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+' · '+esc(x.bank)+' · '+esc(x.iban)+'</div>'
+      +ownerKycLineHtml(x)
+      +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(x.iban):'')+'</div>'
       +'<div class="m">'+(x.whatsapp?('WhatsApp (görüntülü təsdiq): <a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
       +'<div class="m">'+(roomCount?roomCount+' otaq/sahə · ':'')+photoCount+' şəkil yükləndi</div>'
       +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
       +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
       +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
-      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
+      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
       +siblingIdHtml(x,'ep-')
       +'</div><div class="act">'
       +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
@@ -6581,7 +6619,7 @@ function modApprovedCard(x){
         return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div><h4>'+esc(x.t)+'</h4>'
           +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
           +'<div class="m">'+(okId?'<span class="tag done">Epoint ID var</span>':'<span class="tag hold" style="background:var(--nar);color:#fff">ID yoxdur: saytda gizlidir</span>')+'</div>'
-          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="12345 / i000123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
+          +'<div class="m" style="margin-top:8px"><input id="epa-'+x.id+'" placeholder="123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(!okId&&x.epointIdRequest?'Ev sahibinin yazdığı ID. Yoxlayıb saxla.':'')+'</span></div>'
           +siblingIdHtml(x,'epa-')
           +'</div><div class="act"><button class="btn sm ok" onclick="saveEpointId('+x.id+')">ID-ni saxla</button>'+'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDeleteListings(['+x.id+'])">Sil</button>'+'</div></div>';
 }
