@@ -463,6 +463,7 @@ form.frm h4{grid-column:1/-1;font-size:15px;margin-top:6px;padding-top:12px;bord
 .gallerywrap .side .more{position:absolute;inset:0;background:rgba(10,30,26,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
 @media (max-width:760px){.gallerywrap{grid-template-columns:1fr}.gallerywrap .side{display:grid;grid-template-columns:repeat(4,1fr)}}
 .roomlist{display:grid;gap:10px}
+.ptag{display:inline-block;background:#E3F3EC;color:var(--ok);border:1px solid var(--ok);font-weight:800;font-size:12.5px;padding:3px 10px;border-radius:999px}
 .roomcard{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--card)}
 .roomcard-ph{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;cursor:pointer}
 .roomcard-ph img{width:100%;height:100%;object-fit:cover;display:block}
@@ -748,7 +749,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>A-Frame</option><option>Villa</option><option>Bağ evi</option><option>Otaq</option></select></label>
       <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required onfocus="this.min=state.isAdminUser?1:15" oninput="renderPriceTiers()"></label>
       <label>Qonaq tutumu<input id="h-guests" type="number" min="1" max="100" value="4" required oninput="if(this.value>100)this.value=100"></label>
-      <label>Yataq otağı<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
+      <label>Yataq otağı sayı (aşağıda otaqları əlavə etdikdə avtomatik hesablanır)<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
       <label>Təmizlik haqqı (₼)<input id="h-clean" type="number" min="0" max="300" value="20"></label>
       <label>Minimum neçə gecəyə verilir<input id="h-minstay" type="number" min="1" max="90" value="1" required oninput="syncTierMin()"></label>
       <label>Maksimum neçə gecəyə verilir (limit yoxdursa boş saxla)<input id="h-maxstay" type="number" min="1" max="365" placeholder="Limitsiz"></label>
@@ -884,6 +885,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
 
         <div id="rm-bathroom" class="rm-block full" style="display:none">
+          <label class="full">Bu cür sanuzelin sayı
+            <input id="rm-ba-count" type="number" min="1" max="10" value="1" inputmode="numeric">
+          </label>
+          <div class="full hint" style="font-size:12.5px;font-weight:600;color:var(--muted);margin-top:-6px">Eyni cür sanuzeldən bir neçə varsa, sayını yaz. Fərqli sanuzellər (məs. biri vannalı, biri duş kabinli) üçün hər birini ayrıca əlavə et. Yataq otağında olan şəxsi sanuzel buraya yazılmır, onu yataq otağında işarələ.</div>
           <label class="full">Duş növü
             <select id="rm-ba-type"><option>Sadə duş</option><option>Duş kabin</option><option>Vanna</option></select>
           </label>
@@ -3194,7 +3199,6 @@ function roomsHtmlFor(x){
     var lines=[], checklist='';
     if(r.kind==='bedroom'){
       lines.push('Yataq: '+(r.beds?bedSummaryText(bedCounts(r))+' ('+bedSleeps(bedCounts(r))+' nəfərlik yer)':r.bedType)); lines.push('İsitmə: '+r.heating);
-      if(r.privateBathroom) lines.push('Şəxsi sanuzeli var');
       checklist = roomAmenChecklistHtml(BEDROOM_AMENITY_OPTIONS, r.amenities);
     } else if(r.kind==='pool'){
       lines.push(r.poolType); lines.push('Ölçü: '+r.size); lines.push('Su: '+r.temp);
@@ -3221,6 +3225,7 @@ function roomsHtmlFor(x){
       +'<div class="roomcard-ph" onclick="openLightbox('+JSON.stringify(r.photos).replace(/"/g,'&quot;')+',0)"><img loading="lazy" decoding="async" src="'+r.photos[0]+'" alt="'+esc(roomLabel(r))+'">'+(r.photos.length>1?'<span class="more" style="font-size:13px">+'+(r.photos.length-1)+'</span>':'')+'</div>'
       +'<div><h4 style="font-size:15px">'+esc(roomLabel(r))+'</h4>'
       +(lines.length?'<div class="m" style="color:var(--muted);font-size:13.5px;font-weight:600">'+lines.map(esc).join(' · ')+'</div>':'')
+      +((r.kind==='bedroom'&&r.privateBathroom)?'<div style="margin-top:6px"><span class="ptag">✓ Şəxsi sanuzel</span></div>':'')
       +checklist
       +'</div>'
       +'</div>';
@@ -4097,7 +4102,17 @@ function renderRoomPhotoGrid(){
   if(el) el.textContent = "Bu ev üçün qalan şəkil hüququn: "+hostPhotosRemaining()+" / "+HOST_PHOTO_LIMIT;
 }
 function removeCurrentRoomPhoto(i){ state.currentRoomPhotos.splice(i,1); state.currentRoomPhotoFiles.splice(i,1); renderRoomPhotoGrid(); }
-function roomLabel(r){ return (r.kind==='other' && r.otherName) ? r.otherName : (ROOM_KIND_LABELS[r.kind]||'Sahə'); }
+function roomLabel(r){
+  var l=(r.kind==='other' && r.otherName) ? r.otherName : (ROOM_KIND_LABELS[r.kind]||'Sahə');
+  return (r.kind==='bathroom' && r.count>1) ? (l+' × '+r.count) : l;
+}
+/* Elanda göstərilən say: sanitar qovşaq = ümumi sanuzellər (say ilə) + şəxsi sanuzelli yataq otaqları; yataq otağı sayı = əlavə olunmuş yataq otaqları */
+function bathCountOf(rooms){
+  var n=0;
+  (rooms||[]).forEach(function(r){ if(r.kind==='bathroom') n+=Math.max(1,parseInt(r.count,10)||1); else if(r.kind==='bedroom' && r.privateBathroom) n+=1; });
+  return n||1;
+}
+function bedroomCountOf(rooms){ return (rooms||[]).filter(function(r){return r.kind==='bedroom';}).length; }
 var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',other:'Digər şəkillər',kitchen:'Mətbəx',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
 var KITCHEN_OPTIONS=["Ocaq / plitə","Soba (duxovka)","Mikrodalğalı soba","Soyuducu","Dondurucu","Qabyuyan","Çaydan / elektrik çaydan","Qəhvə maşını","Toster","Blender","Qazan-qab","Boşqab, stəkan, çəngəl-bıçaq","Havalandırma (aspirator)","Yemək masası","Su qabı / içməli su"];
 var KITCHEN_MAP=[["stove", "Ocaq / plitə"], ["oven", "Soba (duxovka)"], ["micro", "Mikrodalğalı soba"], ["fridge", "Soyuducu"], ["freezer", "Dondurucu"], ["dish", "Qabyuyan"], ["kettle", "Çaydan / elektrik çaydan"], ["coffee", "Qəhvə maşını"], ["toaster", "Toster"], ["blender", "Blender"], ["pots", "Qazan-qab"], ["plates", "Boşqab, stəkan, çəngəl-bıçaq"], ["hood", "Havalandırma (aspirator)"], ["table", "Yemək masası"], ["water", "Su qabı / içməli su"]];
@@ -4163,7 +4178,7 @@ function addRoomToPending(){
     room.foosball=ck('rm-g-foosball'); room.dart=ck('rm-g-dart'); room.airhockey=ck('rm-g-airhockey');
     room.ps=ck('rm-g-ps'); room.psGen=room.ps?v('rm-g-ps-gen'):null;
   } else if(kind==='bathroom'){
-    room.showerType=v('rm-ba-type'); room.toiletries=[];
+    room.showerType=v('rm-ba-type'); room.count=Math.max(1,Math.min(10,parseInt(v('rm-ba-count'),10)||1)); room.toiletries=[];
     if(ck('rm-ba-shampoo')) room.toiletries.push('Şampun');
     if(ck('rm-ba-towel')) room.toiletries.push('Dəsmal');
     if(ck('rm-ba-soap')) room.toiletries.push('Sabun');
@@ -4236,7 +4251,7 @@ function addRoomToPending(){
   document.getElementById('rm-b-iron').checked=false; document.getElementById('rm-b-tv').checked=false;
   document.getElementById('rm-b-desk').checked=false; document.getElementById('rm-b-safe').checked=false;
   document.getElementById('rm-b-fan').checked=false; document.getElementById('rm-b-bath').checked=false;
-  setBedCounts({single:0,double:1,bunk:0,sofa:0});
+  setBedCounts({single:0,double:1,bunk:0,sofa:0}); document.getElementById('rm-ba-count').value=1;
   document.getElementById('rm-g-domino').checked=false; document.getElementById('rm-g-nard').checked=false;
   document.getElementById('rm-g-billiard').checked=false; document.getElementById('rm-g-tennis').checked=false;
   document.getElementById('rm-g-foosball').checked=false; document.getElementById('rm-g-dart').checked=false;
@@ -4570,6 +4585,7 @@ function loadRoomIntoBuilder(r){
     $('rm-g-ps-genwrap').style.display=r.ps?'':'none'; if(r.psGen) $('rm-g-ps-gen').value=r.psGen;
   }
   if(r.kind==='bathroom' && r.showerType) $('rm-ba-type').value=r.showerType;
+  if(r.kind==='bathroom') $('rm-ba-count').value=r.count||1;
   if(r.kind==='hamam' && r.hamamType) $('rm-h-type').value=r.hamamType;
   if(r.kind==='other') $('rm-other-name').value=r.otherName||'';
 }
@@ -4779,7 +4795,7 @@ function addListing(e){
     var listing = {
       id:id,t:v('h-title').slice(0,60),c:v('h-city'),d:v('h-addr').slice(0,50),ty:v('h-type'),
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
-      r:parseInt(v('h-rooms'),10)||1,b:1,cl:parseInt(v('h-clean'),10)||0,
+      r:bedroomCountOf(state.pendingRooms)||parseInt(v('h-rooms'),10)||1,b:bathCountOf(state.pendingRooms),cl:parseInt(v('h-clean'),10)||0,
       bookMode:(ck('h-gp-drivers')?'instant':((document.querySelector('input[name="h-bookmode"]:checked')||{}).value||'instant')),
       minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay && t.price<(parseFloat(v('h-price'))||90);}),
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
@@ -5743,7 +5759,7 @@ function submitListingEdit(e){
     if(epReq && epReq!==x.epointId) x.epointIdRequest=epReq;
     x.pendingEdit = {
       t:v('h-title').slice(0,60), c:v('h-city'), d:v('h-addr').slice(0,50), ty:v('h-type'),
-      g:parseInt(v('h-guests'),10)||1, r:parseInt(v('h-rooms'),10)||1, b:1,
+      g:parseInt(v('h-guests'),10)||1, r:bedroomCountOf(state.pendingRooms)||parseInt(v('h-rooms'),10)||1, b:bathCountOf(state.pendingRooms),
       cl:parseInt(v('h-clean'),10)||0,
       minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),
       priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay && t.price<(parseFloat(v('h-price'))||90);}),
