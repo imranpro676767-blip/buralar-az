@@ -3051,7 +3051,7 @@ function coverPriceHtml(x){
 }
 function cardTiersHtml(x){
   var mn=x.minNights||1;
-  var t=(x.priceTiers||[]).filter(function(pt){return pt.minNights>=Math.max(2,mn);}).slice().sort(function(a,b){return a.minNights-b.minNights;});
+  var t=(x.priceTiers||[]).filter(function(pt){return pt.minNights>=Math.max(2,mn) && pt.price<x.p;}).slice().sort(function(a,b){return a.minNights-b.minNights;});
   var h='<div class="minnight">Minimum '+mn+' gecə'+(x.maxNights?' · maksimum '+x.maxNights+' gecə':'')+'</div>';
   if(!t.length) return h;
   var chip=function(pt){return '<span class="tierchip">'+pt.minNights+'+ gecə: '+az(pt.price)+'</span>';};
@@ -3388,7 +3388,8 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&state.open
 function renderBanks(){ /* Ödəniş yalnız Epoint vasitəsilədir; bank seçimi ləğv edildi (köhnə çağırışlar zərərsiz qalır) */ }
 /* ============ pilləli qiymət (uzun müddətə endirim) ============ */
 function priceTiersOf(x){
-  var t=[{minNights:1,price:x.p}].concat((x.priceTiers||[]).map(function(pt){return {minNights:pt.minNights,price:pt.price};}));
+  /* Pillə qiyməti baza qiymətdən AŞAĞI olmalıdır; baza endirilibsə köhnə (baza ≥) pillələr nəzərə alınmır — server də eyni qaydanı tətbiq edir */
+  var t=[{minNights:1,price:x.p}].concat((x.priceTiers||[]).filter(function(pt){return pt.price<x.p;}).map(function(pt){return {minNights:pt.minNights,price:pt.price};}));
   t.sort(function(a,b){return a.minNights-b.minNights;});
   return t;
 }
@@ -3438,7 +3439,8 @@ function renderPriceTiers(){
   var _mn=parseInt((document.getElementById('h-minstay')||{}).value,10)||1;
   var rows='<div class="tierrow" style="background:var(--card)"><span>'+(_mn>1?'Minimum '+_mn+' gecədən (baza)':'1 gecədən (baza)')+'</span><b style="margin-left:auto">'+(base||'—')+' ₼ / gecə</b></div>';
   rows += state.pendingTiers.map(function(t){
-    return '<div class="tierrow"><span>'+t.minNights+' gecədən başlayaraq</span><b style="margin-left:auto;margin-right:8px">'+t.price+' ₼ / gecə</b><button type="button" onclick="removePriceTier('+t.minNights+')">Sil</button></div>';
+    var stale=base>0 && t.price>=base;
+    return '<div class="tierrow"'+(stale?' style="border-color:var(--nar)"':'')+'><span>'+t.minNights+' gecədən başlayaraq'+(stale?' <em style="color:var(--nar);font-style:normal">— baza qiymətdən ('+base+' ₼) aşağı deyil, saxlananda silinəcək</em>':'')+'</span><b style="margin-left:auto;margin-right:8px">'+t.price+' ₼ / gecə</b><button type="button" onclick="removePriceTier('+t.minNights+')">Sil</button></div>';
   }).join('');
   box.innerHTML=rows;
 }
@@ -4747,7 +4749,7 @@ function addListing(e){
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
       r:parseInt(v('h-rooms'),10)||1,b:1,cl:parseInt(v('h-clean'),10)||0,
       bookMode:(ck('h-gp-drivers')?'instant':((document.querySelector('input[name="h-bookmode"]:checked')||{}).value||'instant')),
-      minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay;}),
+      minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay && t.price<(parseFloat(v('h-price'))||90);}),
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       rt:5,rv:0,sc:(id%6),host:v('h-name').slice(0,50),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
@@ -5715,7 +5717,7 @@ function submitListingEdit(e){
       g:parseInt(v('h-guests'),10)||1, r:parseInt(v('h-rooms'),10)||1, b:1,
       cl:parseInt(v('h-clean'),10)||0,
       minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),
-      priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay;}),
+      priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay && t.price<(parseFloat(v('h-price'))||90);}),
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
