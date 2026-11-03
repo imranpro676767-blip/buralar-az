@@ -4986,6 +4986,7 @@ function addListing(e){
     return syncListing(listing);
   }).then(function(){
     e.target.reset(); fillRegions(); resetRoomBuilderDraft(); resetPriceTiersDraft();
+    draftClear();
     document.getElementById('h-price').value=90; document.getElementById('h-guests').value=4;
     document.getElementById('h-rooms').value=2; document.getElementById('h-clean').value=20;
     document.getElementById('h-minstay').value=1; document.getElementById('h-maxstay').value=''; document.getElementById('h-minguest').value='';
@@ -5310,6 +5311,7 @@ function exportHouseReportCsv(id){
   toast('Hesabat yükləndi ('+rows.length+' sətir)');
 }
 function renderHost(){
+  try{ draftBannerUpdate(); }catch(e){}
   loadHostNotices();
   loadClaims();
   renderHostReports();
@@ -5755,6 +5757,91 @@ function mergeListingWithPendingEdit(x){
   if(x.pendingEdit){ for(var k2 in x.pendingEdit){ m[k2]=x.pendingEdit[k2]; } }
   return m;
 }
+/* ===== Elan qaralaması (yarımçıq qalan elanı davam etdir) ===== */
+var _draftTimer=null, _draftRestoring=false;
+function draftKey(){ return state.user&&state.user.email ? 'buralar_draft_'+state.user.email.toLowerCase() : null; }
+function draftCollect(){
+  var f=document.getElementById('listingForm'); if(!f) return null;
+  var fields={}, els=f.querySelectorAll('input,select,textarea');
+  for(var i=0;i<els.length;i++){
+    var el=els[i], id=el.id; if(!id||el.type==='file') continue;
+    if(!(id.indexOf('h-')===0||id.indexOf('r-')===0)) continue;
+    if(id==='h-terms'||id==='h-privacy'||id==='h-epoint') { if(id!=='h-epoint') continue; }
+    fields[id]=(el.type==='checkbox')?el.checked:el.value;
+  }
+  var rooms=(state.pendingRooms||[]).map(function(r){ var c={}; for(var k in r){ if(k!=='photos'&&k!=='photoFiles') c[k]=r[k]; } c.photos=[]; c.photoFiles=[]; return c; });
+  return {t:Date.now(), fields:fields, tiers:(state.pendingTiers||[]).map(function(t){return {minNights:t.minNights,price:t.price};}), rooms:rooms, hadPhotos:!!state.coverData||(state.pendingRooms||[]).some(function(r){return r.photos&&r.photos.length;})};
+}
+function draftMeaningful(d){ return !!(d && ((d.fields['h-title']||'').trim() || (d.fields['h-addr']||'').trim() || (d.fields['h-desc']||'').trim() || d.rooms.length)); }
+function draftSave(){
+  try{
+    if(_draftRestoring||state.editingListingId) return;
+    var key=draftKey(); if(!key) return;
+    var d=draftCollect(); if(!draftMeaningful(d)) return;
+    localStorage.setItem(key, JSON.stringify(d)); draftBannerUpdate();
+  }catch(e){}
+}
+function draftSchedule(){ clearTimeout(_draftTimer); _draftTimer=setTimeout(draftSave,800); }
+function draftGet(){
+  try{
+    var key=draftKey(); if(!key) return null;
+    var raw=localStorage.getItem(key); if(!raw) return null;
+    var d=JSON.parse(raw);
+    if(!d||Date.now()-d.t>30*864e5){ localStorage.removeItem(key); return null; }
+    return d;
+  }catch(e){ return null; }
+}
+function draftClear(){ try{ var key=draftKey(); if(key) localStorage.removeItem(key); }catch(e){} draftBannerUpdate(); }
+function draftBannerUpdate(){
+  var f=document.getElementById('listingForm'); if(!f) return;
+  var b=document.getElementById('draftBanner');
+  var d=state.editingListingId?null:draftGet();
+  if(!d){ if(b) b.style.display='none'; return; }
+  if(!b){
+    b=document.createElement('div'); b.id='draftBanner';
+    b.style.cssText='margin:0 0 14px;padding:14px 16px;border:1px dashed var(--line,#c9d3cf);border-radius:14px;background:rgba(46,160,110,.08);display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+    var h=f.previousElementSibling; (h||f).parentNode.insertBefore(b,(h||f));
+  }
+  var when=new Date(d.t), hh=('0'+when.getHours()).slice(-2)+':'+('0'+when.getMinutes()).slice(-2);
+  var name=(d.fields['h-title']||'').trim();
+  b.innerHTML='<div style="flex:1;min-width:200px"><b>📝 Yarımçıq elanın var</b><div style="font-size:13px;opacity:.75">'+(name?esc(name)+' · ':'')+'son saxlanma: '+hh+(d.rooms.length?' · '+d.rooms.length+' otaq/sahə':'')+'</div></div>'+
+    '<button type="button" class="btn sm" style="width:auto" onclick="draftRestore()">Davam et</button>'+
+    '<button type="button" class="btn sm ghost" style="width:auto" onclick="draftDiscard()">Sil</button>';
+  b.style.display='flex';
+}
+function draftDiscard(){ if(!confirm('Yarımçıq elan qaralaması silinsin?')) return; draftClear(); toast('Qaralama silindi'); }
+function draftRestore(){
+  var d=draftGet(); if(!d){ draftBannerUpdate(); return; }
+  _draftRestoring=true;
+  try{
+    resetListingFormToCreateMode();
+    var F=d.fields;
+    if(F['h-region']!=null){ document.getElementById('h-region').value=F['h-region']; fillDistricts(); }
+    for(var id in F){
+      var el=document.getElementById(id); if(!el||id==='h-region') continue;
+      if(el.type==='checkbox') el.checked=!!F[id]; else el.value=F[id];
+    }
+    var tc=document.getElementById('h-title-count'); if(tc) tc.textContent=(F['h-title']||'').length;
+    var wa=document.getElementById('h-whatsapp'); if(wa&&wa.value) formatAzPhone(wa);
+    try{ driversToggle(); }catch(e){}
+    state.pendingTiers=d.tiers||[]; renderPriceTiers();
+    state.pendingRooms=d.rooms||[]; renderPendingRooms(); renderRoomPhotoGrid();
+    var lat=parseFloat(F['h-lat']), lng=parseFloat(F['h-lng']);
+    if(!isNaN(lat)&&!isNaN(lng)){ try{ setPinLatLng(lat,lng,true,16); }catch(e){} }
+    var form=document.getElementById('listingForm'); if(form&&form.scrollIntoView) form.scrollIntoView({behavior:'smooth'});
+    toast('Qaralama bərpa olundu. Şəkilləri (üz şəkli və otaq şəkilləri) yenidən əlavə etməlisən, şərtləri də təsdiqlə');
+  }finally{ setTimeout(function(){ _draftRestoring=false; },400); }
+}
+(function(){
+  function init(){
+    var f=document.getElementById('listingForm'); if(!f) return;
+    f.addEventListener('input',draftSchedule); f.addEventListener('change',draftSchedule);
+    document.addEventListener('visibilitychange',function(){ if(document.hidden) draftSave(); });
+    window.addEventListener('pagehide',draftSave);
+    draftBannerUpdate();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
+})();
 function resetListingFormToCreateMode(){
   state.editingListingId=null;
   var _bmb=document.getElementById('bm-create-box'); if(_bmb) _bmb.style.display='';
