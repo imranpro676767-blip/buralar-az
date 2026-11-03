@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="Təhlükəsiz ödəniş, rəsmi icarə, ev sahibi ilə birbaşa əlaqə.">
 <meta name="twitter:image" content="https://buralar.az/og-image.png">
 <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Buralar.az","url":"https://buralar.az/","logo":"https://buralar.az/buralar-logo-light-bg.png","email":"salam.buralar.az@gmail.com","areaServed":"AZ"},{"@type":"WebSite","name":"Buralar.az","url":"https://buralar.az/","inLanguage":"az"}]}</script>
+<script type="application/ld+json" id="ld-main">{"@context":"https://schema.org","@graph":[{"@type":"Organization","name":"Buralar.az","url":"https://buralar.az/","logo":"https://buralar.az/buralar-logo-light-bg.png","email":"salam.buralar.az@gmail.com","areaServed":"AZ"},{"@type":"WebSite","name":"Buralar.az","url":"https://buralar.az/","inLanguage":"az"}]}</script>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1183,6 +1183,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="rz-pager" id="hostpager"></div>
       </div>
       <div class="sub" id="s-stats">
+        <div class="dash-card"><h4>SEO: sitemap.xml</h4><div class="sub2">Təsdiqlənmiş elanların siyahısı (Google üçün). Yeni elan təsdiqlənəndən sonra yenidən yüklə və GitHub-dakı sitemap.xml faylının üstünə yaz.</div><button class="btn sm" style="width:auto" onclick="downloadSitemap()">sitemap.xml yüklə</button></div>
         <input type="text" id="statsSearch" placeholder="Region və ya ev tipi üzrə axtar..." oninput="renderMarketStatsAdmin()"
           style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
         <div class="blist" id="statslist"></div>
@@ -1753,12 +1754,13 @@ function _mergeListings(){
   ['pub','own','admin'].forEach(function(k){ _lsParts[k].forEach(function(x){ m[String(x.id)]=x; }); });
   state.custom=Object.keys(m).map(function(k){return m[k];});
   render(); renderHost(); if(state.adminAuth) renderAdmin();
+  seoDeepLink(false);
 }
 function startListingsSync(){
   if(!fbOnline) return;
   db.collection('listingsPublic').onSnapshot(function(snap){
     var arr=[]; snap.forEach(function(doc){ arr.push(doc.data()); });
-    _lsParts.pub=arr; _mergeListings();
+    _lsParts.pub=arr; _mergeListings(); seoDeepLink(true);
   }, function(err){
     console.error('Elanlar sinxronizasiya xətası:', err);
     toast('Server ilə bağlantı xətası — internetini yoxla');
@@ -3180,7 +3182,7 @@ function render(scroll,keepPage){
     var thumb = x.cover ? '<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return '<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
       +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+modeTagHtml(x)+coverPriceHtml(x)+'</div>'
-      +'<div class="row"><h3 title="'+esc(x.t)+'">'+esc(x.t)+'</h3><span class="rate"'+(x.rv?' onclick="event.stopPropagation();openListingReviews('+x.id+')" style="cursor:pointer;text-decoration:underline" title="Rəylərə bax"':'')+'>★ '+(x.rv?x.rt.toFixed(2):'Yeni')+'</span></div>'
+      +'<div class="row"><h3 title="'+esc(x.t)+'"><a href="'+listingPath(x)+'" onclick="event.preventDefault()" style="color:inherit;text-decoration:none">'+esc(x.t)+'</a></h3><span class="rate"'+(x.rv?' onclick="event.stopPropagation();openListingReviews('+x.id+')" style="cursor:pointer;text-decoration:underline" title="Rəylərə bax"':'')+'>★ '+(x.rv?x.rt.toFixed(2):'Yeni')+'</span></div>'
       +'<div class="loc">'+esc(x.c)+', '+esc(x.d)+' · '+esc(x.ty)+'</div>'
       +'<div class="meta">'+x.g+' qonaq · '+x.r+' otaq · '+x.b+' sanitar qovşaq</div>'
       +cardTiersHtml(x)
@@ -3313,6 +3315,7 @@ function leftInfoHtml(x){
   var roomsHtml = roomsHtmlFor(x);
   return '<div>'
     +'<h2>'+esc(x.t)+'</h2>'
+    +(x.st==='approved'?'<div style="margin:-2px 0 6px"><button type="button" class="btn sm ghost" style="width:auto" onclick="shareListing('+x.id+')">🔗 Linki paylaş</button></div>':'')
     +'<div class="facts"><span>'+esc(x.c)+', '+esc(x.d)+' · '+regionOf(x.c)+'</span>'
       +(x.rv?('<span style="cursor:pointer;text-decoration:underline" onclick="openListingReviews('+x.id+')" title="Rəylərə bax">★ '+x.rt.toFixed(2)+' ('+x.rv+' rəy)</span>'):'<span>★ Yeni elan</span>')
       +'<span>'+esc(x.ty)+'</span><span>'+x.g+' qonaq · '+x.r+' yataq otağı · '+x.b+' sanitar qovşaq</span></div>'
@@ -3362,6 +3365,7 @@ function openDetail(id,bookingCode){
     return;
   }
 
+  seoOpen(x);
   var d1=document.getElementById('d1').value||'';
   var d2=document.getElementById('d2').value||'';
   var g=document.getElementById('g').value||2;
@@ -3456,7 +3460,104 @@ function previewPendingEdit(id){
   document.getElementById('overlay').classList.add('open');
   document.body.style.overflow='hidden';
 }
-function closeDetail(){ document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; state.openId=null; }
+/* ============ SEO: hər elan üçün ayrı link (/ev/<id>-<ad>), dinamik başlıq/təsvir/OG/JSON-LD ============ */
+var SEO_SITE='https://buralar.az';
+var SEO_DEFAULT={title:document.title,
+  desc:((document.querySelector('meta[name="description"]')||{}).content||''),
+  image:SEO_SITE+'/og-image.png'};
+function slugAz(s){
+  var m={'ə':'e','Ə':'e','ı':'i','İ':'i','I':'i','ö':'o','Ö':'o','ü':'u','Ü':'u','ş':'s','Ş':'s','ç':'c','Ç':'c','ğ':'g','Ğ':'g'};
+  return String(s||'').replace(/[əƏıİIöÖüÜşŞçÇğĞ]/g,function(c){return m[c];}).toLowerCase()
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function listingPath(x){ return '/ev/'+x.id+'-'+(slugAz((x.t||'')+' '+(x.c||'')).slice(0,60).replace(/-+$/,'')||'ev'); }
+function seoIdFromPath(){ var m=/^\/ev\/(\d+)(?:-|$)/.exec(location.pathname); return m?m[1]:null; }
+function seoMeta(sel,attr,val){ var el=document.querySelector(sel); if(el) el.setAttribute(attr,val); }
+function seoPublicListing(x){ return !!(x && x.st==='approved' && !x.deletePending); }
+function seoApplyListing(x){
+  var minP=lowestNightlyRate(x);
+  var title=String(x.t||'Ev').slice(0,42)+' — '+(x.c||'')+', günlük kirayə | Buralar.az';
+  var desc=(x.c||'')+': '+(x.ty||'ev')+', '+x.g+' qonaq, '+x.r+' yataq otağı, '+x.b+' sanitar qovşaq. Gecəlik '+Math.round(minP)+' ₼-dan. Təhlükəsiz onlayn ödəniş, rəsmi icarə. '+String(x.desc||'').replace(/\s+/g,' ').slice(0,100);
+  desc=desc.slice(0,300);
+  var url=SEO_SITE+listingPath(x);
+  var photos=[]; try{ photos=allPhotosOf(x).filter(function(u){return /^https:/.test(u);}).slice(0,5); }catch(e){}
+  var img=photos[0]||SEO_DEFAULT.image;
+  document.title=title;
+  seoMeta('meta[name="description"]','content',desc);
+  seoMeta('link[rel="canonical"]','href',url);
+  seoMeta('meta[property="og:title"]','content',title); seoMeta('meta[property="og:description"]','content',desc);
+  seoMeta('meta[property="og:url"]','content',url); seoMeta('meta[property="og:image"]','content',img);
+  seoMeta('meta[name="twitter:title"]','content',title); seoMeta('meta[name="twitter:description"]','content',desc); seoMeta('meta[name="twitter:image"]','content',img);
+  var ld={'@context':'https://schema.org','@type':'LodgingBusiness','name':x.t,'description':desc,'url':url,
+    'image':photos.length?photos:[SEO_DEFAULT.image],
+    'address':{'@type':'PostalAddress','addressLocality':x.c,'addressCountry':'AZ'},
+    'priceRange':Math.round(minP)+' AZN','numberOfRooms':x.r};
+  if(x.rv>0 && x.rt) ld.aggregateRating={'@type':'AggregateRating','ratingValue':Number(x.rt).toFixed(2),'reviewCount':x.rv};
+  var sc=document.getElementById('ld-listing');
+  if(!sc){ sc=document.createElement('script'); sc.type='application/ld+json'; sc.id='ld-listing'; document.head.appendChild(sc); }
+  sc.textContent=JSON.stringify(ld).replace(/</g,'\\u003c');
+}
+function seoReset(){
+  document.title=SEO_DEFAULT.title;
+  seoMeta('meta[name="description"]','content',SEO_DEFAULT.desc);
+  seoMeta('link[rel="canonical"]','href',SEO_SITE+'/');
+  seoMeta('meta[property="og:title"]','content',SEO_DEFAULT.title); seoMeta('meta[property="og:description"]','content',SEO_DEFAULT.desc);
+  seoMeta('meta[property="og:url"]','content',SEO_SITE+'/'); seoMeta('meta[property="og:image"]','content',SEO_DEFAULT.image);
+  seoMeta('meta[name="twitter:title"]','content',SEO_DEFAULT.title); seoMeta('meta[name="twitter:description"]','content',SEO_DEFAULT.desc); seoMeta('meta[name="twitter:image"]','content',SEO_DEFAULT.image);
+  var sc=document.getElementById('ld-listing'); if(sc) sc.remove();
+}
+function seoOpen(x){
+  if(!seoPublicListing(x)) return;
+  var p=listingPath(x);
+  try{
+    if(location.pathname!==p){
+      if(seoIdFromPath()==String(x.id)) history.replaceState({seo:0,lid:x.id},'',p); /* birbaşa link: geri qayıtmaq saytdan çıxmasın */
+      else history.pushState({seo:1,lid:x.id},'',p);
+    }
+  }catch(e){}
+  seoApplyListing(x);
+}
+function seoClose(){
+  seoReset();
+  try{
+    if(location.pathname.indexOf('/ev/')===0){
+      if(history.state && history.state.seo) history.back(); else history.replaceState(null,'','/');
+    }
+  }catch(e){}
+}
+/* Birbaşa linklə (/ev/...) gələndə elanı açır. loaded=true: ictimai elanlar tam yüklənib, yenə tapılmadısa ana səhifəyə qayıdır */
+function seoDeepLink(loaded){
+  if(state._deepDone) return;
+  var id=seoIdFromPath(); if(!id){ state._deepDone=true; return; }
+  var x=byId(id);
+  if(x){ state._deepDone=true; openDetail(x.id); return; }
+  if(loaded){ state._deepDone=true; try{ history.replaceState(null,'','/'); }catch(e){} seoReset(); toast('Bu elan tapılmadı və ya artıq yayımda deyil'); }
+}
+window.addEventListener('popstate',function(){
+  var id=seoIdFromPath();
+  if(id){ var x=byId(id); if(x && String(state.openId)!==String(id)) openDetail(x.id); }
+  else if(state.openId){ document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; state.openId=null; seoReset(); }
+});
+function shareListing(id){
+  var x=byId(id); if(!x) return;
+  var url=SEO_SITE+listingPath(x);
+  if(navigator.share){ navigator.share({title:x.t,url:url}).catch(function(){}); return; }
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(function(){ toast('Link kopyalandı: '+url); },function(){ prompt('Linki kopyala:',url); }); }
+  else prompt('Linki kopyala:',url);
+}
+/* Admin: təsdiqlənmiş elanlardan sitemap.xml yaradır (GitHub-dakı sitemap.xml-in üstünə yazılır) */
+function downloadSitemap(){
+  var d=new Date().toISOString().slice(0,10);
+  var urls=['<url><loc>'+SEO_SITE+'/</loc><lastmod>'+d+'</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>'];
+  state.custom.filter(seoPublicListing).forEach(function(x){
+    urls.push('<url><loc>'+esc(SEO_SITE+listingPath(x))+'</loc><lastmod>'+d+'</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>');
+  });
+  var xml='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  '+urls.join('\n  ')+'\n</urlset>\n';
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([xml],{type:'application/xml'})); a.download='sitemap.xml';
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+  toast('sitemap.xml yaradıldı: '+(urls.length-1)+' elan');
+}
+function closeDetail(){ document.getElementById('overlay').classList.remove('open'); document.body.style.overflow=''; var _was=state.openId; state.openId=null; if(_was) seoClose(); }
 document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&state.openId) closeDetail(); });
 
 function renderBanks(){ /* Ödəniş yalnız Epoint vasitəsilədir; bank seçimi ləğv edildi (köhnə çağırışlar zərərsiz qalır) */ }
@@ -6596,7 +6697,7 @@ var MD={cat:'pending',q:'',page:1,per:8,sel:{},_rows:[]};
 function mdToggle(id,on){ if(on) MD.sel[id]=1; else delete MD.sel[id]; renderMod(); }
 function mdSelectPage(){ (MD._rows||[]).forEach(function(id){MD.sel[id]=1;}); renderMod(); }
 /* ===== 48 saatlıq təxirə salınmış silmə (elan / müştəri / ev sahibi) ===== */
-var DEL_MS=48*3600000, ADMIN_PROTECTED=['imranpro676767@gmail.com'];
+var DEL_MS=48*3600000, ADMIN_PROTECTED=['imranpro676767@gmail.com','kkaarriibb@gmail.com'];
 var _del={kind:'',ids:[]};
 function delLeftText(dp){
   var ms=dp.runAt-Date.now(); if(ms<=0) return 'tezliklə silinəcək';
