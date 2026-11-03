@@ -1482,6 +1482,23 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   </div>
 </div>
 
+<!-- ŞƏXSİYYƏT ŞƏKLİNİ YENİLƏ -->
+<div class="modal" id="idFixModal" role="dialog" aria-modal="true" aria-label="Şəxsiyyət şəklini yenilə">
+  <div class="box" style="width:min(460px,100%)">
+    <h3>Şəxsiyyət vəsiqəsinin şəkli</h3>
+    <p class="note" style="text-align:left">Vəsiqənin ön üzünün aydın şəklini yüklə. Şəkil yalnız kimlik yoxlaması üçün istifadə olunur, adminə görünəcək.</p>
+    <div class="evidence">
+      <label class="filebtn" for="idfix-file">Yeni şəkil seç</label>
+      <input type="file" id="idfix-file" accept="image/*" style="display:none" onchange="idFixPick(this)">
+      <img id="idfix-preview" style="display:none;max-width:100%;border-radius:10px;margin-top:8px">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn dark" id="idfix-btn" onclick="idFixSubmit()">Göndər</button>
+      <button class="btn ghost" onclick="closeModal('idFixModal')">Bağla</button>
+    </div>
+  </div>
+</div>
+
 <!-- TERMS OF SERVICE -->
 <div class="modal" id="tosModal" role="dialog" aria-modal="true" aria-label="İstifadə şərtləri">
   <div class="box" style="width:min(680px,100%)">
@@ -2444,6 +2461,7 @@ function startOwnCustomerListener(email){
     }
     var prevStatus=state.user.status;
     state.user.status=data.status; state.user.rejectionReason=data.rejectionReason||null;
+    state.user.idPhotoRequested=!!data.idPhotoRequested;
     state.user.verified=(data.status==='verified');
     save(); renderAuth();
     if(!first && data.status!==prevStatus){
@@ -2461,7 +2479,7 @@ function stopOwnCustomerListener(){
    adətən 5-10 dəfəyə qədər kiçildir (telefon kamerası şəkli 4-8MB-dan 300-800KB-a düşür) —
    Firebase Storage tutumunu və trafik xərcini xeyli azaldır. Sıxılma nəticəsi orijinaldan
    böyük çıxarsa (nadir hallarda, artıq sıxılmış kiçik şəkillərdə), orijinal fayl saxlanılır. */
-function compressImageFile(file, maxDim, quality){
+function compressImageFile(file, maxDim, quality, force){
   maxDim = maxDim || 1920; quality = (quality==null) ? 0.82 : quality;
   return new Promise(function(resolve){
     if(!file || !/^image\//.test(file.type) || file.type==='image/svg+xml'){ resolve(file); return; }
@@ -2478,7 +2496,7 @@ function compressImageFile(file, maxDim, quality){
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img,0,0,cw,ch);
       canvas.toBlob(function(blob){
-        if(!blob || blob.size>=file.size){ resolve(file); return; }
+        if(!blob || (!force && blob.size>=file.size)){ resolve(file); return; }
         resolve(blob);
       }, 'image/jpeg', quality);
     };
@@ -2488,12 +2506,18 @@ function compressImageFile(file, maxDim, quality){
 }
 function _uploadImageOnce(file, pathPrefix, opts){
   if(!fbOnline) return Promise.reject(new Error('Server bağlantısı yoxdur'));
-  return compressImageFile(file, opts&&opts.maxDim, opts&&opts.quality).then(function(out){
+  return compressImageFile(file, opts&&opts.maxDim, opts&&opts.quality, opts&&opts.forceJpeg).then(function(out){
     var isJpeg = out.type==='image/jpeg';
     var ext = isJpeg ? '.jpg' : ((file.name && /\.[a-z0-9]+$/i.test(file.name)) ? file.name.match(/\.[a-z0-9]+$/i)[0] : '');
     var safeName=Date.now()+'-'+Math.floor(Math.random()*1e6)+'-img'+ext;
     var ref=fbStorage.ref().child(pathPrefix+'/'+safeName);
-    return ref.put(out, {contentType: out.type || file.type});
+    /* contentType boş qalarsa Storage "application/octet-stream" saxlayır və şəkil brauzerdə AÇILMIR, yalnız yüklənir */
+    var ct = out.type || file.type;
+    if(!/^image\//.test(ct||'')){
+      var em=(ext||'').toLowerCase();
+      ct = em==='.png' ? 'image/png' : em==='.webp' ? 'image/webp' : em==='.gif' ? 'image/gif' : 'image/jpeg';
+    }
+    return ref.put(out, {contentType: ct});
   }).then(function(snap){ return snap.ref.getDownloadURL(); });
 }
 
@@ -2614,9 +2638,12 @@ function scene(k,id){
 function renderAuth(){
   var el=document.getElementById('authArea');
   var banner=document.getElementById('rejectionBanner');
-  if(state.user && state.user.status==='rejected'){
+  if(state.user && (state.user.status==='rejected' || state.user.idPhotoRequested)){
     banner.style.display='block';
-    banner.textContent='Qeydiyyatın rədd edildi: '+(state.user.rejectionReason||'Səbəb qeyd edilməyib')+' — yenidən sınamaq üçün "Daxil ol" bölməsindən kimlik məlumatlarını yenilə.';
+    banner.innerHTML=(state.user.status==='rejected'
+      ? 'Qeydiyyatın rədd edildi: '+esc(state.user.rejectionReason||'Səbəb qeyd edilməyib')+'.'
+      : 'Şəxsiyyət vəsiqəsinin şəkli oxunmur, zəhmət olmasa yenisini yüklə.')
+      +' <button type="button" onclick="openIdFix()" style="margin-left:8px;background:#fff;color:var(--nar);border:0;border-radius:999px;padding:4px 12px;font-weight:800;cursor:pointer">Şəkli yenilə</button>';
   } else {
     banner.style.display='none';
   }
@@ -2692,9 +2719,57 @@ function googleSignIn(){
     else toast('Google girişi alınmadı: '+e.message);
   });
 }
+/* Şəkil brauzerdə açılırmı? (iPhone-un HEIC formatı və s. yüklənir, amma admin panelində AÇILMIR — qeydiyyatdan əvvəl yoxlayırıq) */
+function imageDecodes(file){
+  return new Promise(function(resolve){
+    var url=URL.createObjectURL(file), img=new Image();
+    img.onload=function(){ URL.revokeObjectURL(url); resolve(!!(img.naturalWidth&&img.naturalHeight)); };
+    img.onerror=function(){ URL.revokeObjectURL(url); resolve(false); };
+    img.src=url;
+  });
+}
+var ID_BAD_FORMAT_MSG="Bu şəkil formatı oxunmur (iPhone-un HEIC formatı ola bilər). Vəsiqəni başqa şəkildə çək: telefon Ayarları → Kamera → Formatlar → \"Ən uyğun\" seç, ya da şəkli JPG/PNG kimi yüklə";
 function previewIdPhoto(input){
   var f=input.files&&input.files[0]; if(!f) return;
   if(f.size>6*1024*1024){ toast("Şəkil 6MB-dan kiçik olmalıdır"); return; }
+  imageDecodes(f).then(function(ok){
+    if(!ok){
+      input.value=''; state.idPhotoFile=null; state.idPhotoData=null;
+      var im=document.getElementById('u-idpreview'); if(im){ im.style.display='none'; im.removeAttribute('src'); }
+      toast(ID_BAD_FORMAT_MSG); return;
+    }
+    previewIdPhotoOk(f);
+  });
+}
+function openIdFix(){ state.idFixFile=null; var im=document.getElementById('idfix-preview'); if(im){ im.style.display='none'; im.removeAttribute('src'); } openModal('idFixModal'); }
+function idFixPick(input){
+  var f=input.files&&input.files[0]; if(!f) return;
+  if(f.size>6*1024*1024){ toast("Şəkil 6MB-dan kiçik olmalıdır"); return; }
+  imageDecodes(f).then(function(ok){
+    if(!ok){ input.value=''; state.idFixFile=null; toast(ID_BAD_FORMAT_MSG); return; }
+    state.idFixFile=f;
+    var r=new FileReader(); r.onload=function(e){ var im=document.getElementById('idfix-preview'); im.src=e.target.result; im.style.display='block'; }; r.readAsDataURL(f);
+  });
+}
+function idFixSubmit(){
+  if(!state.user || !fbAuth || !fbAuth.currentUser){ toast("Əvvəl daxil ol"); return; }
+  if(!state.idFixFile){ toast("Şəkil seç"); return; }
+  var btn=document.getElementById('idfix-btn'); if(btn.disabled) return; btn.disabled=true; btn.textContent='Yüklənir...';
+  var email=fbAuth.currentUser.email, wasRejected=(state.user.status==='rejected');
+  Promise.all([uploadImageToStorage(state.idFixFile,'customers/'+fbAuth.currentUser.uid,{forceJpeg:true}), sha256Hex(state.idFixFile)]).then(function(r){
+    var upd={idPhoto:r[0], idPhotoHash:r[1], idPhotoRequested:false};
+    if(wasRejected) upd.status='pending';
+    return db.collection('customers').doc(email).update(upd);
+  }).then(function(){
+    btn.disabled=false; btn.textContent='Göndər';
+    closeModal('idFixModal'); toast("Yeni şəkil göndərildi, admin yoxlayacaq");
+  }).catch(function(er){
+    btn.disabled=false; btn.textContent='Göndər';
+    console.error('Şəkil yeniləmə xətası:', er);
+    toast('Şəkil göndərilmədi: '+(er&&er.message||'xəta'));
+  });
+}
+function previewIdPhotoOk(f){
   state.idPhotoFile=f;
   var reader=new FileReader();
   reader.onload=function(e){
@@ -2739,7 +2814,7 @@ function finishLogin(){
      (Cloud Function) eyni şəklin başqa hesabda təkrar istifadə olunub-olunmadığını FİN-lə birlikdə
      müqayisə edib avtomatik aşkarlamaq üçün istifadə olunacaq, brauzerdə heç kimin şəkli görmədən. */
   var idPhotoUpload = state.idPhotoFile
-    ? uploadImageToStorage(state.idPhotoFile,'customers/'+fbAuth.currentUser.uid)
+    ? uploadImageToStorage(state.idPhotoFile,'customers/'+fbAuth.currentUser.uid,{forceJpeg:true})
     : Promise.resolve(state.idPhotoData.data);
   var idPhotoHash = state.idPhotoFile ? sha256Hex(state.idPhotoFile) : Promise.resolve(null);
 
@@ -6073,7 +6148,7 @@ function renderCustomers(){
         +'<div style="display:grid;gap:8px;margin-top:8px;max-height:340px;overflow:auto">'+staysRows+'</div></details>';
     }
     return '<div class="bk" style="grid-template-columns:84px 1fr auto">'
-      +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" onclick="logAdmin(\'view:idPhoto\',\''+esc(c.email||'')+'\',\'Şəxsiyyət şəklinə baxdı\')" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover"></a>'
+      +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" onclick="logAdmin(\'view:idPhoto\',\''+esc(c.email||'')+'\',\'Şəxsiyyət şəklinə baxdı\')" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.parentNode.insertAdjacentHTML(\'beforeend\',\'<span style=&quot;display:block;padding:8px;font-size:12px;font-weight:800;color:var(--nar)&quot;>Şəkil açılmır</span>\')"></a>'
       +'<div><h4>'+esc(c.name)+'</h4>'
       +'<div class="m">'+esc(c.email)+' · '+esc(c.phone)+' · FİN '+esc(c.fin)+'</div>'
       +'<div class="m">Qeydiyyat: '+new Date(c.registeredAt).toLocaleDateString('az-AZ')+' · '+cntText+'</div>'
@@ -6085,6 +6160,7 @@ function renderCustomers(){
       +'<div class="split" style="margin-top:8px">'+stays+'</div>'
       +'</div><div class="act">'
       +custDelBtn(c)
+      +(c.status!=='banned'?'<button class="btn sm" onclick="requestIdReupload(\''+esc(c.email)+'\')" title="Şəkil açılmırsa və ya oxunmursa müştəridən yenisini istə">'+(c.idPhotoRequested?'Şəkil istənilib ✓':'Şəkli yenidən istə')+'</button>':'')
       +(c.status!=='verified'&&c.status!=='banned'?'<button class="btn sm ok" onclick="approveCustomer(\''+c.email+'\')">Təsdiqlə</button>':'')
       +(c.status!=='rejected'&&c.status!=='banned'?'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="rejectCustomer(\''+c.email+'\')">İmtina et</button>':'')
       +'<div style="margin-top:8px;display:grid;gap:6px">'+(sancTagHtml(c.email)?('<div>'+sancTagHtml(c.email)+'</div>'):'')+sancButtonsHtml(c.email)+'</div>'
@@ -6098,6 +6174,14 @@ function custDelBtn(c){
     : '<button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDelete(\'customer\',[\''+esc(c.email)+'\'])">Sil</button>';
 }
 function toggleCustStays(el,email){ state.custOpen=state.custOpen||{}; if(el.open) state.custOpen[email]=true; else delete state.custOpen[email]; }
+function requestIdReupload(email){
+  var c=state.customers.filter(function(x){return x.email===email;})[0]; if(!c) return;
+  if(!confirm(email+' hesabından şəxsiyyət vəsiqəsinin yeni şəklini istəyirsən? Müştəri sayta girəndə yeniləmə təklifi görəcək (status dəyişmir).')) return;
+  c.idPhotoRequested=true;
+  customersSync.save(c); renderCustomers();
+  logAdmin('idPhotoRequest',email,'Şəxsiyyət şəklini yenidən istədi');
+  toast("Müştəriyə şəkil yeniləmə tələbi göndərildi");
+}
 function approveCustomer(email){
   var c=state.customers.filter(function(x){return x.email===email;})[0]; if(!c) return;
   c.status='verified'; c.flags=[]; c.rejectionReason=null;
