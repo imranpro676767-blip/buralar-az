@@ -1184,6 +1184,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
       <div class="sub" id="s-stats">
         <div class="dash-card"><h4>SEO: sitemap.xml</h4><div class="sub2">Təsdiqlənmiş elanların siyahısı (Google üçün). Yeni elan təsdiqlənəndən sonra yenidən yüklə və GitHub-dakı sitemap.xml faylının üstünə yaz.</div><button class="btn sm" style="width:auto" onclick="downloadSitemap()">sitemap.xml yüklə</button></div>
+        <div class="dash-card"><h4>Unikal başlıqlar</h4><div class="sub2">Köhnə elanların başlıqlarını "qeydə al" (bir dəfəlik). Eyni başlıqlı elanlar varsa siyahısı çıxacaq.</div><button class="btn sm" style="width:auto" onclick="backfillTitleKeys()">Başlıq qeydlərini yenilə</button></div>
         <input type="text" id="statsSearch" placeholder="Region və ya ev tipi üzrə axtar..." oninput="renderMarketStatsAdmin()"
           style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;font-weight:600;font-size:15px;margin-bottom:14px">
         <div class="blist" id="statslist"></div>
@@ -1779,6 +1780,59 @@ function startUserListingsSync(email){
 function stopUserListingsSync(){ if(_lsUnsubs.own){ _lsUnsubs.own(); _lsUnsubs.own=null; } _lsParts.own=[]; _mergeListings(); }
 function startAdminListingsSync(){ if(!fbOnline || !db) return; _listenListings('admin', db.collection('listings')); }
 function stopAdminListingsSync(){ if(_lsUnsubs.admin){ _lsUnsubs.admin(); _lsUnsubs.admin=null; } _lsParts.admin=[]; _mergeListings(); }
+/* ===== Unikal elan başlığı: titleKeys/{açar} sənədi başlığı "tutur" ===== */
+function titleKeyOf(t){
+  var m={'ə':'e','ı':'i','i̇':'i','ö':'o','ü':'u','ş':'s','ç':'c','ğ':'g','â':'a','ё':'e'};
+  var x=String(t||'').toLocaleLowerCase('az').normalize('NFC');
+  var out=''; for(var i=0;i<x.length;i++){ var ch=x.charAt(i); ch=m[ch]||ch; if(/[a-z0-9]/.test(ch)) out+=ch; }
+  return out.slice(0,60);
+}
+function titleAvailable(title, selfId){
+  var key=titleKeyOf(title);
+  if(!key) return Promise.resolve({ok:false,key:'',msg:'Başlıqda ən azı bir hərf və ya rəqəm olmalıdır'});
+  var msg='Bu başlıq artıq başqa elanda işlədilir. Zəhmət olmasa fərqli, evinə xas bir ad yaz (məsələn rayon və ya evin xüsusiyyətini əlavə et)';
+  var clash=state.custom.some(function(l){ return String(l.id)!==String(selfId) && (titleKeyOf(l.t)===key || (l.st==='approved' && l.pendingEdit && titleKeyOf(l.pendingEdit.t)===key && false)); });
+  if(clash) return Promise.resolve({ok:false,key:key,msg:msg});
+  if(!fbOnline||!db) return Promise.resolve({ok:true,key:key});
+  return db.collection('titleKeys').doc(key).get().then(function(sn){
+    if(sn.exists && String(sn.data().lid)!==String(selfId)) return {ok:false,key:key,msg:msg};
+    return {ok:true,key:key};
+  }).catch(function(){ return {ok:true,key:key}; });
+}
+function syncNewListingWithKey(x){
+  if(!fbOnline||!db) return syncListing(x);
+  var b=db.batch();
+  b.set(db.collection('titleKeys').doc(x.tk),{lid:String(x.id)});
+  b.set(db.collection('listings').doc(String(x.id)),x);
+  return b.commit().catch(function(e){
+    console.error('Elan yazma xətası:', e);
+    toast((e&&e.code==='permission-denied')?'Elan göndərilmədi: bu başlıq artıq işlədilir və ya icazə yoxdur. Başlığı dəyişib yenidən cəhd et':('Elan serverə yazıla bilmədi: '+e.message));
+    throw e;
+  });
+}
+function backfillTitleKeys(){
+  if(!state.isAdminUser||!db){ toast('Yalnız admin'); return; }
+  var todo=state.custom.filter(function(x){return !x.tk && x.t;}).sort(function(a,b){ return ((b.st==='approved')-(a.st==='approved'))||(a.id-b.id); });
+  if(!todo.length){ toast('Bütün elanların başlıq qeydi var'); return; }
+  var seen={}, conflicts=[], jobs=[];
+  todo.forEach(function(x){
+    var k=titleKeyOf(x.t); if(!k){ conflicts.push(x.t+' (boş açar)'); return; }
+    if(seen[k]){ conflicts.push(x.t); return; }
+    seen[k]=x;
+  });
+  Object.keys(seen).forEach(function(k){
+    var x=seen[k];
+    jobs.push(db.collection('titleKeys').doc(k).get().then(function(sn){
+      if(sn.exists && String(sn.data().lid)!==String(x.id)){ conflicts.push(x.t); return 0; }
+      var b=db.batch(); b.set(db.collection('titleKeys').doc(k),{lid:String(x.id)}); b.update(db.collection('listings').doc(String(x.id)),{tk:k});
+      return b.commit().then(function(){ x.tk=k; return 1; });
+    }));
+  });
+  Promise.all(jobs).then(function(r){
+    var n=r.reduce(function(a,b){return a+b;},0);
+    alert(n+' elana başlıq qeydi yazıldı.'+(conflicts.length?('\n\nEyni başlıqlı elanlar (yalnız biri qeyd olundu, digərlərinin adını dəyişdirmək lazımdır):\n- '+conflicts.join('\n- ')):'\n\nEyni başlıqlı elan tapılmadı.'));
+  }).catch(function(e){ toast('Xəta: '+((e&&e.message)||e)); });
+}
 function syncListing(x){
   if(!x || !x.ownerEmail){ toast('Elanın tam məlumatı hələ yüklənməyib, bir az sonra yenidən cəhd et'); return Promise.reject(new Error('elan tam yüklənməyib')); }
   if(!fbOnline){ toast('Server bağlantısı yoxdur, dəyişiklik yalnız bu cihazda qalır'); return Promise.resolve(); }
@@ -1790,9 +1844,10 @@ function syncListing(x){
     throw e;
   });
 }
-function unsyncListing(id){
+function unsyncListing(id,tk){
   if(!fbOnline) return Promise.resolve();
-  return db.collection('listings').doc(String(id)).delete().catch(function(e){
+  var _b=db.batch(); _b.delete(db.collection('listings').doc(String(id))); if(tk) _b.delete(db.collection('titleKeys').doc(String(tk)));
+  return _b.commit().catch(function(e){
     console.error('Elan silmə xətası:', e); toast('Elan serverdən silinə bilmədi: '+e.message);
   });
 }
@@ -4934,6 +4989,15 @@ function addListing(e){
     document.getElementById('h-guests').value=Math.min(dcap,20);
   }
   if(!fbOnline){ toast("Server bağlantısı yoxdur, elan hələlik yerləşdirilə bilmir"); return; }
+  if(!e._tkChecked){
+    var _ev=e, _sb=e.target.querySelector('button[type="submit"]'); if(_sb) _sb.disabled=true;
+    titleAvailable(v('h-title'),null).then(function(r){
+      if(_sb) _sb.disabled=false;
+      if(!r.ok){ toast(r.msg); return; }
+      _ev._tkChecked=r.key; addListing(_ev);
+    });
+    return;
+  }
 
   var submitBtn = e.target.querySelector('button[type="submit"]');
   var submitBtnOrigText = submitBtn ? submitBtn.textContent : '';
@@ -4969,7 +5033,7 @@ function addListing(e){
       return copy;
     });
     var listing = {
-      id:id,t:v('h-title').slice(0,60),c:v('h-city'),d:v('h-addr').slice(0,50),ty:v('h-type'),
+      id:id,t:v('h-title').slice(0,60),tk:e._tkChecked,c:v('h-city'),d:v('h-addr').slice(0,50),ty:v('h-type'),
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
       r:bedroomCountOf(state.pendingRooms)||parseInt(v('h-rooms'),10)||1,b:bathCountOf(state.pendingRooms),cl:parseInt(v('h-clean'),10)||0,
       bookMode:(ck('h-gp-drivers')?'instant':((document.querySelector('input[name="h-bookmode"]:checked')||{}).value||'instant')),
@@ -4983,7 +5047,7 @@ function addListing(e){
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
-    return syncListing(listing);
+    return syncNewListingWithKey(listing);
   }).then(function(){
     e.target.reset(); fillRegions(); resetRoomBuilderDraft(); resetPriceTiersDraft();
     draftClear();
@@ -5100,7 +5164,7 @@ function adminDeleteListing(id){
   if(listingBlockingBookings(id).length){ toast('Bu evdə aktiv rezervasiya var, silmək olmaz. Müraciəti rədd edin.'); return; }
   if(!confirm('"'+x.t+'" elanı həmişəlik silinsin?')) return;
   state.custom=state.custom.filter(function(l){return l.id!==id;});
-  unsyncListing(id); renderHost(); renderAdmin(); render(); toast('Elan silindi');
+  unsyncListing(id,x.tk); renderHost(); renderAdmin(); render(); toast('Elan silindi');
 }
 function adminRejectDelete(id){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
@@ -5995,6 +6059,20 @@ function submitListingEdit(e){
     document.getElementById('h-guests').value=Math.min(dcap,20);
   }
   if(!fbOnline){ toast("Server bağlantısı yoxdur, dəyişiklik hələlik göndərilə bilmir"); return; }
+  if(!e._tkChecked){
+    var _ev2=e, _sb2=e.target.querySelector('button[type="submit"]');
+    var _newT=v('h-title');
+    if(titleKeyOf(_newT)===titleKeyOf(x.t)){ _ev2._tkChecked='same'; }
+    else{
+      if(_sb2) _sb2.disabled=true;
+      titleAvailable(_newT,id).then(function(r){
+        if(_sb2) _sb2.disabled=false;
+        if(!r.ok){ toast(r.msg); return; }
+        _ev2._tkChecked=r.key; submitListingEdit(_ev2);
+      });
+      return;
+    }
+  }
 
   var submitBtn = e.target.querySelector('button[type="submit"]');
   var submitBtnOrigText = submitBtn ? submitBtn.textContent : '';
@@ -6047,13 +6125,27 @@ function submitListingEdit(e){
 }
 function approveEdit(id,ok){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x||!x.pendingEdit) return;
-  if(ok){
-    var p=x.pendingEdit;
-    Object.keys(p).forEach(function(k){ x[k]=p[k]; });
+  function finish(){
+    x.pendingEdit=null;
+    syncListing(x); renderAdmin(); renderHost(); render();
+    toast(ok?"Elan dəyişiklikləri təsdiqləndi":"Dəyişikliklər rədd edildi, əvvəlki məlumat qalır");
   }
-  x.pendingEdit=null;
-  syncListing(x); renderAdmin(); renderHost(); render();
-  toast(ok?"Elan dəyişiklikləri təsdiqləndi":"Dəyişikliklər rədd edildi, əvvəlki məlumat qalır");
+  if(!ok){ finish(); return; }
+  var p=x.pendingEdit;
+  function apply(){ Object.keys(p).forEach(function(k){ x[k]=p[k]; }); }
+  if(p.t && titleKeyOf(p.t)!==titleKeyOf(x.t) && fbOnline && db){
+    titleAvailable(p.t,id).then(function(r){
+      if(!r.ok){ toast('Bu başlıq artıq başqa elanda var, təsdiq edilmədi. Ev sahibindən başlığı dəyişməsini istə'); return; }
+      var oldTk=x.tk; apply(); x.tk=r.key; x.pendingEdit=null;
+      var b=db.batch(); b.set(db.collection('titleKeys').doc(r.key),{lid:String(x.id)});
+      if(oldTk && oldTk!==r.key) b.delete(db.collection('titleKeys').doc(String(oldTk)));
+      b.set(db.collection('listings').doc(String(x.id)),x);
+      b.commit().then(function(){ renderAdmin(); renderHost(); render(); toast('Elan dəyişiklikləri təsdiqləndi'); })
+       .catch(function(e){ toast('Xəta: '+((e&&e.message)||e)); });
+    });
+    return;
+  }
+  apply(); finish();
 }
 
 /* ============ reytinq / rəy ============ */
