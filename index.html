@@ -57,6 +57,16 @@ body{margin:0;background:var(--paper);color:var(--text);font-family:'Manrope',-a
 h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.022em;line-height:1.15}
 button{font:inherit;color:inherit;cursor:pointer}
 input,select,textarea{font:inherit;color:inherit}
+textarea{resize:none!important}
+.gpop{position:absolute;left:0;top:100%;margin-top:6px;z-index:60;min-width:270px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:8px 14px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.grow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0}
+.grow + .grow{border-top:1px solid var(--line)}
+.grow b{font-size:15px;display:block}.grow small{color:var(--muted);font-weight:600;font-size:12.5px}
+.gstep{display:flex;align-items:center;gap:10px}
+.gstep button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--paper);font-size:18px;font-weight:800;line-height:1;cursor:pointer;color:inherit}
+.gstep button:disabled{opacity:.35;cursor:not-allowed}
+.gstep span{min-width:22px;text-align:center;font-weight:800;font-size:16px}
+
 select{max-width:100%;min-width:0;text-overflow:ellipsis}input,textarea{max-width:100%}
 input:focus::placeholder,textarea:focus::placeholder{color:transparent}
 .wrap{width:min(1180px,100% - 32px);margin-inline:auto}
@@ -432,7 +442,7 @@ form.frm{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--ca
 form.frm .full{grid-column:1/-1}
 form.frm label{display:grid;gap:5px;font-size:13px;font-weight:700;color:var(--muted)}
 form.frm input,form.frm select,form.frm textarea{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 12px;font-weight:600;font-size:15px;width:100%}
-form.frm textarea{min-height:86px;resize:vertical;font-family:inherit}
+form.frm textarea{min-height:86px;resize:none;font-family:inherit}
 form.frm h4{grid-column:1/-1;font-size:15px;margin-top:6px;padding-top:12px;border-top:1px solid var(--line)}
 .mappicker{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card)}
 .gmap{width:100%;background:var(--sand)}
@@ -601,8 +611,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
         <div class="f"><label for="d1">Giriş</label><input type="hidden" id="d1" onchange="render()"><button type="button" class="dateBtn" id="d1-btn" onclick="toggleDatePicker('d1',today())">Tarix seç</button></div>
         <div class="f"><label for="d2">Çıxış</label><input type="hidden" id="d2" onchange="render()"><button type="button" class="dateBtn" id="d2-btn" onclick="toggleDatePicker('d2',checkoutMinIso('d1'))">Tarix seç</button></div>
-        <div class="f"><label for="g">Qonaq</label>
-          <input id="g" type="number" min="1" max="100" step="1" inputmode="numeric" value="2" onchange="if(!this.value||this.value<1)this.value=1;if(this.value>100)this.value=100;render()" oninput="if(this.value>100){this.value=100;toast('Qonaq sayı 100-dən çox ola bilməz')}render()">
+        <div class="f" style="position:relative"><label for="g-btn">Qonaq</label>
+          <input type="hidden" id="g" value="2">
+          <button type="button" class="dateBtn" id="g-btn" onclick="toggleGuestPop(event)">2 böyük</button>
+          <div class="gpop" id="g-pop" hidden></div>
         </div>
         <div class="f"><label for="gt">Qonaq tipi</label>
           <select id="gt" onchange="state.guestType=this.value||null;render()">
@@ -798,6 +810,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
         <div id="tierList" style="display:grid;gap:6px;margin-top:8px"></div>
       </div>
+      <div class="full" id="h-amen-box"><div style="font-weight:800;margin:4px 0 8px">Ümumi imkanlar</div>
+        <div class="roomamen" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr))"><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-0" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Wi-Fi</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-1" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Pulsuz parkinq</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-2" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Eyvan</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-3" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Yelləncək</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-4" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Səsgücləndirici</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-5" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Karaoke</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-6" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Həyətdə ocaq yeri</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-7" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Kölgəlik (çardaq)</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-8" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Şezlonq</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-9" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Generator</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-10" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Yanğınsöndürən</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-11" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> İlk yardım dəsti</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-12" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Mühafizəli ərazi</label></div>
+        <div class="hint" style="margin-top:6px">Evin ümumi imkanlarını işarələ. Televizor, kondisioner, mətbəx avadanlığı, istilik və s. otaqları əlavə edəndə otağın içində seçilir.</div></div>
       <label class="full">Ev haqqında təsvir<textarea id="h-desc" maxlength="400" placeholder="Evin yeri, yaxınlıqdakı yerlər, nə var..."></textarea></label>
 
       <h4>Evin üz şəkli</h4>
@@ -832,6 +847,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <label>Cüt yataq (Double / Queen / King, 2 nəfərlik)<input id="rm-bed-double" type="number" min="0" max="10" value="1" inputmode="numeric" oninput="bedSleepsHint()"></label>
           <label>İkimərtəbəli çarpayı (2 nəfərlik)<input id="rm-bed-bunk" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
           <label>Açılan divan (2 nəfərlik)<input id="rm-bed-sofa" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
+          <label>Uşaq çarpayısı (1 nəfərlik)<input id="rm-bed-crib" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
           <div class="full" id="rm-bed-hint" style="font-size:13px;font-weight:800;color:var(--ok)"></div>
           <label>İsitmə sistemi
             <select id="rm-b-heat">
@@ -1659,7 +1675,7 @@ var DEFAULT_RULES = {kids:true,pets:false,smoke:false,party:false,quiet:true,nos
 
 var SEED=[]; /* nümunə evlər silindi — yalnız real elanlar (Firestore) göstərilir */
 
-var state={tab:'kesf',sub:'dash',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
+var state={mix:{a:2,c1:0,c2:0},bmix:{a:2,c1:0,c2:0},tab:'kesf',sub:'dash',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
   notifications:[],reviews:[],reports:[],customers:[],sanctions:[],violations:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,editingListingId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
   coverData:null,coverFile:null,pendingRooms:[],currentRoomPhotos:[],currentRoomPhotoFiles:[],galleryList:[],galleryIdx:0,
   calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null,guestType:null,pool:'Hamısı',
@@ -3363,6 +3379,58 @@ function roomsHtmlFor(x){
       +'</div>';
   }).join('');
 }
+/* ===== Qonaq tərkibi: böyük, uşaq 0-6, uşaq 7-12 ===== */
+var GMIX_ROWS=[['a','Böyüklər','13 yaş və yuxarı'],['c1','Uşaqlar','0–6 yaş'],['c2','Uşaqlar','7–12 yaş']];
+function gmixTotal(m){ return (m.a||0)+(m.c1||0)+(m.c2||0); }
+function gmixLabel(m){ var k=(m.c1||0)+(m.c2||0); return m.a+' böyük'+(k?' · '+k+' uşaq':''); }
+function gmixNorm(m,max){
+  m={a:Math.max(1,parseInt(m.a,10)||1),c1:Math.max(0,parseInt(m.c1,10)||0),c2:Math.max(0,parseInt(m.c2,10)||0)};
+  max=Math.max(1,Math.min(max||100,100));
+  while(gmixTotal(m)>max){ if(m.c2>0) m.c2--; else if(m.c1>0) m.c1--; else if(m.a>1) m.a--; else break; }
+  return m;
+}
+function gmixStepperHtml(ctx,m,max){
+  var tot=gmixTotal(m);
+  return GMIX_ROWS.map(function(r){
+    var k=r[0], v=m[k]||0, minv=(k==='a'?1:0);
+    return '<div class="grow"><div><b>'+r[1]+'</b><small>'+r[2]+'</small></div><div class="gstep">'
+      +'<button type="button" '+(v<=minv?'disabled ':'')+'onclick="gmixStep(\''+ctx+'\',\''+k+'\',-1)" aria-label="azalt">−</button><span>'+v+'</span>'
+      +'<button type="button" '+(tot>=max?'disabled ':'')+'onclick="gmixStep(\''+ctx+'\',\''+k+'\',1)" aria-label="artır">+</button></div></div>';
+  }).join('');
+}
+function gmixMax(ctx){ if(ctx==='b'){ var x=state.custom.filter(function(l){return l.id===state.openId;})[0]; return Math.min((x&&x.g)||100,100); } return 100; }
+function gmixRender(ctx){
+  if(ctx==='s'){
+    var m=state.mix; document.getElementById('g').value=gmixTotal(m); document.getElementById('g-btn').textContent=gmixLabel(m);
+    var pop=document.getElementById('g-pop'); if(pop && !pop.hidden) pop.innerHTML=gmixStepperHtml('s',m,gmixMax('s'));
+  } else {
+    var mb=state.bmix, box=document.getElementById('bg-mix'); if(!box) return;
+    box.innerHTML=gmixStepperHtml('b',mb,gmixMax('b'));
+    var h=document.getElementById('bg'); if(h) h.value=gmixTotal(mb);
+  }
+}
+function gmixStep(ctx,k,d){
+  var m=(ctx==='s')?state.mix:state.bmix; var max=gmixMax(ctx);
+  var n={a:m.a,c1:m.c1,c2:m.c2}; n[k]=(n[k]||0)+d;
+  if(n.a<1||n.c1<0||n.c2<0) return;
+  if(gmixTotal(n)>max){ toast(ctx==='b'?('Bu ev ən çoxu '+max+' nəfər üçündür'):'Qonaq sayı 100-dən çox ola bilməz'); return; }
+  if(ctx==='s') state.mix=n; else state.bmix=n;
+  gmixRender(ctx);
+  if(ctx==='s') render(); else { if(typeof calc==='function') calc(); }
+}
+function toggleGuestPop(ev){
+  if(ev) ev.stopPropagation();
+  var pop=document.getElementById('g-pop'); if(!pop) return;
+  pop.hidden=!pop.hidden; if(!pop.hidden) pop.innerHTML=gmixStepperHtml('s',state.mix,gmixMax('s'));
+}
+document.addEventListener('click',function(e){ var pop=document.getElementById('g-pop'); if(pop && !pop.hidden && !pop.contains(e.target)) pop.hidden=true; });
+function gmixText(b){
+  if(b && (b.ga!=null)){ var p=[b.ga+' böyük']; if(b.k1) p.push(b.k1+' uşaq (0–6 yaş)'); if(b.k2) p.push(b.k2+' uşaq (7–12 yaş)'); return p.join(', '); }
+  return (b&&b.g!=null)?(b.g+' nəfər'):'';
+}
+var HOME_AMEN=["Wi-Fi","Pulsuz parkinq","Eyvan","Yelləncək","Səsgücləndirici","Karaoke","Həyətdə ocaq yeri","Kölgəlik (çardaq)","Şezlonq","Generator","Yanğınsöndürən","İlk yardım dəsti","Mühafizəli ərazi"];
+function readHomeAmen(){ return HOME_AMEN.filter(function(a,i){ var el=document.getElementById('h-am-'+i); return el&&el.checked; }); }
+function setHomeAmen(arr){ arr=arr||[]; HOME_AMEN.forEach(function(a,i){ var el=document.getElementById('h-am-'+i); if(el) el.checked=arr.indexOf(a)>=0; }); }
 function leftInfoHtml(x){
   setTimeout(function(){ initDetailMap(x); },0);
   var R=rulesOf(x);
@@ -3378,6 +3446,7 @@ function leftInfoHtml(x){
     +'<hr class="sep">'
     +'<div class="host"><div class="avatar">'+esc(x.host.slice(0,1))+'</div><div><strong>Ev sahibi: '+esc(x.host)+'</strong><div style="color:var(--muted);font-size:14px">'+(x.voen?'VÖEN təsdiqlənib · ':'')+(x.sup?'Seçilmiş ev sahibi':'Təsdiqlənmiş ev sahibi')+'</div></div></div>'
     +'<hr class="sep"><p style="margin:0;max-width:64ch">'+esc(x.desc)+'</p>'
+    +((x.amen&&x.amen.length)?('<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Ümumi imkanlar</h3><div class="amen">'+x.amen.map(function(a){return '<div>'+checkIcon(true)+esc(a)+'</div>';}).join('')+'</div>'):'')
     +(roomsHtml
       ? '<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Otaqlar və sahələr</h3><div class="roomlist">'+roomsHtml+'</div>'
       : '<hr class="sep"><h3 style="margin-bottom:12px;font-size:18px">Evdə nələr var</h3><div class="amen">'+amen.map(function(a){return '<div>'+checkIcon(true)+a+'</div>';}).join('')+'</div>')
@@ -3398,7 +3467,7 @@ function bookedAsideHtml(x,bk){
     +'<hr class="sep" style="margin:6px 0">'
     +'<div style="display:grid;gap:8px;font-size:14.5px;font-weight:600">'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Tarixlər</span>'+fmtDate(bk.d1)+' – '+fmtDate(bk.d2)+' · '+bk.n+' gecə</div>'
-      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Qonaq sayı</span>'+bk.g+' nəfər</div>'
+      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Qonaq sayı</span>'+esc(gmixText(bk))+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Rezervasiya kodu</span>'+bk.code+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Status</span>'+statusTag(bk.status,bk)+'</div>'
     +'</div>'
@@ -3424,6 +3493,7 @@ function openDetail(id,bookingCode){
   var d1=document.getElementById('d1').value||'';
   var d2=document.getElementById('d2').value||'';
   var g=document.getElementById('g').value||2;
+  state.bmix=gmixNorm(state.mix,Math.min(x.g||100,100));
 
   document.getElementById('detailBody').innerHTML=
     galleryHtmlFor(x)
@@ -3442,7 +3512,7 @@ function openDetail(id,bookingCode){
       +['family','couple','men','women','mixed','drivers'].map(function(k){return '<option value="'+k+'"'+(state.guestType===k?' selected':'')+'>'+GUEST_TYPE_LABELS[k]+'</option>';}).join('')+'</select></div></div>'
     +(isDriverListing(x)
       ? '<input type="hidden" id="bg" value="1"><div class="hint" style="margin:0 0 4px">Hər sürücü ayrıca bron edir (1 sürücü = 1 yer). Qiymət hər sürücü üçündür.</div><div class="drvspot" id="drvdetail" data-lid="'+x.id+'" style="font-weight:800;font-size:14px;margin-bottom:4px"></div>'
-      : '<div class="fieldgrid one"><div class="f"><label for="bg">Qonaq sayı (maks. '+Math.min(x.g,100)+')</label><input type="number" id="bg" min="1" max="'+Math.min(x.g,100)+'" step="1" inputmode="numeric" value="'+Math.max(1,Math.min(parseInt(g,10)||1,x.g,100))+'" oninput="clampGuestInput(this,'+Math.min(x.g,100)+');calc()" onchange="clampGuestInput(this,'+Math.min(x.g,100)+',true);calc()"></div></div>')
+      : '<div class="fieldgrid one"><div class="f"><label>Qonaq sayı (maks. '+Math.min(x.g,100)+')</label><input type="hidden" id="bg" value="'+gmixTotal(state.bmix)+'"><div id="bg-mix">'+gmixStepperHtml('b',state.bmix,Math.min(x.g,100))+'</div></div></div>')
     +(isDriverListing(x)?'':(bookModeOf(x)==='request'
         ? '<div class="reqbox"><b>📩 Sorğu ilə bron.</b> Bu ev dərhal bron olunmur: əvvəlcə sorğu göndərirsiniz, ev sahibi <b>6 saat</b> ərzində cavab verir. Təsdiqləsə, ödəniş üçün <b>1 saatınız</b> olur. Ödənişə qədər pul tutulmur və sorğunu istədiyiniz vaxt ləğv edə bilərsiniz. Sorğu gedərkən həmin tarixlər başqalarına boş görünmür.</div>'
         : '<div class="hint" style="margin:4px 0"><b>⚡ Dərhal bron.</b> Təsdiq gözləmədən dərhal ödəyib bron edirsiniz.</div>'))
@@ -3861,6 +3931,7 @@ function book(id){
   }
   var a=document.getElementById('b1').value,b=document.getElementById('b2').value,g=document.getElementById('bg').value;
   g=Math.max(1,Math.min(parseInt(g,10)||1,x.g||100,100));
+  state.bmix=gmixNorm(state.bmix,Math.min(x.g||100,100)); g=gmixTotal(state.bmix);
   var n=nights(a,b);
   var gate=bookGate(x,a,b);
   if(gate){ toast(gate.msg); return; }
@@ -3879,7 +3950,7 @@ function book(id){
      statusu da eyni funksiyada YENİDƏN, serverdə hesablanır/yoxlanılır — client-in göndərdiyi rəqəmlər
      yalnız "faktiki daxil edilən gecə/qonaq sayı" üçün istifadə olunur. */
   var btn=document.getElementById('bookBtn'); if(btn){ btn.disabled=true; btn.textContent='Göndərilir...'; }
-  fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g, termsVersion:TERMS_VERSION}).then(function(res){
+  fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g, adults:state.bmix.a, kids06:state.bmix.c1, kids712:state.bmix.c2, termsVersion:TERMS_VERSION}).then(function(res){
     if(res.data && res.data.mode==='request'){
       toast('Sorğunuz ev sahibinə göndərildi. Cavab 6 saat ərzində gözlənilir. Sorğunu Rezervasiyalarım bölməsindən izləyə və ləğv edə bilərsiniz');
       closeDetail(); go('rez');
@@ -4116,7 +4187,7 @@ function renderBookings(){
     b.__viewerIsHost=false;
     return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div>'
       +'<h4>'+esc(b.title)+'</h4>'
-      +'<div class="m">'+esc(b.city)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
+      +'<div class="m">'+esc(b.city)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+esc(gmixText(b).replace(' nəfər',''))+' qonaq</div>'
       +'<div class="m">Kod: '+b.code+' · '+esc(b.bank)+' · giriş '+esc(R.cin)+'</div>'
       +(b.status!=='refunded'?'<div class="m">Ev sahibi ('+esc(b.host)+') ilə əlaqə: '+hostContactHtml(b.lid,b)+'</div>':'')
       +'<div style="margin-top:8px">'+statusTag(b.status,b)+payCountdownHtml(b)+(b.status==='hold'&&!(b.paymentStatus==='pending'||b.paymentStatus==='failed')?' <span class="m">'+leftText(b)+'</span>':'')+'</div>'
@@ -4350,25 +4421,26 @@ var KITCHEN_MAP=[["stove", "Ocaq / plitə"], ["oven", "Soba (duxovka)"], ["micro
 var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
 /* ===== Otaqda yataq sayları: tək / cüt / ikimərtəbəli / açılan divan → yatacaq sayı ===== */
 function bedCounts(r){
-  if(r && r.beds) return {single:+r.beds.single||0,double:+r.beds.double||0,bunk:+r.beds.bunk||0,sofa:+r.beds.sofa||0};
+  if(r && r.beds) return {single:+r.beds.single||0,double:+r.beds.double||0,bunk:+r.beds.bunk||0,sofa:+r.beds.sofa||0,crib:+r.beds.crib||0};
   var t=String((r&&r.bedType)||'');
-  if(/Single/i.test(t)) return {single:1,double:0,bunk:0,sofa:0};
-  if(/Twin/i.test(t)) return {single:2,double:0,bunk:0,sofa:0};
-  if(/Bunk/i.test(t)) return {single:0,double:0,bunk:1,sofa:0};
-  return {single:0,double:1,bunk:0,sofa:0}; /* köhnə qeydlər: Double/Queen/King */
+  if(/Single/i.test(t)) return {single:1,double:0,bunk:0,sofa:0,crib:0};
+  if(/Twin/i.test(t)) return {single:2,double:0,bunk:0,sofa:0,crib:0};
+  if(/Bunk/i.test(t)) return {single:0,double:0,bunk:1,sofa:0,crib:0};
+  return {single:0,double:1,bunk:0,sofa:0,crib:0}; /* köhnə qeydlər: Double/Queen/King */
 }
-function bedSleeps(b){ return b.single+2*b.double+2*b.bunk+2*b.sofa; }
+function bedSleeps(b){ return b.single+2*b.double+2*b.bunk+2*b.sofa+(b.crib||0); }
 function bedSummaryText(b){
   var a=[];
   if(b.single) a.push(b.single+' tək yataq');
   if(b.double) a.push(b.double+' cüt yataq');
   if(b.bunk) a.push(b.bunk+' ikimərtəbəli çarpayı');
   if(b.sofa) a.push(b.sofa+' açılan divan');
+  if(b.crib) a.push(b.crib+' uşaq çarpayısı');
   return a.join(' + ')||'—';
 }
 function readBedCounts(){
   var g=function(id){ var n=parseInt(document.getElementById(id).value,10); return (isNaN(n)||n<0)?0:Math.min(n,10); };
-  return {single:g('rm-bed-single'),double:g('rm-bed-double'),bunk:g('rm-bed-bunk'),sofa:g('rm-bed-sofa')};
+  return {single:g('rm-bed-single'),double:g('rm-bed-double'),bunk:g('rm-bed-bunk'),sofa:g('rm-bed-sofa'),crib:g('rm-bed-crib')};
 }
 function bedSleepsHint(){
   var el=document.getElementById('rm-bed-hint'); if(!el) return;
@@ -4377,7 +4449,7 @@ function bedSleepsHint(){
 }
 function setBedCounts(b){
   document.getElementById('rm-bed-single').value=b.single; document.getElementById('rm-bed-double').value=b.double;
-  document.getElementById('rm-bed-bunk').value=b.bunk; document.getElementById('rm-bed-sofa').value=b.sofa; bedSleepsHint();
+  document.getElementById('rm-bed-bunk').value=b.bunk; document.getElementById('rm-bed-sofa').value=b.sofa; document.getElementById('rm-bed-crib').value=b.crib||0; bedSleepsHint();
 }
 /* Elanın ümumi yatacaq sayı (yataq otaqları üzrə) — qonaq tutumundan az ola bilməz */
 function totalSleepsOf(rooms){
@@ -4391,7 +4463,7 @@ function addRoomToPending(){
   var ck=function(id){return document.getElementById(id).checked;}, v=function(id){return document.getElementById(id).value;};
   if(kind==='bedroom'){
     var _bc=readBedCounts();
-    if(!bedSleeps(_bc)){ toast("Bu otaqda ən azı bir yataq yaz (tək, cüt, ikimərtəbəli və ya açılan divan)"); return; }
+    if(!bedSleeps(_bc)){ toast("Bu otaqda ən azı bir yataq yaz (tək, cüt, ikimərtəbəli, açılan divan və ya uşaq çarpayısı)"); return; }
     room.beds=_bc; room.sleeps=bedSleeps(_bc); room.bedType=bedSummaryText(_bc); room.heating=v('rm-b-heat'); room.privateBathroom=ck('rm-b-bath');
     room.amenities=[];
     if(ck('rm-b-ac')) room.amenities.push('Kondisioner');
@@ -4482,7 +4554,7 @@ function addRoomToPending(){
   document.getElementById('rm-b-iron').checked=false; document.getElementById('rm-b-tv').checked=false;
   document.getElementById('rm-b-desk').checked=false; document.getElementById('rm-b-safe').checked=false;
   document.getElementById('rm-b-fan').checked=false; document.getElementById('rm-b-bath').checked=false;
-  setBedCounts({single:0,double:1,bunk:0,sofa:0}); document.getElementById('rm-ba-count').value=1;
+  setBedCounts({single:0,double:1,bunk:0,sofa:0,crib:0}); document.getElementById('rm-ba-count').value=1;
   document.getElementById('rm-g-domino').checked=false; document.getElementById('rm-g-nard').checked=false;
   document.getElementById('rm-g-billiard').checked=false; document.getElementById('rm-g-tennis').checked=false;
   document.getElementById('rm-g-foosball').checked=false; document.getElementById('rm-g-dart').checked=false;
@@ -5033,7 +5105,7 @@ function addListing(e){
       return copy;
     });
     var listing = {
-      id:id,t:v('h-title').slice(0,60),tk:e._tkChecked,c:v('h-city'),d:v('h-addr').slice(0,50),ty:v('h-type'),
+      id:id,t:v('h-title').slice(0,60),tk:e._tkChecked,amen:readHomeAmen(),c:v('h-city'),d:v('h-addr').slice(0,50),ty:v('h-type'),
       p:parseInt(v('h-price'),10)||90,g:parseInt(v('h-guests'),10)||2,
       r:bedroomCountOf(state.pendingRooms)||parseInt(v('h-rooms'),10)||1,b:bathCountOf(state.pendingRooms),cl:parseInt(v('h-clean'),10)||0,
       bookMode:(ck('h-gp-drivers')?'instant':((document.querySelector('input[name="h-bookmode"]:checked')||{}).value||'instant')),
@@ -5443,7 +5515,7 @@ function renderHost(){
       +'<h4>'+esc(b.title)+'</h4>'
       +'<div class="m">Qonaq: '+esc(b.guest)+((b.status==='requested'||b.paymentStatus==='pending')?'':' · '+esc(b.phone))+'</div>'
       +'<div class="m">'+guestRatingBadgeHtml(b.email)+'</div>'
-      +'<div class="m">'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+b.g+' qonaq</div>'
+      +'<div class="m">'+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+esc(gmixText(b).replace(' nəfər',''))+' qonaq</div>'
       +'<div style="margin-top:8px">'+statusTag(b.status,b)+payCountdownHtml(b)+'</div>'
       +(b.status==='requested'?'<div class="reqbox"><b>Bron sorğusu.</b> Cavab müddəti bitməmiş təsdiqləyin və ya rədd edin. Təsdiqləsəniz, qonağın ödəniş üçün 1 saatı olacaq. Cavab verməsəniz sorğu avtomatik bağlanır. Qonağın telefonu ödənişdən sonra görünəcək.</div>':'')
       +(b.status==='hold'&&b.paymentStatus==='pending'&&b.payDeadline?'<div class="reqbox">Sorğunu təsdiqlədiniz. Qonaq ödəniş edənə qədər tarixlər ayrılıb. Vaxt bitərsə azad olur.</div>':'')
@@ -5961,6 +6033,7 @@ function openEdit(id){
   document.getElementById('h-maxstay').value=(live.maxNights!=null?live.maxNights:x.maxNights)||'';
   document.getElementById('h-minguest').value=live.minGuestRating||'';
 
+  setHomeAmen(live.amen);
   var gp=live.guestPolicy;
   document.getElementById('h-gp-family').checked=gp.indexOf('family')>=0;
   document.getElementById('h-gp-men').checked=gp.indexOf('men')>=0;
@@ -6099,7 +6172,7 @@ function submitListingEdit(e){
     x.p=newPrice; x.minNights=minStay; x.maxNights=maxStay;
     if(epReq && epReq!==x.epointId) x.epointIdRequest=epReq;
     x.pendingEdit = {
-      t:v('h-title').slice(0,60), c:v('h-city'), d:v('h-addr').slice(0,50), ty:v('h-type'),
+      t:v('h-title').slice(0,60), c:v('h-city'), d:v('h-addr').slice(0,50), ty:v('h-type'), amen:readHomeAmen(),
       g:parseInt(v('h-guests'),10)||1, r:bedroomCountOf(state.pendingRooms)||parseInt(v('h-rooms'),10)||1, b:bathCountOf(state.pendingRooms),
       cl:parseInt(v('h-clean'),10)||0,
       minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),
@@ -6768,7 +6841,7 @@ function openBkDetail(code){
   function r(l,v){ return '<div><span>'+l+'</span><b>'+(v===undefined||v===null||v===''?'—':v)+'</b></div>'; }
   function dt(t){ return t?new Date(t).toLocaleString('az-AZ'):'—'; }
   var h='<h3 style="margin:0 0 4px">'+esc(b.code)+' '+statusTag(b.status,b)+'</h3><div class="m" style="margin-bottom:12px">'+esc(b.title||'')+(b.city?' · '+esc(b.city):'')+'</div><div style="display:grid;gap:12px">';
-  h+='<div class="bkd"><h5>Qonaq</h5>'+r('Ad',esc(b.guest))+r('Telefon',esc(b.phone))+r('E-poçt',esc(b.email))+r('Qonaq sayı',b.g)+'</div>';
+  h+='<div class="bkd"><h5>Qonaq</h5>'+r('Ad',esc(b.guest))+r('Telefon',esc(b.phone))+r('E-poçt',esc(b.email))+r('Qonaq sayı',esc(gmixText(b)))+'</div>';
   h+='<div class="bkd"><h5>Ev sahibi</h5>'+r('Ad',esc(b.host))+r('E-poçt',esc(b.hostEmail))+'</div>';
   h+='<div class="bkd"><h5>Qalma</h5>'+r('Giriş',fmtDate(b.d1))+r('Çıxış',fmtDate(b.d2))+r('Gecə',b.n)+r('Rezervasiya vaxtı',dt(b.createdAt))+r('Pulun köçürülmə vaxtı',dt(b.releaseAt))+'</div>';
   h+='<div class="bkd"><h5>Ödəniş</h5>'+r('Kirayə',b.rent!=null?az2(b.rent):'')+r('Təmizlik',b.clean!=null?az2(b.clean):'')+r('Cəmi (qonaq ödəyib)',az2(b.total))+r('Ev sahibinə çatan',b.hostGets!=null?az2(b.hostGets):'')+r('Platforma komissiyası',b.platform!=null?az2(b.platform):'')+r('Ödəniş statusu',esc(b.paymentStatus))+r('Ödəniş vaxtı',dt(b.paidAt))+r('Ev sahibinə ödəniş',b.status==='released'?(b.payoutStatus==='paid'?'Ödənilib'+(b.payoutRef?' ('+esc(b.payoutRef)+')':''):'Gözləyir'):'—')+'</div>';
