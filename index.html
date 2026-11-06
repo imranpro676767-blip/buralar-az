@@ -739,6 +739,14 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
     <h3 style="margin:28px 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span id="listingFormHeading">Yeni elan yerləşdir</span><button type="button" id="cancelEditBtn" class="btn sm ghost" style="display:none;width:auto" onclick="cancelListingEdit()">İmtina et</button></h3>
     <form class="frm" id="listingForm" onsubmit="handleListingFormSubmit(event)">
+      <div class="full" id="h-admin-box" style="display:none;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;background:rgba(46,160,110,.07)">
+        <label style="display:flex;gap:9px;align-items:center;cursor:pointer;font-weight:800"><input type="checkbox" id="h-onbehalf" onchange="onBehalfToggle()" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Ev sahibi adından yerləşdir (admin)</label>
+        <div id="h-onbehalf-fields" style="display:none;margin-top:10px;display:none;gap:10px;grid-template-columns:1fr 1fr">
+          <label>Ev sahibinin Gmail ünvanı<input id="h-owner-email" type="email" autocomplete="off" placeholder="evsahibi@gmail.com"></label>
+          <label>Gmail ünvanını təkrar yaz<input id="h-owner-email2" type="email" autocomplete="off" placeholder="evsahibi@gmail.com"></label>
+          <div class="hint" style="grid-column:1/-1;margin:0">Elan həmin Gmail-ə bağlanacaq və bron üçün açılmayacaq. Ev sahibi həmin Gmail ilə daxil olub şərtləri qəbul edib elanı təsdiqləməlidir. İstifadə Şərtləri və Məxfilik qutularını sən yox, ev sahibi təsdiqləyir. Aşağıda ev sahibinin adı, VÖEN-i və WhatsApp nömrəsini yaz.</div>
+        </div>
+      </div>
       <h4>Ev haqqında</h4>
       <label class="full">Elanın başlığı<input id="h-title" required maxlength="60" placeholder="Dəniz mənzərəli mənzil, Bakı bulvarı" oninput="document.getElementById('h-title-count').textContent=this.value.length"></label>
       <p class="note" style="text-align:left;margin:-10px 0 0 0"><span id="h-title-count">0</span>/60 hərf — əsas səhifədə uzun adlar qısaldılıb göstərilir</p>
@@ -5028,6 +5036,37 @@ function uploadListingMedia(id, rooms, btn){
   });
 }
 
+/* ===== Admin: ev sahibi adından elan ===== */
+function onBehalfToggle(){
+  var on=document.getElementById('h-onbehalf'); var box=document.getElementById('h-onbehalf-fields'); if(!on||!box) return;
+  box.style.display=on.checked?'grid':'none';
+}
+function adminBoxUpdate(){
+  var b=document.getElementById('h-admin-box'); if(!b) return;
+  b.style.display=(state.isAdminUser)?'block':'none';
+  if(!state.isAdminUser){ var c=document.getElementById('h-onbehalf'); if(c) c.checked=false; }
+  onBehalfToggle();
+}
+function claimBadgeHtml(x){
+  return (x&&x.claim&&x.claim.pending)?'<span class="tag hold" style="background:var(--warn);color:#fff">Ev sahibi təsdiqi gözləyir</span> ':'';
+}
+function claimBoxHtml(x){
+  if(!(x&&x.claim&&x.claim.pending&&state.user&&x.ownerEmail===state.user.email)) return '';
+  return '<div class="m" style="white-space:normal;border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:8px 0;background:rgba(255,170,0,.08)">'
+    +'<b>Bu elan sizin üçün Buralar.az tərəfindən hazırlanıb.</b> Elanı yoxlayın, sonra təsdiqləyin. Təsdiqləməsəniz elan yayımlanmayacaq.'
+    +'<label style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-weight:600;cursor:pointer"><input type="checkbox" id="claim-ok-'+x.id+'" style="width:17px;height:17px;flex:none;margin:2px 0 0;accent-color:var(--ok)"> <span>Elandakı məlumatlar düzgündür, <a href="#" onclick="openModal(\'tosModal\');return false">İstifadə Şərtləri</a>ni və Məxfilik siyasətini qəbul edirəm.</span></label>'
+    +'<button class="btn sm" style="width:auto;margin-top:8px" onclick="claimListing('+x.id+')">Elanı təsdiq edirəm</button></div>';
+}
+function claimListing(id){
+  var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x||!x.claim||!x.claim.pending) return;
+  if(!state.user||x.ownerEmail!==state.user.email){ toast('Bu elan başqa hesaba aiddir'); return; }
+  var ck=document.getElementById('claim-ok-'+id); if(!ck||!ck.checked){ toast('Təsdiqləmək üçün qutunu işarələ'); return; }
+  var claim={pending:false,by:x.claim.by,at:x.claim.at,acceptedAt:Date.now(),tv:TERMS_VERSION,pv:PRIVACY_VERSION};
+  db.collection('listings').doc(String(id)).update({claim:claim}).then(function(){
+    x.claim=claim; renderHost(); renderAdmin();
+    toast('Təsdiq edildi. Tezliklə sizinlə görüntülü əlaqə saxlanılacaq');
+  }).catch(function(e){ toast('Təsdiq alınmadı: '+((e&&e.message)||e)); });
+}
 function addListing(e){
   e.preventDefault();
   if(needLogin()) return;
@@ -5040,8 +5079,17 @@ function addListing(e){
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
   var epReq=readEpointRequest(); if(epReq===false) return;
-  if(!ck('h-terms')){ toast("Elan göndərmək üçün İstifadə Şərtlərini qəbul etməlisən"); return; }
-  if(!ck('h-privacy')){ toast("Elan göndərmək üçün Məxfilik siyasətini də qəbul etməlisən"); return; }
+  var onBehalf=!!(state.isAdminUser && document.getElementById('h-onbehalf') && ck('h-onbehalf')), ownerEm=state.user.email;
+  if(onBehalf){
+    var oe1=v('h-owner-email').trim().toLowerCase(), oe2=v('h-owner-email2').trim().toLowerCase();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(oe1)){ toast('Ev sahibinin e-poçt ünvanı düzgün deyil'); return; }
+    if(oe1!==oe2){ toast('İki e-poçt ünvanı eyni deyil, yenidən yoxla'); return; }
+    if(oe1===String(state.user.email).toLowerCase()){ toast('Ev sahibinin e-poçtu sənin hesabın ola bilməz'); return; }
+    if(ADMIN_PROTECTED.indexOf(oe1)>=0){ toast('Bu e-poçt admin hesabıdır, ev sahibinin öz Gmail-ini yaz'); return; }
+    ownerEm=oe1;
+  }
+  if(!onBehalf && !ck('h-terms')){ toast("Elan göndərmək üçün İstifadə Şərtlərini qəbul etməlisən"); return; }
+  if(!onBehalf && !ck('h-privacy')){ toast("Elan göndərmək üçün Məxfilik siyasətini də qəbul etməlisən"); return; }
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
@@ -5112,9 +5160,9 @@ function addListing(e){
       minNights:minStay,maxNights:maxStay,minGuestRating:(v('h-minguest')?parseFloat(v('h-minguest')):null),priceTiers:state.pendingTiers.filter(function(t){return t.minNights>=minStay && t.price<(parseFloat(v('h-price'))||90);}),
       guestPolicy:(function(){ var gp=[]; if(ck('h-gp-family')) gp.push('family'); if(ck('h-gp-men')) gp.push('men'); if(ck('h-gp-women')) gp.push('women'); if(ck('h-gp-couple')) gp.push('couple'); if(ck('h-gp-mixed')) gp.push('mixed'); if(ck('h-gp-drivers')) gp.push('drivers'); return gp; })(),
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
-      rt:5,rv:0,sc:(id%6),host:v('h-name').slice(0,50),sup:false,mine:true,st:'pending',ownerEmail:state.user.email,
+      rt:5,rv:0,sc:(id%6),host:v('h-name').slice(0,50),sup:false,mine:!onBehalf,st:'pending',ownerEmail:ownerEm,claim:(onBehalf?{pending:true,by:state.user.email,at:Date.now()}:null),
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen,whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:Date.now(), privacyVersion:PRIVACY_VERSION,
+      voen:voen,whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:(onBehalf?null:Date.now()), privacyVersion:PRIVACY_VERSION,
       cover:coverUrl, coverThumb:(results[0]&&r3[0][2])||null, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
       rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
@@ -5134,6 +5182,7 @@ function addListing(e){
     document.getElementById('r-novisitors').checked=false;
     document.getElementById('r-camera').checked=false;
     renderHost(); renderAdmin(); render();
+    if(onBehalf){ onBehalfToggle(); toast('Elan '+ownerEm+' adından yaradıldı. Ev sahibinə e-poçt getdi, o daxil olub təsdiqləməlidir'); return; }
     document.getElementById('verifyCallText').textContent =
       "Zəhmət olmasa şəxsiyyətinizi təsdiq edən sənəd (şəxsiyyət vəsiqəsi) yanınızda olsun. Bir qədər sonra +994 50 331 92 99 nömrəsindən sizin qeyd etdiyiniz "+whatsapp+" WhatsApp nömrənizə görüntülü əlaqə saxlanılacaq. Yerləşdirdiyiniz elanla bağlı bəzi yoxlamalar aparılacaq.";
     openModal('verifyCallModal');
@@ -5447,7 +5496,7 @@ function exportHouseReportCsv(id){
   toast('Hesabat yükləndi ('+rows.length+' sətir)');
 }
 function renderHost(){
-  try{ draftBannerUpdate(); }catch(e){}
+  try{ draftBannerUpdate(); adminBoxUpdate(); }catch(e){}
   loadHostNotices();
   loadClaims();
   renderHostReports();
@@ -5481,7 +5530,8 @@ function renderHost(){
       +(isDriverListing(x)?spotsHtmlHost(x):'')
       +'<div class="m">VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(String(x.iban).slice(0,8))+'…':'')+'</div>'
       +(x.st==='approved'&&!isEpointId(x.epointId)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
-      +(x.st==='pending'?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
+      +claimBoxHtml(x)
+      +(x.st==='pending'&&!(x.claim&&x.claim.pending)?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
       +(x.deleteRequest?'<div class="m" style="color:var(--warn);font-weight:700;white-space:normal">Silmə müraciətiniz admin baxışındadır</div>':'')
       +(!x.deleteRequest&&x.deleteRejected?'<div class="m" style="color:var(--nar);font-weight:700;white-space:normal">Silmə müraciəti rədd edildi: '+esc(x.deleteRejected.reason)+'</div>':'')
       +'<div style="margin-top:8px">'+listingTag(x.st)+(x.pendingEdit?' <span class="pendingbadge">Dəyişiklik admin təsdiqini gözləyir</span>':'')+' '+bookModeChipHtml(x)+'</div></div>'
@@ -5959,7 +6009,7 @@ function draftRestore(){
     }
     var tc=document.getElementById('h-title-count'); if(tc) tc.textContent=(F['h-title']||'').length;
     var wa=document.getElementById('h-whatsapp'); if(wa&&wa.value) formatAzPhone(wa);
-    try{ driversToggle(); }catch(e){}
+    try{ driversToggle(); onBehalfToggle(); }catch(e){}
     state.pendingTiers=d.tiers||[]; renderPriceTiers();
     state.pendingRooms=d.rooms||[]; renderPendingRooms(); renderRoomPhotoGrid();
     var lat=parseFloat(F['h-lat']), lng=parseFloat(F['h-lng']);
@@ -6383,6 +6433,7 @@ function resolveReport(id,remove){
 /* ============ admin ============ */
 function approveListing(id,ok){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
+  if(ok && x.claim && x.claim.pending){ toast('Ev sahibi ('+(x.ownerEmail||'')+') elanı hələ təsdiqləməyib. Əvvəlcə o daxil olub təsdiq etməlidir'); return false; }
   if(ok){
     var inp=document.getElementById('ep-'+id)||document.getElementById('ep-d-'+id);
     var val=String(inp&&inp.value?inp.value:(x.epointId||'')).trim().toLowerCase();
@@ -7054,7 +7105,8 @@ function modPendingCard(x){
       +'<h4>'+esc(x.t)+'</h4>'
       +'<div class="m">'+esc(x.c)+' ('+regionOf(x.c)+') · '+esc(x.d)+' · '+esc(x.ty)+' · '+az(x.p)+'/gecə</div>'
       +ownerKycLineHtml(x)
-      +'<div class="m">Ev sahibi: '+esc(x.host)+' · VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(x.iban):'')+'</div>'
+      +'<div class="m">'+claimBadgeHtml(x)+(x.claim&&x.claim.by?'<span style="color:var(--muted)">'+esc(x.claim.by)+' yaradıb</span>':'')+'</div>'
+      +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+' · VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(x.iban):'')+'</div>'
       +'<div class="m">'+(x.whatsapp?('WhatsApp (görüntülü təsdiq): <a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
       +'<div class="m">'+(roomCount?roomCount+' otaq/sahə · ':'')+photoCount+' şəkil yükləndi</div>'
       +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
