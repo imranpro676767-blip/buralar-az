@@ -739,13 +739,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
     <h3 style="margin:28px 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span id="listingFormHeading">Yeni elan yerləşdir</span><button type="button" id="cancelEditBtn" class="btn sm ghost" style="display:none;width:auto" onclick="cancelListingEdit()">İmtina et</button></h3>
     <form class="frm" id="listingForm" onsubmit="handleListingFormSubmit(event)">
-      <div class="full" id="h-admin-box" style="display:none;border:1px dashed var(--line);border-radius:12px;padding:12px 14px;background:rgba(46,160,110,.07)">
-        <label style="display:flex;gap:9px;align-items:center;cursor:pointer;font-weight:800"><input type="checkbox" id="h-onbehalf" onchange="onBehalfToggle()" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Ev sahibi adından yerləşdir (admin)</label>
-        <div id="h-onbehalf-fields" style="display:none;margin-top:10px;display:none;gap:10px;grid-template-columns:1fr 1fr">
-          <label>Ev sahibinin Gmail ünvanı<input id="h-owner-email" type="email" autocomplete="off" placeholder="evsahibi@gmail.com"></label>
-          <label>Gmail ünvanını təkrar yaz<input id="h-owner-email2" type="email" autocomplete="off" placeholder="evsahibi@gmail.com"></label>
-          <div class="hint" style="grid-column:1/-1;margin:0">Elan həmin Gmail-ə bağlanacaq və bron üçün açılmayacaq. Ev sahibi həmin Gmail ilə daxil olub şərtləri qəbul edib elanı təsdiqləməlidir. İstifadə Şərtləri və Məxfilik qutularını sən yox, ev sahibi təsdiqləyir. Aşağıda ev sahibinin adı, VÖEN-i və WhatsApp nömrəsini yaz.</div>
-        </div>
+      <div class="full" id="h-proxy-banner" style="display:none;border:1px dashed var(--ok);border-radius:12px;padding:12px 14px;background:rgba(46,160,110,.09);align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div><b>Ev sahibi adından yerləşdirirsən:</b> <span id="h-proxy-email"></span><div class="hint" style="margin:2px 0 0">Elan bu Gmail-ə bağlanacaq və ev sahibi təsdiqləməyənə qədər bron üçün açılmayacaq. İstifadə Şərtləri və Məxfilik qutularını ev sahibi təsdiqləyir.</div></div>
+        <button type="button" class="btn sm ghost" style="width:auto" onclick="cancelProxy()">Ləğv et</button>
       </div>
       <h4>Ev haqqında</h4>
       <label class="full">Elanın başlığı<input id="h-title" required maxlength="60" placeholder="Dəniz mənzərəli mənzil, Bakı bulvarı" oninput="document.getElementById('h-title-count').textContent=this.value.length"></label>
@@ -1120,6 +1116,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button data-sub="hosts" aria-selected="false" onclick="goSub('hosts')">Ev sahibləri <span id="hostscount"></span></button>
         <button data-sub="sanc" aria-selected="false" onclick="goSub('sanc')">Nəzarət <span id="sanccount"></span></button>
         <div class="adm-grp">Elanlar</div>
+        <button data-sub="proxy" aria-selected="false" onclick="goSub('proxy')">+ Ev sahibi adından elan</button>
         <button data-sub="mod" aria-selected="false" onclick="goSub('mod')">Elan moderasiyası <span id="modcount"></span></button>
         <button data-sub="edits" aria-selected="false" onclick="goSub('edits')">Elan dəyişiklikləri <span id="editcount"></span></button>
         <button data-sub="dels" aria-selected="false" onclick="goSub('dels')">Silinmə müraciətləri <span id="delcount"></span></button>
@@ -1185,6 +1182,20 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="rz-sum" id="custsum"></div>
         <div class="blist" id="customerlist"></div>
         <div class="rz-pager" id="custpager"></div>
+      </div>
+
+      <div class="sub" id="s-proxy">
+        <div class="dash-card" style="max-width:760px">
+          <h4>Yeni elan: ev sahibi adından</h4>
+          <div class="sub2" style="margin-bottom:10px">Ev sahibinin Gmail ünvanını yaz, sonra elan formasını aç. Elan həmin Gmail-ə bağlanır və ev sahibi təsdiqləməyənə qədər sayta çıxmır. Ev sahibinin adı, VÖEN-i və WhatsApp nömrəsini formada yazmalısan.</div>
+          <div class="fieldgrid" style="gap:10px">
+            <div class="f"><label for="a-owner-email">Ev sahibinin Gmail ünvanı</label><input id="a-owner-email" type="email" autocomplete="off" placeholder="evsahibi@gmail.com"></div>
+            <div class="f"><label for="a-owner-email2">Gmail ünvanını təkrar yaz</label><input id="a-owner-email2" type="email" autocomplete="off" placeholder="evsahibi@gmail.com"></div>
+          </div>
+          <button class="btn" style="width:auto;margin-top:12px" onclick="openProxyForm()">Elan formasını aç</button>
+        </div>
+        <h3 style="margin:22px 0 10px;font-size:17px">Ev sahibi təsdiqi gözləyən elanlar</h3>
+        <div id="proxyList"></div>
       </div>
 
       <div class="sub" id="s-mod">
@@ -1738,7 +1749,7 @@ function loadAudit(){
 }
 function verifyAdminAccess(){
   if(!fbOnline || !db || !fbAuth || !fbAuth.currentUser){ state.isAdminUser=false; return Promise.resolve(false); }
-  return db.collection('admin_ping').doc('check').get().then(function(){ state.isAdminUser=true; return true; })
+  return db.collection('admin_ping').doc('check').get().then(function(){ state.isAdminUser=true; try{ adminBoxUpdate(); }catch(e){} return true; })
     .catch(function(){ state.isAdminUser=false; return false; });
 }
 var db=null, fbStorage=null, fbAuth=null, fbFunctions=null, fbOnline=false;
@@ -2942,6 +2953,7 @@ function needLogin(){ if(state.user) return false; openLogin(); toast("Davam etm
 /* ============ naviqasiya ============ */
 function go(tab){
   state.tab=tab;
+  if(tab==='host'){ try{ adminBoxUpdate(); }catch(e){} }
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.getElementById('p-'+tab).classList.add('active');
   document.querySelectorAll('nav.tabs button').forEach(function(b,i){ b.setAttribute('aria-selected',['kesf','rez','host'][i]===tab?'true':'false'); });
@@ -3023,6 +3035,7 @@ var ADM_HEAD={
   cust:['Müştərilər','Qeydiyyatdan keçmiş və doğrulanmış istifadəçilər.'],
   hosts:['Ev sahibləri','Ev sahiblərinin rekvizitləri və Epoint ID-ləri.'],
   sanc:['Nəzarət','Pozuntular, xəbərdarlıqlar və sanksiyalar.'],
+  proxy:['Ev sahibi adından elan','Elanı sən hazırla, ev sahibi öz Gmail-i ilə daxil olub təsdiq etsin.'],
   mod:['Elan moderasiyası','Təsdiq gözləyən yeni elanlar.'],
   edits:['Elan dəyişiklikləri','Ev sahiblərinin göndərdiyi dəyişikliklər.'],
   dels:['Silinmə müraciətləri','Elanı silmək istəyən ev sahibləri.'],
@@ -3037,6 +3050,7 @@ function goSub(s){
   if(s==='hnotice') setTimeout(loadAdminNotices,0);
   if(s==='dmg') setTimeout(loadAdminClaims,0);
   if(s==='audit') setTimeout(loadAudit,0);
+  if(s==='proxy') setTimeout(renderProxyList,0);
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
   var pane=document.getElementById('s-'+s); if(pane) pane.classList.add('active');
   document.querySelectorAll('.adm-nav button[data-sub]').forEach(function(b){ b.setAttribute('aria-selected', b.getAttribute('data-sub')===s?'true':'false'); });
@@ -5037,15 +5051,31 @@ function uploadListingMedia(id, rooms, btn){
 }
 
 /* ===== Admin: ev sahibi adından elan ===== */
-function onBehalfToggle(){
-  var on=document.getElementById('h-onbehalf'); var box=document.getElementById('h-onbehalf-fields'); if(!on||!box) return;
-  box.style.display=on.checked?'grid':'none';
+function proxyBannerUpdate(){
+  var bn=document.getElementById('h-proxy-banner'); if(!bn) return;
+  var on=!!(state.isAdminUser && state.proxyEmail);
+  bn.style.display=on?'flex':'none';
+  var em=document.getElementById('h-proxy-email'); if(em) em.textContent=on?state.proxyEmail:'';
 }
-function adminBoxUpdate(){
-  var b=document.getElementById('h-admin-box'); if(!b) return;
-  b.style.display=(state.isAdminUser)?'block':'none';
-  if(!state.isAdminUser){ var c=document.getElementById('h-onbehalf'); if(c) c.checked=false; }
-  onBehalfToggle();
+function adminBoxUpdate(){ if(!state.isAdminUser) state.proxyEmail=null; proxyBannerUpdate(); }
+function onBehalfToggle(){ proxyBannerUpdate(); }
+function openProxyForm(){
+  if(!state.isAdminUser){ toast('Yalnız admin'); return; }
+  var oe1=document.getElementById('a-owner-email').value.trim().toLowerCase(), oe2=document.getElementById('a-owner-email2').value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(oe1)){ toast('Ev sahibinin e-poçt ünvanı düzgün deyil'); return; }
+  if(oe1!==oe2){ toast('İki e-poçt ünvanı eyni deyil, yenidən yoxla'); return; }
+  if(oe1===String(state.user.email).toLowerCase() || ADMIN_PROTECTED.indexOf(oe1)>=0){ toast('Bu admin hesabıdır, ev sahibinin öz Gmail-ini yaz'); return; }
+  state.proxyEmail=oe1;
+  if(state.editingListingId){ try{ cancelListingEdit(); }catch(e){} }
+  go('host'); proxyBannerUpdate();
+  toast('Elan formu açıldı: '+oe1+' adından yerləşdirirsən');
+}
+function cancelProxy(){ state.proxyEmail=null; proxyBannerUpdate(); toast('Ləğv edildi'); }
+function renderProxyList(){
+  var el=document.getElementById('proxyList'); if(!el) return;
+  var list=state.custom.filter(function(x){return x.claim&&x.claim.pending;});
+  el.innerHTML=!list.length?'<div class="empty"><p>Hazırda ev sahibi təsdiqi gözləyən elan yoxdur.</p></div>'
+    :list.map(function(x){ return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div><h4>'+esc(x.t)+'</h4><div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div><div class="m">Yaradılıb: '+(x.claim.at?fmtDate(new Date(x.claim.at).toISOString().slice(0,10)):'')+' · '+claimBadgeHtml(x)+'</div></div></div>'; }).join('');
 }
 function claimBadgeHtml(x){
   return (x&&x.claim&&x.claim.pending)?'<span class="tag hold" style="background:var(--warn);color:#fff">Ev sahibi təsdiqi gözləyir</span> ':'';
@@ -5079,14 +5109,10 @@ function addListing(e){
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
   var epReq=readEpointRequest(); if(epReq===false) return;
-  var onBehalf=!!(state.isAdminUser && document.getElementById('h-onbehalf') && ck('h-onbehalf')), ownerEm=state.user.email;
+  var onBehalf=!!(state.isAdminUser && state.proxyEmail), ownerEm=state.user.email;
   if(onBehalf){
-    var oe1=v('h-owner-email').trim().toLowerCase(), oe2=v('h-owner-email2').trim().toLowerCase();
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(oe1)){ toast('Ev sahibinin e-poçt ünvanı düzgün deyil'); return; }
-    if(oe1!==oe2){ toast('İki e-poçt ünvanı eyni deyil, yenidən yoxla'); return; }
-    if(oe1===String(state.user.email).toLowerCase()){ toast('Ev sahibinin e-poçtu sənin hesabın ola bilməz'); return; }
-    if(ADMIN_PROTECTED.indexOf(oe1)>=0){ toast('Bu e-poçt admin hesabıdır, ev sahibinin öz Gmail-ini yaz'); return; }
-    ownerEm=oe1;
+    ownerEm=String(state.proxyEmail).toLowerCase();
+    if(ownerEm===String(state.user.email).toLowerCase() || ADMIN_PROTECTED.indexOf(ownerEm)>=0){ toast('Bu admin hesabıdır, ev sahibinin öz Gmail-ini yaz'); return; }
   }
   if(!onBehalf && !ck('h-terms')){ toast("Elan göndərmək üçün İstifadə Şərtlərini qəbul etməlisən"); return; }
   if(!onBehalf && !ck('h-privacy')){ toast("Elan göndərmək üçün Məxfilik siyasətini də qəbul etməlisən"); return; }
@@ -5182,7 +5208,7 @@ function addListing(e){
     document.getElementById('r-novisitors').checked=false;
     document.getElementById('r-camera').checked=false;
     renderHost(); renderAdmin(); render();
-    if(onBehalf){ onBehalfToggle(); toast('Elan '+ownerEm+' adından yaradıldı. Ev sahibinə e-poçt getdi, o daxil olub təsdiqləməlidir'); return; }
+    if(onBehalf){ state.proxyEmail=null; proxyBannerUpdate(); document.getElementById('a-owner-email').value=''; document.getElementById('a-owner-email2').value=''; go('admin'); goSub('proxy'); toast('Elan '+ownerEm+' adından yaradıldı. Ev sahibinə e-poçt getdi, o daxil olub təsdiqləməlidir'); return; }
     document.getElementById('verifyCallText').textContent =
       "Zəhmət olmasa şəxsiyyətinizi təsdiq edən sənəd (şəxsiyyət vəsiqəsi) yanınızda olsun. Bir qədər sonra +994 50 331 92 99 nömrəsindən sizin qeyd etdiyiniz "+whatsapp+" WhatsApp nömrənizə görüntülü əlaqə saxlanılacaq. Yerləşdirdiyiniz elanla bağlı bəzi yoxlamalar aparılacaq.";
     openModal('verifyCallModal');
@@ -5961,7 +5987,7 @@ function draftCollect(){
 function draftMeaningful(d){ return !!(d && ((d.fields['h-title']||'').trim() || (d.fields['h-addr']||'').trim() || (d.fields['h-desc']||'').trim() || d.rooms.length)); }
 function draftSave(){
   try{
-    if(_draftRestoring||state.editingListingId) return;
+    if(_draftRestoring||state.editingListingId||state.proxyEmail) return;
     var key=draftKey(); if(!key) return;
     var d=draftCollect(); if(!draftMeaningful(d)) return;
     localStorage.setItem(key, JSON.stringify(d)); draftBannerUpdate();
