@@ -485,6 +485,9 @@ form.frm h4:first-of-type{border-top:0;padding-top:0;margin-top:0}
 .togs{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
 .tog{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:700;background:var(--paper)}
 .tog input{width:17px;height:17px;accent-color:var(--ok);flex:none;margin:0}
+.rm-hall-only{display:none}
+#rm-bedroom.is-hall .rm-hall-only{display:flex}
+#rm-bedroom.is-hall .rm-bed-only{display:none}
 .togs label{display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3}
 @media (max-width:640px){form.frm{grid-template-columns:minmax(0,1fr);padding:14px}form.frm>*,form.frm label{min-width:0}form.frm input,form.frm select,form.frm textarea{min-width:0;max-width:100%}.roombuilder{grid-template-columns:1fr}.rm-block{grid-template-columns:1fr}}
 
@@ -831,6 +834,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <label>Nə əlavə edirsən?
           <select id="rm-kind" onchange="updateRoomKindUI()">
             <option value="bedroom">Yataq otağı</option>
+            <option value="hall">Zal / qonaq otağı</option>
             <option value="foyer">Foye</option>
             <option value="gym">İdman zalı</option>
             <option value="game">Oyun zalı</option>
@@ -846,7 +850,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div></div>
 
         <div id="rm-bedroom" class="rm-block">
-          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Bu otaqdakı yataqların sayı (hamısını doldur, olmayanı 0 burax)</div>
+          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Bu otaqdakı yataqların sayı (hamısını doldur, olmayanı 0 burax). Zalda yataq olmaya bilər, açılan divan varsa onu yaz.</div>
           <label>Tək yataq (1 nəfərlik)<input id="rm-bed-single" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
           <label>Cüt yataq (Double / Queen / King, 2 nəfərlik)<input id="rm-bed-double" type="number" min="0" max="10" value="1" inputmode="numeric" oninput="bedSleepsHint()"></label>
           <label>İkimərtəbəli çarpayı (2 nəfərlik)<input id="rm-bed-bunk" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
@@ -859,7 +863,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
               <option>Kondisioner (isti hava rejimi)</option><option>Yerdən isitmə</option><option>İsitmə yoxdur</option>
             </select>
           </label>
-          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Otaqda olanlar</div>
+          <div class="full" style="font-size:13px;font-weight:700;color:var(--muted)">Otaqda / zalda olanlar</div>
           <div class="togs full">
             <div class="tog"><input type="checkbox" id="rm-b-ac" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-ac" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Kondisioner</label></div>
             <div class="tog"><input type="checkbox" id="rm-b-wardrobe" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-wardrobe" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Paltar dolabı</label></div>
@@ -868,7 +872,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <div class="tog"><input type="checkbox" id="rm-b-desk" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-desk" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Yazı masası</label></div>
             <div class="tog"><input type="checkbox" id="rm-b-safe" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-safe" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Seyf</label></div>
             <div class="tog"><input type="checkbox" id="rm-b-fan" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-fan" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Fen</label></div>
-            <div class="tog"><input type="checkbox" id="rm-b-bath" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-bath" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Şəxsi sanuzeli var</label></div>
+            <div class="tog rm-bed-only"><input type="checkbox" id="rm-b-bath" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-bath" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Şəxsi sanuzeli var</label></div>
+            <div class="tog rm-hall-only"><input type="checkbox" id="rm-b-fireplace" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-fireplace" style="display:block;flex:1;min-width:0;cursor:pointer">Kamin</label></div>
+            <div class="tog rm-hall-only"><input type="checkbox" id="rm-b-dining" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-dining" style="display:block;flex:1;min-width:0;cursor:pointer">Yemək masası</label></div>
+            <div class="tog rm-hall-only"><input type="checkbox" id="rm-b-sofaset" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="rm-b-sofaset" style="display:block;flex:1;min-width:0;cursor:pointer">Oturma dəsti (künc divan, kreslolar)</label></div>
           </div>
         </div>
 
@@ -3311,7 +3318,7 @@ function galleryHtmlFor(x){
    imkanları ✓/✕ işarəsi ilə açıq şəkildə göstəririk. Beləliklə qonaq "bu evdə kondisioner var"
    deyə ümumiləşdirmək əvəzinə, məhz hansı otaqda olub-olmadığını görür və giriş zamanı
    mübahisə yaranmır. */
-var BEDROOM_AMENITY_OPTIONS=["Kondisioner","Paltar dolabı","Ütü","Televizor","Yazı masası","Seyf","Fen"];
+var BEDROOM_AMENITY_OPTIONS=["Kondisioner","Paltar dolabı","Ütü","Televizor","Yazı masası","Seyf","Fen","Kamin","Yemək masası","Oturma dəsti"];
 var BATHROOM_TOILETRY_OPTIONS=["Şampun","Dəsmal","Sabun","Diş fırçası","Diş pastası","Duş geli","Tualet kağızı","Fen"];
 var GYM_EQUIPMENT_OPTIONS=["Qaçış zolağı","Stasionar velosiped","Eliptik trenajor","Çəki dəstləri","Güc tərbiyəsi maşınları","Turnik","Məşq skamyası","Yoga döşəkçəsi","Boks kisəsi","Güzgülü divar","Kondisioner"];
 var FOYER_OPTIONS=["Kondisioner","Divan / künc","Kreslo","Televizor","Qəhvə stolu","Ayaqqabılıq","Asılqan / soyunma şkafı","Güzgü","Kamin","Ventilyator"];
@@ -3367,8 +3374,8 @@ function roomsHtmlFor(x){
   if(!(x.rooms && x.rooms.length)) return '';
   return x.rooms.map(function(r){
     var lines=[], checklist='';
-    if(r.kind==='bedroom'){
-      lines.push('Yataq: '+(r.beds?bedSummaryText(bedCounts(r))+' ('+bedSleeps(bedCounts(r))+' nəfərlik yer)':r.bedType)); lines.push('İsitmə: '+r.heating);
+    if(r.kind==='bedroom'||r.kind==='hall'){
+      lines.push((r.kind==='hall'&&!(r.beds&&bedSleeps(bedCounts(r)))?'Yataq yeri: yoxdur':'Yataq: '+(r.beds?bedSummaryText(bedCounts(r))+' ('+bedSleeps(bedCounts(r))+' nəfərlik yer)':r.bedType))); lines.push('İsitmə: '+r.heating);
       checklist = roomAmenChecklistHtml(BEDROOM_AMENITY_OPTIONS, r.amenities);
     } else if(r.kind==='pool'){
       lines.push(r.poolType); lines.push('Ölçü: '+r.size); lines.push('Su: '+r.temp);
@@ -4383,7 +4390,10 @@ function handleCoverUpload(input){
 }
 function updateRoomKindUI(){
   var k=document.getElementById('rm-kind').value;
-  document.getElementById('rm-bedroom').style.display = k==='bedroom'?'grid':'none';
+  document.getElementById('rm-bedroom').style.display = (k==='bedroom'||k==='hall')?'grid':'none';
+  document.getElementById('rm-bedroom').classList.toggle('is-hall', k==='hall');
+  if(window._prevRoomKind!==k){ if(k==='hall') setBedCounts({single:0,double:0,bunk:0,sofa:0,crib:0}); else if(window._prevRoomKind==='hall' && k==='bedroom') setBedCounts({single:0,double:1,bunk:0,sofa:0,crib:0}); window._prevRoomKind=k; }
+  try{ bedSleepsHint(); }catch(e){}
   document.getElementById('rm-pool').style.display = k==='pool'?'grid':'none';
   document.getElementById('rm-game').style.display = k==='game'?'grid':'none';
   document.getElementById('rm-bathroom').style.display = k==='bathroom'?'grid':'none';
@@ -4437,7 +4447,7 @@ function bathCountOf(rooms){
   return n||1;
 }
 function bedroomCountOf(rooms){ return (rooms||[]).filter(function(r){return r.kind==='bedroom';}).length; }
-var ROOM_KIND_LABELS={bedroom:'Yataq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',other:'Digər şəkillər',kitchen:'Mətbəx',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
+var ROOM_KIND_LABELS={bedroom:'Yataq otağı',hall:'Zal',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',other:'Digər şəkillər',kitchen:'Mətbəx',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət'};
 var KITCHEN_OPTIONS=["Ocaq / plitə","Soba (duxovka)","Mikrodalğalı soba","Soyuducu","Dondurucu","Qabyuyan","Çaydan / elektrik çaydan","Qəhvə maşını","Toster","Blender","Qazan-qab","Boşqab, stəkan, çəngəl-bıçaq","Havalandırma (aspirator)","Yemək masası","Su qabı / içməli su"];
 var KITCHEN_MAP=[["stove", "Ocaq / plitə"], ["oven", "Soba (duxovka)"], ["micro", "Mikrodalğalı soba"], ["fridge", "Soyuducu"], ["freezer", "Dondurucu"], ["dish", "Qabyuyan"], ["kettle", "Çaydan / elektrik çaydan"], ["coffee", "Qəhvə maşını"], ["toaster", "Toster"], ["blender", "Blender"], ["pots", "Qazan-qab"], ["plates", "Boşqab, stəkan, çəngəl-bıçaq"], ["hood", "Havalandırma (aspirator)"], ["table", "Yemək masası"], ["water", "Su qabı / içməli su"]];
 var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
@@ -4467,7 +4477,8 @@ function readBedCounts(){
 function bedSleepsHint(){
   var el=document.getElementById('rm-bed-hint'); if(!el) return;
   var b=readBedCounts(), n=bedSleeps(b);
-  el.textContent=n?('Bu otaqda yatacaq yer: '+n+' nəfər'):'Ən azı bir yataq yaz';
+  var isHall=(document.getElementById('rm-kind')||{}).value==='hall';
+  el.textContent=n?((isHall?'Bu zalda yatacaq yer: ':'Bu otaqda yatacaq yer: ')+n+' nəfər'):(isHall?'Zalda yataq yeri yoxdur (olmaya bilər)':'Ən azı bir yataq yaz');
 }
 function setBedCounts(b){
   document.getElementById('rm-bed-single').value=b.single; document.getElementById('rm-bed-double').value=b.double;
@@ -4475,7 +4486,7 @@ function setBedCounts(b){
 }
 /* Elanın ümumi yatacaq sayı (yataq otaqları üzrə) — qonaq tutumundan az ola bilməz */
 function totalSleepsOf(rooms){
-  return (rooms||[]).filter(function(r){return r.kind==='bedroom';}).reduce(function(s,r){return s+bedSleeps(bedCounts(r));},0);
+  return (rooms||[]).filter(function(r){return r.kind==='bedroom'||r.kind==='hall';}).reduce(function(s,r){return s+bedSleeps(bedCounts(r));},0);
 }
 function addRoomToPending(){
   var kind=document.getElementById('rm-kind').value;
@@ -4483,10 +4494,10 @@ function addRoomToPending(){
   var _ed=state.editingRoom;
   var room={id:_ed?_ed.room.id:('RM-'+Math.floor(1e5+Math.random()*9e5)), kind:kind, photos:state.currentRoomPhotos.slice(), photoFiles:state.currentRoomPhotoFiles.slice()};
   var ck=function(id){return document.getElementById(id).checked;}, v=function(id){return document.getElementById(id).value;};
-  if(kind==='bedroom'){
+  if(kind==='bedroom'||kind==='hall'){
     var _bc=readBedCounts();
-    if(!bedSleeps(_bc)){ toast("Bu otaqda ən azı bir yataq yaz (tək, cüt, ikimərtəbəli, açılan divan və ya uşaq çarpayısı)"); return; }
-    room.beds=_bc; room.sleeps=bedSleeps(_bc); room.bedType=bedSummaryText(_bc); room.heating=v('rm-b-heat'); room.privateBathroom=ck('rm-b-bath');
+    if(kind==='bedroom' && !bedSleeps(_bc)){ toast("Bu otaqda ən azı bir yataq yaz (tək, cüt, ikimərtəbəli, açılan divan və ya uşaq çarpayısı)"); return; }
+    room.beds=_bc; room.sleeps=bedSleeps(_bc); room.bedType=bedSleeps(_bc)?bedSummaryText(_bc):'Yataq yeri yoxdur'; room.heating=v('rm-b-heat'); room.privateBathroom=(kind==='bedroom')&&ck('rm-b-bath');
     room.amenities=[];
     if(ck('rm-b-ac')) room.amenities.push('Kondisioner');
     if(ck('rm-b-wardrobe')) room.amenities.push('Paltar dolabı');
@@ -4495,6 +4506,7 @@ function addRoomToPending(){
     if(ck('rm-b-desk')) room.amenities.push('Yazı masası');
     if(ck('rm-b-safe')) room.amenities.push('Seyf');
     if(ck('rm-b-fan')) room.amenities.push('Fen');
+    if(kind==='hall'){ if(ck('rm-b-fireplace')) room.amenities.push('Kamin'); if(ck('rm-b-dining')) room.amenities.push('Yemək masası'); if(ck('rm-b-sofaset')) room.amenities.push('Oturma dəsti'); }
   } else if(kind==='pool'){
     room.temp=v('rm-p-temp'); room.size=v('rm-p-size'); room.poolType=v('rm-p-type');
   } else if(kind==='game'){
@@ -4576,6 +4588,7 @@ function addRoomToPending(){
   document.getElementById('rm-b-iron').checked=false; document.getElementById('rm-b-tv').checked=false;
   document.getElementById('rm-b-desk').checked=false; document.getElementById('rm-b-safe').checked=false;
   document.getElementById('rm-b-fan').checked=false; document.getElementById('rm-b-bath').checked=false;
+  ['fireplace','dining','sofaset'].forEach(function(k){ var e=document.getElementById('rm-b-'+k); if(e) e.checked=false; });
   setBedCounts({single:0,double:1,bunk:0,sofa:0,crib:0}); document.getElementById('rm-ba-count').value=1;
   document.getElementById('rm-g-domino').checked=false; document.getElementById('rm-g-nard').checked=false;
   document.getElementById('rm-g-billiard').checked=false; document.getElementById('rm-g-tennis').checked=false;
@@ -4889,6 +4902,7 @@ function loadAdminNotices(){
 /* ============ mövcud otağı redaktə et ============ */
 var ROOM_CHECK_MAPS={
   bedroom:{field:'amenities',pairs:[['Kondisioner','rm-b-ac'],['Paltar dolabı','rm-b-wardrobe'],['Ütü','rm-b-iron'],['Televizor','rm-b-tv'],['Yazı masası','rm-b-desk'],['Seyf','rm-b-safe'],['Fen','rm-b-fan']]},
+  hall:{field:'amenities',pairs:[['Kondisioner','rm-b-ac'],['Paltar dolabı','rm-b-wardrobe'],['Ütü','rm-b-iron'],['Televizor','rm-b-tv'],['Yazı masası','rm-b-desk'],['Seyf','rm-b-safe'],['Fen','rm-b-fan'],['Kamin','rm-b-fireplace'],['Yemək masası','rm-b-dining'],['Oturma dəsti','rm-b-sofaset']]},
   bathroom:{field:'toiletries',pairs:[['Şampun','rm-ba-shampoo'],['Dəsmal','rm-ba-towel'],['Sabun','rm-ba-soap'],['Diş fırçası','rm-ba-toothbrush'],['Diş pastası','rm-ba-toothpaste'],['Duş geli','rm-ba-showergel'],['Tualet kağızı','rm-ba-toiletpaper'],['Fen','rm-ba-hairdryer']]},
   gym:{field:'equipment',pairs:[['Qaçış zolağı','rm-gy-treadmill'],['Stasionar velosiped','rm-gy-bike'],['Eliptik trenajor','rm-gy-elliptical'],['Çəki dəstləri','rm-gy-weights'],['Güc tərbiyəsi maşınları','rm-gy-machines'],['Turnik','rm-gy-pullupbar'],['Məşq skamyası','rm-gy-bench'],['Yoga döşəkçəsi','rm-gy-yogamat'],['Boks kisəsi','rm-gy-punchbag'],['Güzgülü divar','rm-gy-mirror'],['Kondisioner','rm-gy-ac']]},
   foyer:{field:'foyerItems',pairs:[['Kondisioner','rm-f-ac'],['Divan / künc','rm-f-sofa'],['Kreslo','rm-f-armchair'],['Televizor','rm-f-tv'],['Qəhvə stolu','rm-f-coffeetable'],['Ayaqqabılıq','rm-f-shoes'],['Asılqan / soyunma şkafı','rm-f-hanger'],['Güzgü','rm-f-mirror'],['Kamin','rm-f-fireplace'],['Ventilyator','rm-f-fan']]},
@@ -4903,7 +4917,7 @@ function loadRoomIntoBuilder(r){
   var cm=ROOM_CHECK_MAPS[r.kind];
   if(cm){ var have=r[cm.field]||[]; cm.pairs.forEach(function(p){ var e=$(p[1]); if(e) e.checked=have.indexOf(p[0])>=0; }); }
   if(r.kind==='kitchen'){ var kh=r.kitchenItems||[]; KITCHEN_MAP.forEach(function(m){ var e=$('rm-k-'+m[0]); if(e) e.checked=kh.indexOf(m[1])>=0; }); }
-  if(r.kind==='bedroom'){ setBedCounts(bedCounts(r)); if(r.heating) $('rm-b-heat').value=r.heating; $('rm-b-bath').checked=!!r.privateBathroom; }
+  if(r.kind==='bedroom'||r.kind==='hall'){ setBedCounts(bedCounts(r)); if(r.heating) $('rm-b-heat').value=r.heating; $('rm-b-bath').checked=!!r.privateBathroom; }
   if(r.kind==='pool'){ if(r.temp) $('rm-p-temp').value=r.temp; if(r.size) $('rm-p-size').value=r.size; if(r.poolType) $('rm-p-type').value=r.poolType; }
   if(r.kind==='game'){
     ['domino','nard','billiard','tennis','foosball','dart','airhockey','ps'].forEach(function(k){ var e=$('rm-g-'+k); if(e) e.checked=!!r[k]; });
@@ -4937,7 +4951,7 @@ function cancelRoomEdit(){
 }
 function removeRoomFromPending(id){ state.pendingRooms=state.pendingRooms.filter(function(r){return r.id!==id;}); renderPendingRooms(); renderRoomPhotoGrid(); }
 function roomSummary(r){
-  if(r.kind==='bedroom') return r.bedType+' · '+r.heating+(r.privateBathroom?' · Şəxsi sanuzel':'')+(r.amenities.length?' · '+r.amenities.join(', '):'');
+  if(r.kind==='bedroom'||r.kind==='hall') return r.bedType+' · '+r.heating+(r.privateBathroom?' · Şəxsi sanuzel':'')+(r.amenities.length?' · '+r.amenities.join(', '):'');
   if(r.kind==='pool') return r.poolType+' · '+r.size+' · '+r.temp;
   if(r.kind==='game') return [r.domino?'Domino':null,r.nard?'Nərd':null,r.billiard?'Bilyard':null,r.tennis?'Stolüstü tennis':null,r.foosball?'Stolüstü futbol':null,r.dart?'Dartqın':null,r.airhockey?'Hava hokkeyi':null,r.ps?('PlayStation'+(r.psGen?' ('+r.psGen+')':'')):null].filter(Boolean).join(', ')||'Oyun ləvazimatı qeyd edilməyib';
   if(r.kind==='bathroom') return r.showerType+(r.toiletries&&r.toiletries.length?' · '+r.toiletries.join(', '):'');
