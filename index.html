@@ -158,13 +158,27 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .sortrow select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-weight:600;font-size:14px}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:26px 20px;padding:18px 0 48px}
-.card{background:transparent;border:0;padding:0;display:grid;gap:9px;cursor:pointer;text-align:left;min-width:0}
-.card .ph{position:relative;aspect-ratio:20/15;border-radius:var(--radius);overflow:hidden;background:var(--sand)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left;min-width:0;transition:box-shadow .15s,border-color .15s}
+.card:hover{box-shadow:var(--shadow);border-color:var(--ok)}
+.card .cbody{display:grid;gap:9px;padding:0 4px 4px;flex:1;align-content:start}
+.card .ph{position:relative;aspect-ratio:20/15;border-radius:12px;overflow:hidden;background:var(--sand)}
 .card .ph svg{width:100%;height:100%;display:block}
-.card:hover .ph{box-shadow:var(--shadow)}
 .card .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;min-width:0}
 .card h3{font-size:15.5px;font-weight:700;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .loc,.card .meta{color:var(--muted);font-size:14px;font-weight:500}
+.card .addr{color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.hchip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:800;line-height:1;padding:7px 11px;border-radius:999px;white-space:nowrap}
+.hchip svg{width:14px;height:14px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hchip.city{background:var(--ink);color:#F4EFE4}
+.hchip.type{background:#E3F3EC;color:var(--ok)}
+.hstats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.hstat{display:grid;gap:3px;justify-items:center;align-content:start;text-align:center;padding:8px 4px;min-width:0}
+.hstat + .hstat{border-left:1px solid var(--line)}
+.hstat svg{width:18px;height:18px;stroke:var(--ok);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.hstat b{font-size:17px;font-weight:900;line-height:1;color:var(--text)}
+.hstat small{font-size:11.5px;font-weight:700;color:var(--muted);line-height:1.15}
+
 .card .price{font-weight:800}
 .bmopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #e5e0d4;border-radius:12px;margin-bottom:8px;cursor:pointer;line-height:1.4}
 .bmopt input,.box .bmopt input[type=radio],label.bmopt input[type=radio]{margin:3px 0 0;flex:none;width:18px!important;min-width:18px;height:18px;padding:0}
@@ -3225,6 +3239,23 @@ function coverPriceHtml(x){
   var r=nightlyRateFor(x,x.minNights||1);
   return '<span class="pricetag">'+az(r)+'<small>/ '+(isDriverListing(x)?'sürücü':'gecə')+'</small></span>';
 }
+var HICON={
+  pin:'<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
+  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 010 5.6"/><path d="M18 14.3c2 .8 3.4 2.9 3.4 5.2"/>',
+  bed:'<path d="M3 18V7"/><path d="M3 14h18v4"/><path d="M21 14v-2a3 3 0 00-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/>',
+  bath:'<path d="M4 12h16v2a5 5 0 01-5 5H9a5 5 0 01-5-5v-2z"/><path d="M6 12V6a2 2 0 013.7-1"/><path d="M7 19l-1 2M17 19l1 2"/>'
+};
+function hsvg(n){ return '<svg viewBox="0 0 24 24" aria-hidden="true">'+HICON[n]+'</svg>'; }
+function homeChipsHtml(x){
+  return '<div class="hchips"><span class="hchip city">'+hsvg('pin')+esc(x.c)+'</span><span class="hchip type">'+hsvg('home')+esc(x.ty)+'</span></div>';
+}
+function homeStatsHtml(x){
+  return '<div class="hstats">'
+    +'<div class="hstat">'+hsvg('users')+'<b>'+x.g+'</b><small>qonaq</small></div>'
+    +'<div class="hstat">'+hsvg('bed')+'<b>'+x.r+'</b><small>yataq otağı</small></div>'
+    +'<div class="hstat">'+hsvg('bath')+'<b>'+x.b+'</b><small>sanitar qovşaq</small></div></div>';
+}
 function cardTiersHtml(x){
   var mn=x.minNights||1;
   var t=(x.priceTiers||[]).filter(function(pt){return pt.minNights>=Math.max(2,mn) && pt.price<x.p;}).slice().sort(function(a,b){return a.minNights-b.minNights;});
@@ -3282,12 +3313,14 @@ function render(scroll,keepPage){
     var thumb = x.cover ? '<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return '<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
       +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+modeTagHtml(x)+coverPriceHtml(x)+'</div>'
+      +'<div class="cbody">'
       +'<div class="row"><h3 title="'+esc(x.t)+'"><a href="'+listingPath(x)+'" onclick="event.preventDefault()" style="color:inherit;text-decoration:none">'+esc(x.t)+'</a></h3><span class="rate"'+(x.rv?' onclick="event.stopPropagation();openListingReviews('+x.id+')" style="cursor:pointer;text-decoration:underline" title="Rəylərə bax"':'')+'>★ '+(x.rv?x.rt.toFixed(2):'Yeni')+'</span></div>'
-      +'<div class="loc">'+esc(x.c)+', '+esc(x.d)+' · '+esc(x.ty)+'</div>'
-      +'<div class="meta">'+x.g+' qonaq · '+x.r+' otaq · '+x.b+' sanitar qovşaq</div>'
+      +homeChipsHtml(x)
+      +'<div class="addr" title="'+esc(x.d)+'">'+esc(x.d)+'</div>'
+      +homeStatsHtml(x)
       +cardTiersHtml(x)
       +(nights(document.getElementById('d1').value,document.getElementById('d2').value)>0?'<div class="price" style="margin-top:6px">'+cardPriceHtml(x)+'</div>':'')
-      +spotsHtml(x)+'</div>';
+      +spotsHtml(x)+'</div></div>';
   }).join('') || '<div class="empty" style="grid-column:1/-1"><h3>Seçdiyiniz filtrlərə uyğun ev tapılmadı</h3><p>Zəhmət olmasa tarixləri, bölgəni və ya digər filtrləri dəyişib yenidən cəhd edin.</p><button class="btn sm ghost" onclick="resetFilters()">Filtrləri sıfırla</button></div>')
     + (full.length>gridShown ? '<div style="grid-column:1/-1;text-align:center;padding:12px 0"><button class="btn ghost" onclick="loadMoreListings()">Daha çox göstər ('+(full.length-gridShown)+' qalır)</button></div>' : '');
   loadSpots(list);
@@ -3468,9 +3501,11 @@ function leftInfoHtml(x){
   return '<div>'
     +'<h2>'+esc(x.t)+'</h2>'
     +(x.st==='approved'?'<div style="margin:-2px 0 6px"><button type="button" class="btn sm ghost" style="width:auto" onclick="shareListing('+x.id+')">🔗 Linki paylaş</button></div>':'')
-    +'<div class="facts"><span>'+esc(x.c)+', '+esc(x.d)+' · '+regionOf(x.c)+'</span>'
+    +homeChipsHtml(x).replace('class="hchips"','class="hchips" style="margin:2px 0 10px"')
+    +'<div class="facts"><span>'+esc(x.d)+' · '+regionOf(x.c)+'</span>'
       +(x.rv?('<span style="cursor:pointer;text-decoration:underline" onclick="openListingReviews('+x.id+')" title="Rəylərə bax">★ '+x.rt.toFixed(2)+' ('+x.rv+' rəy)</span>'):'<span>★ Yeni elan</span>')
-      +'<span>'+esc(x.ty)+'</span><span>'+x.g+' qonaq · '+x.r+' yataq otağı · '+x.b+' sanitar qovşaq</span></div>'
+      +'</div>'
+    +'<div style="max-width:460px;margin:10px 0 0">'+homeStatsHtml(x)+'</div>'
     +verifiedLineHtml()
     +'<hr class="sep">'
     +'<div class="host"><div class="avatar">'+esc(x.host.slice(0,1))+'</div><div><strong>Ev sahibi: '+esc(x.host)+'</strong><div style="color:var(--muted);font-size:14px">'+(x.voen?'VÖEN təsdiqlənib · ':'')+(x.sup?'Seçilmiş ev sahibi':'Təsdiqlənmiş ev sahibi')+'</div></div></div>'
