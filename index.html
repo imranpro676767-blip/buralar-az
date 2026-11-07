@@ -58,7 +58,7 @@ h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.022em;line-height:1.15}
 button{font:inherit;color:inherit;cursor:pointer}
 input,select,textarea{font:inherit;color:inherit}
 textarea{resize:none!important}
-.gpop{position:absolute;left:0;top:100%;margin-top:6px;z-index:60;min-width:270px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:8px 14px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.gpop{position:absolute;left:0;top:100%;margin-top:6px;z-index:60;min-width:270px;max-width:calc(100vw - 32px);background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:8px 14px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
 .grow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0}
 .grow + .grow{border-top:1px solid var(--line)}
 .grow b{font-size:15px;display:block}.grow small{color:var(--muted);font-weight:600;font-size:12.5px}
@@ -127,8 +127,8 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
   .headerRight{gap:5px}
 }
 
-.hero{background:var(--ink);color:#F4EFE4;position:relative;overflow:hidden;padding:26px 0 0}
-.hero .motif{position:absolute;inset:0;opacity:.12;pointer-events:none}
+.hero{background:var(--ink);color:#F4EFE4;position:relative;z-index:5;padding:26px 0 0}
+.hero .motif{position:absolute;inset:0;opacity:.12;pointer-events:none;overflow:hidden}
 .hero-inner{position:relative;display:grid;gap:22px;padding-bottom:30px}
 .hero h1{font-size:clamp(30px,5.3vw,50px);max-width:17ch}
 .hero p.sub{margin:0;max-width:54ch;color:rgba(244,239,228,.76);font-size:16.5px}
