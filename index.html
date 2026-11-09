@@ -167,6 +167,7 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .card h3{font-size:15.5px;font-weight:700;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .loc,.card .meta{color:var(--muted);font-size:14px;font-weight:500}
 .card .addr{color:var(--muted);font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chipsep{width:1px;height:22px;background:var(--line);margin:0 2px;align-self:center;flex:none}
 .hchips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .hchip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:800;line-height:1;padding:7px 11px;border-radius:999px;white-space:nowrap}
 .hchip svg{width:14px;height:14px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -673,6 +674,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div class="filtergroup">
       <div class="filterlabel">Hovuz</div>
       <div class="filterbar" id="chipsPool"></div>
+    </div>
+    <div class="filtergroup">
+      <div class="filterlabel">Rezervasiya növü</div>
+      <div class="filterbar" id="chipsMode"></div>
     </div>
     <div class="sortrow">
       <div class="count" id="count"></div>
@@ -1732,7 +1737,7 @@ var SEED=[]; /* nümunə evlər silindi — yalnız real elanlar (Firestore) gö
 var state={mix:{a:2,c1:0,c2:0},bmix:{a:2,c1:0,c2:0},tab:'kesf',sub:'dash',region:'Hamısı',type:'Hamısı',bookings:[],custom:[],openId:null,bank:'Kapital Bank',user:null,cmpCode:null,accepted:false,
   notifications:[],reviews:[],reports:[],customers:[],sanctions:[],violations:[],idPhotoData:null,idPhotoFile:null,adminAuth:false,editId:null,editingListingId:null,rateCtx:null,reportCtx:null,evidenceData:[],evidenceFiles:[],
   coverData:null,coverFile:null,pendingRooms:[],currentRoomPhotos:[],currentRoomPhotoFiles:[],galleryList:[],galleryIdx:0,
-  calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null,guestType:null,pool:'Hamısı',
+  calListingId:null,calMonth:null,pendingTiers:[],catStars:{},blocks:[],safetyBookId:null,guestType:null,pool:'Hamısı',pwarm:'',bmode:'Hamısı',
   chatsGuest:[],chatsHost:[],chatsAdmin:[],openChatId:null,
   mySupportThread:null,supportAdmin:[],openSupportEmail:null};
 
@@ -3113,11 +3118,27 @@ function renderChips(){
   var pt='<button class="chip" aria-pressed="'+(state.pool==='Hamısı')+'" onclick="setPool(\'Hamısı\')">Hamısı</button>'
     +'<button class="chip" aria-pressed="'+(state.pool==='var')+'" onclick="setPool(\'var\')">Hovuzlu</button>'
     +'<button class="chip" aria-pressed="'+(state.pool==='yox')+'" onclick="setPool(\'yox\')">Hovuzsuz</button>';
+  if(state.pool==='var'){
+    pt+='<span class="chipsep" aria-hidden="true"></span>'
+      +'<button class="chip" aria-pressed="'+(state.pwarm==='isti')+'" onclick="setPoolTemp(\'isti\')">🔥 İsti hovuz</button>'
+      +'<button class="chip" aria-pressed="'+(state.pwarm==='norm')+'" onclick="setPoolTemp(\'norm\')">İsidilməyən hovuz</button>';
+  }
   document.getElementById('chipsPool').innerHTML=pt;
+  var mt='<button class="chip" aria-pressed="'+(state.bmode==='Hamısı')+'" onclick="setBMode(\'Hamısı\')">Hamısı</button>'
+    +'<button class="chip" aria-pressed="'+(state.bmode==='instant')+'" onclick="setBMode(\'instant\')">⚡ Dərhal bron</button>'
+    +'<button class="chip" aria-pressed="'+(state.bmode==='request')+'" onclick="setBMode(\'request\')">✉️ Sorğu ilə</button>';
+  document.getElementById('chipsMode').innerHTML=mt;
 }
 function setRegion(r){ state.region=(state.region===r?'Hamısı':r); render(); }
 function setType(t){ state.type=(state.type===t?'Hamısı':t); render(); }
-function setPool(p){ state.pool=p; render(); }
+function setPool(p){ state.pool=(state.pool===p&&p!=='Hamısı'?'Hamısı':p); if(state.pool!=='var') state.pwarm=''; render(); }
+function setPoolTemp(t){ state.pwarm=(state.pwarm===t?'':t); render(); }
+function setBMode(m){ state.bmode=(state.bmode===m?'Hamısı':m); render(); }
+function poolIsWarm(r){ return String(r.temp||'').indexOf('(isidilən)')>=0; }
+function listingPoolTemp(x,t){
+  var ps=(x.rooms||[]).filter(function(r){return r.kind==='pool';});
+  return ps.some(function(r){ return t==='isti' ? poolIsWarm(r) : !poolIsWarm(r); });
+}
 function listingHasPool(x){ return !!(x.rooms && x.rooms.some(function(r){return r.kind==='pool';})); }
 
 function isListingFree(id,a,b){
@@ -3207,6 +3228,8 @@ function filtered(){
     if(state.type!=='Hamısı' && x.ty!==state.type) return false;
     if(state.pool==='var' && !listingHasPool(x)) return false;
     if(state.pool==='yox' && listingHasPool(x)) return false;
+    if(state.pool==='var' && state.pwarm && !listingPoolTemp(x,state.pwarm)) return false;
+    if(state.bmode!=='Hamısı' && bookModeOf(x)!==state.bmode) return false;
     if(x.g<g && !isDriverListing(x)) return false;
     if(q && (x.t+' '+x.c+' '+x.d+' '+x.ty).toLowerCase().indexOf(q)<0) return false;
     if(state.guestType && !listingAcceptsGuestType(x,state.guestType)) return false;
@@ -3340,7 +3363,7 @@ function render(scroll,keepPage){
   loadSpots(list);
   if(scroll){ setTimeout(function(){ var tgt=document.querySelector('.sortrow')||document.getElementById('grid'); if(tgt) tgt.scrollIntoView({behavior:'smooth',block:'start'}); },60); }
 }
-function resetFilters(){ state.region='Hamısı'; state.type='Hamısı'; state.pool='Hamısı'; document.getElementById('q').value=''; render(); }
+function resetFilters(){ state.region='Hamısı'; state.type='Hamısı'; state.pool='Hamısı'; state.pwarm=''; state.bmode='Hamısı'; document.getElementById('q').value=''; render(); }
 
 /* ============ detal ============ */
 function byId(id){ return all().filter(function(x){return x.id==id;})[0]; }
