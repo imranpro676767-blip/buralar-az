@@ -263,6 +263,23 @@ label.bmopt{display:flex!important;flex-direction:row;align-items:flex-start;gap
 .rules .r{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:600}
 .rules .r svg{flex:none;margin-top:3px}
 .rules .rgh{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}.rules .rgh:first-child{margin-top:0}
+.hchips.wrapx{flex-wrap:wrap !important}
+.hchip.nov{background:#fff3d6;color:#8a5a00;border-color:#f0c36d}
+.depline{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:14px;color:var(--warn)}
+.novbox{background:#fff7e6;border:1px solid #f0c36d;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;color:#6b4a00;line-height:1.5}
+.novbox b{font-weight:800}
+.htypebox{display:grid;gap:8px}
+.htype{display:flex !important;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;font-weight:600}
+.htype input{margin-top:4px;width:18px;height:18px;flex:none}
+.htype b{display:block;font-size:15px}
+.htype small{display:block;color:var(--muted);font-weight:500;font-size:13px;line-height:1.4;margin-top:2px}
+.htype:has(input:checked){border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset}
+.noveoninfo{margin-top:10px;background:#fff7e6;border:1px solid #f0c36d;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#6b4a00;line-height:1.5;text-align:left}
+.noveoninfo ul{margin:6px 0 10px;padding-left:18px}
+.noveoninfo li{margin-bottom:4px;font-weight:500}
+.docnotice{background:#fff7e6;border:1px solid #f0c36d;border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;color:#6b4a00;line-height:1.45}
+.docnotice ul{margin:6px 0 4px;padding-left:18px}
+.docnotice span{font-weight:700}
 .rules .txt{color:var(--muted);font-weight:500;font-size:14.5px;white-space:pre-line;border-top:1px solid var(--line);padding-top:10px}
 
 .booker{position:sticky;top:84px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:grid;gap:12px}
@@ -1090,22 +1107,51 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="tog"><input type="checkbox" id="r-noshoes" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-noshoes" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Evə ayaqqabı ilə girmək olmaz</label></div>
         <div class="tog"><input type="checkbox" id="r-novisitors" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-novisitors" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Kənar (rezervasiyada olmayan) qonaq qəbulu qadağandır</label></div>
         <div class="tog"><input type="checkbox" id="r-camera" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-camera" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Evin bayır tərəfində müşahidə kamerası var</label></div>
+        <div class="tog"><input type="checkbox" id="r-iddoc" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-iddoc" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Girişdə qonaqdan şəxsiyyəti təsdiq edən sənəd tələb olunur</label></div>
+        <div class="tog"><input type="checkbox" id="r-marriage" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-marriage" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Ailə kimi gələn kişi və qadından nikah haqqında şəhadətnamə tələb oluna bilər</label></div>
       </div>
       <label>Girişdən sonra saat<input id="r-in" value="14:00" maxlength="5"></label>
       <label>Çıxış saatı<input id="r-out" value="12:00" maxlength="5"></label>
       <label class="full">Digər qaydalar<textarea id="r-extra" maxlength="100" placeholder="Məs: Saat 23:00-dan sonra səs-küy olmaz. Ayaqqabı ilə girilmir. Qonşulara hörmətlə yanaşın."></textarea></label>
 
+      <h4>Ev sahibi növü</h4>
+      <div class="full htypebox" id="htypeBox">
+        <label class="htype"><input type="radio" name="h-htype" id="ht-voen" value="voen" checked onchange="htypeChange()"><span><b>VÖEN-li ev sahibi</b><small>Qonaq bütün məbləği Epoint ilə əvvəlcədən ödəyir, pul avtomatik hesabına köçür. Elan "Zəmanətli" bölmədə göstərilir. Komissiya 3%.</small></span></label>
+        <label class="htype"><input type="radio" name="h-htype" id="ht-novoen" value="novoen" onchange="htypeChange()"><span><b>VÖEN-siz (fərdi) ev sahibi</b><small>Qonaq sənin kartına beh atır, qalanını evdə verir. Komissiya 5%, sən platformaya ödəyirsən.</small></span></label>
+      </div>
       <h4>Rəsmi məlumatlar</h4>
-      <label>VÖEN<input id="h-voen" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" placeholder="10 rəqəm" title="VÖEN 10 rəqəmdən ibarət olmalıdır"></label>
+      <label id="voenWrap">VÖEN<input id="h-voen" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" autocomplete="off" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" placeholder="10 rəqəm" title="VÖEN 10 rəqəmdən ibarət olmalıdır"></label>
       <label>Ad, Soyad / Şirkət adı<input id="h-name" required maxlength="50" placeholder="Elnur Məmmədov"></label>
-      <p class="note full" style="text-align:left;margin:0">Bank hesabı və ya kart məlumatı <b>tələb olunmur</b>: ödənişlər birbaşa Epoint vasitəsilə sənin Epoint hesabına köçürülür, bank rekvizitlərinə Epoint özü baxır.</p>
+      <p class="note full" id="bankNote" style="text-align:left;margin:0">Bank hesabı və ya kart məlumatı <b>tələb olunmur</b>: ödənişlər birbaşa Epoint vasitəsilə sənin Epoint hesabına köçürülür, bank rekvizitlərinə Epoint özü baxır.</p>
       <label>WhatsApp əlaqə nömrəsi
         <div class="phoneinput"><span>+994</span><input id="h-whatsapp" required inputmode="numeric" placeholder="50 000 00 00" oninput="formatAzPhone(this)"></div>
       </label>
       <p class="note full" style="text-align:left;margin:-4px 0 0;color:var(--warn);font-weight:700">⚠ Bu nömrəni mütləq düzgün qeyd et — elanın təsdiqi üçün səninlə bu WhatsApp nömrəsi vasitəsilə görüntülü əlaqə saxlanılacaq və şəxsiyyət yoxlanılacaq.</p>
+      <div class="full" id="novoenBlock" style="display:none">
+        <h4>Beh və kart (VÖEN-siz ev sahibi)</h4>
+        <div class="frm-inner" style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+          <label>Beh faizi (10–50%)<select id="h-deppct">
+            <option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30" selected>30%</option><option value="40">40%</option><option value="50">50%</option></select></label>
+          <label>Kart sahibinin adı<input id="h-depcardname" maxlength="60" placeholder="ELNUR MAMMADOV" autocomplete="off"></label>
+          <label class="full" style="grid-column:1/-1">Beh qəbul edəcəyin kartın nömrəsi (16 rəqəm)<input id="h-depcard" inputmode="numeric" maxlength="19" autocomplete="off" placeholder="0000 0000 0000 0000" oninput="this.value=this.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim()"></label>
+        </div>
+        <p class="note" style="text-align:left;margin:6px 0 0">Kart nömrəsi açıq elanda görünmür. Yalnız sən sorğunu qəbul etdikdən sonra həmin qonağa göstərilir. CVV, son istifadə tarixi və ya şifrə <b>heç vaxt</b> soruşulmur və yazılmamalıdır.</p>
+        <div class="noveoninfo"><b>VÖEN-siz ev sahibi qaydaları (qəbul etməlisən):</b>
+          <ul>
+            <li>Platforma komissiyası saytdakı qiymətin <b>5%</b>-dir (məs. 100 ₼-lıq evin 1 gecəsi 5 ₼, 3 gecəsi 15 ₼). Qonaq evə yerləşəndən sonra sən bu məbləği platformanın biznes kartına ödəməlisən. Evdə razılaşdığınız qiymət fərqli olsa belə, komissiya saytdakı qiymətdən hesablanır.</li>
+            <li>Komissiya 3 gün ərzində ödənməsə, hesabın <b>nəzarətə</b> alınır. Nəzarətdən sonra 3 gün ərzində yenə ödənməsə, hesab və elanlar <b>bloklanır</b>.</li>
+            <li>Qonaq gəlməsə, "Qonaq gəlmədi" düyməsinə basırsan, qonaq təsdiq edir. Bu halda beh sənin qalır, komissiya yoxdur və tarixlər yenidən açılır.</li>
+            <li>Təsdiqlənmiş bronu sən ləğv edə bilməzsən. Bu qaydanı pozsan və ya qonağı əsassız qəbul etməsən, qonağın behini qaytarmalısan və məsələni admin həll edir.</li>
+            <li>Təqvimə ciddi nəzarət et: boş olmayan tarixi "boş" göstərməyin cəzası var.</li>
+          </ul>
+          <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-weight:700"><input type="checkbox" id="h-novoen-ok" style="margin-top:3px;width:18px;height:18px;flex:none"><span>Yuxarıdakı qaydaları oxudum və qəbul edirəm.</span></label>
+        </div>
+      </div>
+      <div class="full" id="epBlock" style="display:contents">
       <h4>Epoint ödəniş hesabı</h4>
       <p class="note full" style="text-align:left;margin:0">Müştərinin ödədiyi məbləğin sənə düşən hissəsi (komissiya çıxılmaqla) <b>Epoint vasitəsilə avtomatik hesabına köçürülür</b>. Bunun üçün Epoint-də tacir kimi qeydiyyatdan keçməlisən. <span id="epRegLinkWrap"></span> Qeydiyyatdan sonra aldığın <b>tacir ID-sini</b> aşağıya yaz. ID-ni yazmasan da elan göndərilir, amma ID təsdiqlənmədən elan saytda görünməyəcək.</p>
       <label class="full">Epoint tacir ID-n (məs. 123456)<input id="h-epoint" placeholder="123456" autocomplete="off" inputmode="numeric" maxlength="8"></label>
+      </div>
       <label class="full" style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;cursor:pointer">
         <input type="checkbox" id="h-terms" style="margin-top:3px;width:18px;height:18px;flex:none">
         <span><a href="#" onclick="openModal('tosModal');return false" style="color:var(--nar);font-weight:700">İstifadə Şərtlərini</a> oxudum və qəbul edirəm. Evin təhlükəsiz olmasına (hovuz, balkon, pilləkən, qaz, elektrik və s.), elan məlumatlarının doğruluğuna və qonaqlarla münasibətlərə görə məsuliyyət daşıdığımı, Buralar.az-ın isə yalnız vasitəçi olduğunu təsdiq edirəm.</span>
@@ -1266,7 +1312,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
       <div class="sub" id="s-edits"><div class="blist" id="editlist"></div></div>
       <div class="sub" id="s-dels"><div class="blist" id="dellist"></div></div>
-      <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
+      <div class="sub" id="s-cmp"><h3 style="margin:0 0 8px">VÖEN-siz bronlar (beh)</h3><div class="blist" id="depadmlist" style="margin-bottom:22px"></div><h3 style="margin:0 0 8px">Şikayətlər</h3><div class="blist" id="cmplist"></div></div>
       <div class="sub" id="s-rep"><div class="blist" id="replist"></div></div>
       <div class="sub" id="s-notif"><div class="blist" id="notiflist"></div></div>
       <div class="sub" id="s-audit">
@@ -1730,7 +1776,7 @@ var CITY_CENTERS = {
  "Naxçıvan":[39.2089,45.4122],"Ordubad":[38.9061,46.0219],"Culfa":[38.9544,45.6297],"Şahbuz":[39.4064,45.5733],"Şərur":[39.5547,44.9828],"Babək":[39.1500,45.4500],"Kəngərli":[39.3900,45.1600],"Sədərək":[39.7100,44.8800]
 };
 
-var DEFAULT_RULES = {kids:true,pets:false,smoke:false,party:false,quiet:true,noshoes:false,novisitors:false,camera:false,cin:"14:00",cout:"12:00",extra:""};
+var DEFAULT_RULES = {kids:true,pets:false,smoke:false,party:false,quiet:true,noshoes:false,novisitors:false,camera:false,iddoc:false,marriage:false,cin:"14:00",cout:"12:00",extra:""};
 
 var SEED=[]; /* nümunə evlər silindi — yalnız real elanlar (Firestore) göstərilir */
 
@@ -1997,14 +2043,31 @@ function startBusySync(){
     var arr=[]; snap.forEach(function(d){ arr.push(d.data()); }); state.busy=arr; renderAllShared();
   }, function(e){ console.error('busy sinxronizasiya xətası:', e); toast('Server ilə bağlantı xətası (təqvim)'); });
 }
+/* VÖEN-siz (beh) bronları: ayrıca kolleksiya (depBookings) */
+state.depBookings=[];
+var _depUnsubs={guest:null,host:null,admin:null}, _depParts={guest:[],host:[],admin:[]};
+function _mergeDep(){
+  var m={}; ['guest','host','admin'].forEach(function(k){ _depParts[k].forEach(function(b){ m[b.code]=b; }); });
+  state.depBookings=Object.keys(m).map(function(k){return m[k];}).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+  renderAllShared();
+}
+function _listenDep(kind, query){
+  if(_depUnsubs[kind]){ _depUnsubs[kind](); _depUnsubs[kind]=null; }
+  _depUnsubs[kind]=query.onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){ arr.push(d.data()); }); _depParts[kind]=arr; _mergeDep();
+  }, function(e){ console.error('depBookings('+kind+') xətası:', e); });
+}
+function _stopDep(kind){ if(_depUnsubs[kind]){ _depUnsubs[kind](); _depUnsubs[kind]=null; } _depParts[kind]=[]; }
 function startUserBookingsSync(email){
   if(!fbOnline || !db || !email) return;
   _listenBookings('guest', db.collection('bookings').where('email','==',email));
   _listenBookings('host', db.collection('bookings').where('hostEmail','==',email));
+  _listenDep('guest', db.collection('depBookings').where('email','==',email));
+  _listenDep('host', db.collection('depBookings').where('hostEmail','==',email));
 }
-function stopUserBookingsSync(){ _stopBookings('guest'); _stopBookings('host'); _mergeBookings(); }
-function startAdminBookingsSync(){ if(!fbOnline || !db) return; _listenBookings('admin', db.collection('bookings')); }
-function stopAdminBookingsSync(){ _stopBookings('admin'); _mergeBookings(); }
+function stopUserBookingsSync(){ _stopBookings('guest'); _stopBookings('host'); _stopDep('guest'); _stopDep('host'); _mergeBookings(); _mergeDep(); }
+function startAdminBookingsSync(){ if(!fbOnline || !db) return; _listenBookings('admin', db.collection('bookings')); _listenDep('admin', db.collection('depBookings')); }
+function stopAdminBookingsSync(){ _stopBookings('admin'); _stopDep('admin'); _mergeBookings(); _mergeDep(); }
 var blocksSync = makeCollectionSync('blocks','blocks','id');
 var reviewsSync = makeCollectionSync('reviews','reviews','id');
 var reportsSync = makeCollectionSync('reports','reports','id');
@@ -2657,7 +2720,8 @@ function _uploadImageOnce(file, pathPrefix, opts){
 function save(){ try{ localStorage.setItem('buralar_v1',JSON.stringify({user:state.user,notifications:state.notifications})); }catch(e){} }
 function load(){ try{ var raw=localStorage.getItem('buralar_v1'); if(raw){ var o=JSON.parse(raw); state.user=o.user||null; state.notifications=o.notifications||[]; } }catch(e){} }
 function all(){ return SEED.concat(state.custom); }
-function approved(){ return all().filter(function(x){return x.st==='approved' && !x.deletePending && isEpointId(x.epointId);}); }
+function isNovoen(x){ return !!(x && x.hostType==='novoen'); }
+function approved(){ return all().filter(function(x){return x.st==='approved' && !x.deletePending && (isEpointId(x.epointId) || isNovoen(x));}); }
 var EPOINT_REG_URL='https://epoint.az/az/registration?hunter=10438';
 (function(){ var w=document.getElementById('epRegLinkWrap'); if(!w) return;
   w.innerHTML = EPOINT_REG_URL ? '<a href="'+EPOINT_REG_URL+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">Epoint qeydiyyat linki ↗</a>' : '<i>Qeydiyyat linki üçün bizimlə əlaqə saxla.</i>'; })();
@@ -3285,7 +3349,7 @@ var HICON={
 };
 function hsvg(n){ return '<svg viewBox="0 0 24 24" aria-hidden="true">'+HICON[n]+'</svg>'; }
 function homeChipsHtml(x){
-  return '<div class="hchips"><span class="hchip city">'+hsvg('pin')+esc(x.c)+'</span><span class="hchip type">'+hsvg('home')+esc(x.ty)+'</span></div>';
+  return '<div class="hchips'+(isNovoen(x)?' wrapx':'')+'"><span class="hchip city">'+hsvg('pin')+esc(x.c)+'</span><span class="hchip type">'+hsvg('home')+esc(x.ty)+'</span>'+(isNovoen(x)?'<span class="hchip nov">Fərdi ev sahibi</span>':'')+'</div>';
 }
 function homeStatsHtml(x){
   return '<div class="hstats">'
@@ -3316,6 +3380,90 @@ function toggleTierMore(btn){
 function listingThumb(x){
   if(x && x.cover) return '<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t||'')+'" style="width:100%;height:100%;object-fit:cover;display:block">';
   return scene(x.sc,x.id);
+}
+
+/* ===== VÖEN-siz (beh) bronları: kartlar və əməliyyatlar ===== */
+var DEP_ST={requested:['Ev sahibinin cavabı gözlənilir','wait'],depwait:['Beh göndərilməsi gözlənilir','wait'],depsent:['Beh təsdiqi gözlənilir','wait'],confirmed:['Təsdiqlənib','ok'],arrival_pending:['Gəlişin təsdiqi gözlənilir','wait'],checkedin:['Evə yerləşib','ok'],noshow_pending:['"Gəlmədi" təsdiqi gözlənilir','wait'],noshow:['Qonaq gəlmədi','hold'],review:['Admin baxır','hold'],declined:['Rədd edilib','hold'],cancelled:['Ləğv edilib','hold'],expired:['Vaxtı bitib','hold']};
+function depTag(b){ var t=DEP_ST[b.status]||[b.status,'wait']; return '<span class="tag '+t[1]+'">'+esc(t[0])+'</span>'; }
+function depLeft(ms){ var m=Math.max(0,Math.round((ms-Date.now())/60000)); return m>=60?(Math.floor(m/60)+' saat '+(m%60)+' dəq'):(m+' dəq'); }
+function depHead(b,sub){
+  return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div><h4>'+esc(b.title)+'</h4>'
+   +'<div class="m">Kod '+esc(b.code)+' · '+fmtDate(b.d1)+' – '+fmtDate(b.d2)+' · '+b.n+' gecə · '+esc(gmixText(b))+'</div>'
+   +'<div class="m">'+sub+'</div><div style="margin-top:8px">'+depTag(b)+' <span class="tag wait">Fərdi ev sahibi</span></div>';
+}
+function depGuestListHtml(list){
+  return list.map(function(b){
+    var info='', act='';
+    var ph='<div class="m">Ev sahibi: '+esc(b.host||'—')+'</div>';
+    if(b.status==='requested'){ info='<div class="m">Ev sahibinin cavabına '+depLeft(b.requestExpiresAt)+' qalıb.</div>'; act='<button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'cancel\')">Sorğunu ləğv et</button>'; }
+    else if(b.status==='depwait'){
+      info='<div class="m" style="white-space:normal;color:var(--nar)"><b>'+az2(b.depAmt)+'</b> behi <b>'+depLeft(b.payDeadline)+'</b> ərzində bu karta köçürün:<br><b style="font-size:16px;letter-spacing:1px">'+esc(String(b.depCard||'').replace(/(\d{4})(?=\d)/g,'$1 '))+'</b>'+(b.depCardName?' · '+esc(b.depCardName):'')+'<br>Sonra köçürmənin ekran görüntüsünü yükləyin. Beh geri qaytarılmır.</div>';
+      act='<button class="btn sm" onclick="depProof(\''+b.code+'\')">Ekran görüntüsü yüklə</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'cancel\')">Ləğv et</button>';
+    }
+    else if(b.status==='depsent') info='<div class="m">Ev sahibi behin gəlməsini təsdiqləyəndən sonra bron qəti olacaq.</div>';
+    else if(b.status==='confirmed'||b.status==='arrival_pending'){
+      info='<div class="m" style="white-space:normal">Ünvan: <b>'+esc(b.addr||'—')+'</b>'+(b.hostWa?' · WhatsApp: '+esc(b.hostWa):'')+(b.mapsUrl?' · <a href="'+esc(b.mapsUrl)+'" target="_blank" rel="noopener">Xəritə</a>':'')+'<br>Qalan məbləği ('+az2(Math.max(0,(b.total||0)-(b.depAmt||0)))+') evə gələndə ev sahibinə ödəyin.</div>';
+      if(b.status==='arrival_pending') info+='<div class="m" style="color:var(--nar)">Ev sahibi gəldiyinizi bildirib. Yerləşmisinizsə təsdiqləyin, əks halda etiraz edin.</div>';
+      act='<button class="btn sm" onclick="depAct(\''+b.code+'\',\'checkedIn\')">Evə yerləşdim</button>'+(b.status==='arrival_pending'?'<button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'notArrived\')">Yerləşməmişəm</button>':'');
+    }
+    else if(b.status==='noshow_pending'){ info='<div class="m" style="color:var(--nar);white-space:normal">Ev sahibi gəlmədiyinizi bildirib. Təsdiq etsəniz tarixlər azad olur, beh ev sahibində qalır.</div>'; act='<button class="btn sm" onclick="depAct(\''+b.code+'\',\'confirmNoShow\')">Gəlmədim, təsdiq edirəm</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'denyNoShow\')">Etiraz edirəm</button>'; }
+    else if(b.status==='review') info='<div class="m">Mübahisəni admin həll edəcək.</div>';
+    return depHead(b,az2(b.total)+' · beh '+az2(b.depAmt)+' ('+b.depPct+'%)')+ph+info+'</div><div class="act">'+act+'</div></div>';
+  }).join('');
+}
+function depHostListHtml(list){
+  return list.map(function(b){
+    var info='', act='';
+    var g=esc(b.guest||'—');
+    if(b.status==='requested'){ info='<div class="m">Cavab üçün '+depLeft(b.requestExpiresAt)+' qalıb.</div>'; act='<button class="btn sm" onclick="depAct(\''+b.code+'\',\'respond\',{accept:true})">Qəbul et</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'respond\',{accept:false})">Rədd et</button>'; }
+    else if(b.status==='depwait') info='<div class="m">Qonaq '+depLeft(b.payDeadline)+' ərzində '+az2(b.depAmt)+' beh göndərməlidir.</div>';
+    else if(b.status==='depsent'){ info='<div class="m" style="white-space:normal;color:var(--nar)">Qonaq beh göndərdiyini bildirib. Kartınıza '+az2(b.depAmt)+' gəldisə təsdiqləyin.'+(b.proofUrl?' <a href="'+esc(b.proofUrl)+'" target="_blank" rel="noopener">Ekran görüntüsü</a>':'')+'</div>'; act='<button class="btn sm" onclick="depAct(\''+b.code+'\',\'confirmDeposit\')">Beh gəldi</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'noDeposit\')">Beh gəlmədi</button>'; }
+    else if(b.status==='confirmed'){ info='<div class="m" style="white-space:normal">Qonaq: '+g+' · '+esc(b.phone||'—')+'<br>Qalan məbləğ: '+az2(Math.max(0,(b.total||0)-(b.depAmt||0)))+'. Bron ləğv edilə bilməz; ləğv etsəniz behi qaytarmalısınız.</div>'; act='<button class="btn sm" onclick="depAct(\''+b.code+'\',\'hostArrived\')">Qonaq gəldi</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'noShow\')">Qonaq gəlmədi</button>'; }
+    else if(b.status==='arrival_pending') info='<div class="m">Qonağın təsdiqi gözlənilir (48 saat).</div>';
+    else if(b.status==='checkedin') info='<div class="m" style="white-space:normal">Platforma komissiyası: <b>'+az2(b.commissionAmt)+'</b> · '+(b.commissionDueAt?fmtDate(new Date(b.commissionDueAt).toISOString().slice(0,10))+' tarixinə qədər ödənilməlidir':'')+'</div>';
+    else if(b.status==='noshow_pending') info='<div class="m">Qonağın cavabı gözlənilir.</div>';
+    else if(b.status==='review') info='<div class="m">Mübahisəni admin həll edəcək.</div>';
+    return depHead(b,g+' · '+az2(b.total)+' · beh '+az2(b.depAmt)+' ('+b.depPct+'%)')+info+'</div><div class="act">'+act+'</div></div>';
+  }).join('');
+}
+function depAct(code,action,extra){
+  var msgs={cancel:'Sorğu ləğv edilsin?',respond:null,confirmDeposit:'Beh kartınıza gəlib?',noDeposit:'Beh gəlməyib? Mübahisə admin tərəfindən həll olunacaq.',checkedIn:'Evə yerləşdiyinizi təsdiq edirsiniz?',hostArrived:'Qonaq evə gəlib?',notArrived:'Yerləşmədiyinizi bildirirsiniz? Admin baxacaq.',noShow:'Qonaq gəlmədi? Qonaq təsdiqləsə tarixlər azad olacaq, beh sizdə qalacaq.',confirmNoShow:'Gəlmədiyinizi təsdiq edirsiniz? Beh geri qaytarılmır.',denyNoShow:'Etiraz edirsiniz? Admin baxacaq.'};
+  if(msgs[action] && !confirm(msgs[action])) return;
+  if(!fbOnline||!fbFunctions){ toast('Bağlantı yoxdur'); return; }
+  var data=Object.assign({code:code,action:action},extra||{});
+  fbFunctions.httpsCallable('depositAction')(data).then(function(){ toast('Əməliyyat qeydə alındı'); }).catch(function(e){ toast((e&&e.message)||'Xəta baş verdi'); });
+}
+function depProof(code){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f) return;
+    toast('Yüklənir...');
+    uploadImageToStorage(f,'deposits/'+code+'/proof').then(function(url){
+      return fbFunctions.httpsCallable('depositAction')({code:code,action:'sendProof',url:url});
+    }).then(function(){ toast('Göndərildi. Ev sahibinin təsdiqini gözləyin.'); }).catch(function(e){ toast((e&&e.message)||'Yükləmə alınmadı'); });
+  };
+  inp.click();
+}
+function renderDepAdmin(){
+  var el=document.getElementById('depadmlist'); if(!el) return;
+  var all=state.depBookings||[];
+  el.innerHTML=all.length?all.map(function(b){
+    var act='';
+    if(['review','confirmed','arrival_pending','depsent','noshow_pending'].indexOf(b.status)>=0)
+      act='<button class="btn sm" onclick="adminDep(\''+b.code+'\',\'checkedin\')">Evə yerləşib</button><button class="btn sm ghost" onclick="adminDep(\''+b.code+'\',\'noshow\')">Gəlmədi</button>'
+        +(b.status==='review'||b.status==='depsent'?'<button class="btn sm ghost" onclick="adminDep(\''+b.code+'\',\'confirm\')">Təsdiqlə</button>':'')
+        +'<button class="btn sm ghost" onclick="adminDep(\''+b.code+'\',\'cancel\')">Ləğv et</button>';
+    return depHead(b,esc(b.guest||'—')+' · '+esc(b.phone||'—')+' · ev sahibi '+esc(b.hostEmail||'—'))
+      +'<div class="m">'+az2(b.total)+' · beh '+az2(b.depAmt)+' · komissiya '+az2(b.commissionAmt)+(b.commissionStatus==='due'?' (borc)':'')+'</div>'
+      +(b.reviewReason?'<div class="m" style="color:var(--nar)">Səbəb: '+esc(b.reviewReason)+'</div>':'')
+      +(b.proofUrl?'<div class="m"><a href="'+esc(b.proofUrl)+'" target="_blank" rel="noopener">Beh ekran görüntüsü</a></div>':'')
+      +'</div><div class="act">'+act+'</div></div>';
+  }).join(''):'<div class="empty"><h3>VÖEN-siz bron yoxdur</h3></div>';
+}
+function adminDep(code,action){
+  var note=prompt('Qeyd (istəyə görə):','');
+  if(note===null) return;
+  fbFunctions.httpsCallable('adminDepAction')({code:code,action:action,note:note}).then(function(){ toast('Qərar qeydə alındı'); }).catch(function(e){ toast((e&&e.message)||'Xəta'); });
 }
 function bookingThumb(b){
   var l=null; try{ l=byId(b.lid); }catch(e){}
@@ -3414,6 +3562,8 @@ function rulesGroupedHtml(R){
     +grp('Qadağandır',noL,false)
     +'<div class="rgh">Məlumat</div>'
     +'<div class="r">'+checkIcon(true)+'<span>Giriş '+esc(R.cin)+'-dan sonra · çıxış '+esc(R.cout)+'-a qədər</span></div>'
+    +(R.iddoc?'<div class="r">'+checkIcon(true)+'<span>Girişdə şəxsiyyəti təsdiq edən sənəd tələb olunur</span></div>':'')
+    +(R.marriage?'<div class="r">'+checkIcon(true)+'<span>Ailə kimi gələn kişi və qadından nikah haqqında şəhadətnamə tələb oluna bilər</span></div>':'')
     +'<div class="r">'+checkIcon(true)+'<span>'+(R.camera?'Evin bayır tərəfində müşahidə kamerası var':'Müşahidə kamerası yoxdur')+'</span></div>'
     +(R.extra?'<div class="txt">'+esc(R.extra)+'</div>':'')
   +'</div>';
@@ -3614,15 +3764,21 @@ function openDetail(id,bookingCode){
     +(isDriverListing(x)
       ? '<input type="hidden" id="bg" value="1"><div class="hint" style="margin:0 0 4px">Hər sürücü ayrıca bron edir (1 sürücü = 1 yer). Qiymət hər sürücü üçündür.</div><div class="drvspot" id="drvdetail" data-lid="'+x.id+'" style="font-weight:800;font-size:14px;margin-bottom:4px"></div>'
       : '<div class="fieldgrid one"><div class="f"><label>Qonaq sayı (maks. '+Math.min(x.g,100)+')</label><input type="hidden" id="bg" value="'+gmixTotal(state.bmix)+'"><div id="bg-mix">'+gmixStepperHtml('b',state.bmix,Math.min(x.g,100))+'</div></div></div>')
-    +(isDriverListing(x)?'':(bookModeOf(x)==='request'
+    +(isNovoen(x)?novoenBoxHtml(x):'')
+    +((isNovoen(x)||isDriverListing(x))?'':(bookModeOf(x)==='request'
         ? '<div class="reqbox"><b>📩 Sorğu ilə bron.</b> Bu ev dərhal bron olunmur: əvvəlcə sorğu göndərirsiniz, ev sahibi <b>6 saat</b> ərzində cavab verir. Təsdiqləsə, ödəniş üçün <b>1 saatınız</b> olur. Ödənişə qədər pul tutulmur və sorğunu istədiyiniz vaxt ləğv edə bilərsiniz. Sorğu gedərkən həmin tarixlər başqalarına boş görünmür.</div>'
         : '<div class="hint" style="margin:4px 0"><b>⚡ Dərhal bron.</b> Təsdiq gözləmədən dərhal ödəyib bron edirsiniz.</div>'))
     +'<div class="calc" id="calcbox"></div>'
     +'<div style="display:flex;gap:10px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;color:var(--muted);line-height:1.45"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1C6B55" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V8a5 5 0 0 1 10 0v3"/></svg><span><b style="color:var(--text)">Ödəniş kartla, Epoint təhlükəsiz ödəniş səhifəsində edilir.</b> Bron etdikdən sonra ödəniş səhifəsinə yönləndiriləcəksən. Kart məlumatlarını saytımızda yazmırsan.</span></div>'
+    +(function(){ var R=x.rules||{}; if(!(R.iddoc||R.marriage)) return '';
+        return '<div class="docnotice"><b>⚠ Ödənişdən əvvəl nəzərinizə çatdırırıq</b><ul>'
+          +(R.iddoc?'<li>Girişdə ev sahibi <b>şəxsiyyəti təsdiq edən sənəd</b> tələb edəcək.</li>':'')
+          +(R.marriage?'<li>Ailə kimi gələn kişi və qadından ev sahibi <b>nikah haqqında şəhadətnamə</b> tələb edə bilər.</li>':'')
+          +'</ul><span>Sənədləri özünüzlə götürün.</span></div>'; })()
     +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;calc()">'
-      +'<span>Ev qaydalarını oxudum və qəbul edirəm. Geri qaytarmanın yalnız şikayət yolu ilə mümkün olduğunu başa düşürəm.</span></label>'
+      +(isNovoen(x)?'<span>Ev qaydalarını oxudum və qəbul edirəm. <b>Behin heç bir halda geri qaytarılmadığını</b>, ödənişin birbaşa ev sahibinin kartına edildiyini və platformanın bu ödənişin tərəfi olmadığını başa düşürəm.</span></label>':'<span>Ev qaydalarını oxudum və qəbul edirəm. Geri qaytarmanın yalnız şikayət yolu ilə mümkün olduğunu başa düşürəm.</span></label>')
     +'<button class="btn" id="bookBtn" disabled onclick="openSafetyModal('+x.id+')">'+bookBtnLabel(x)+'</button>'
-    +'<p class="note">'+(bookModeOf(x)==='request'&&!isDriverListing(x)?'Ev sahibi təsdiqləyəndən sonra ödəniş edilir. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.':'Təsdiq gözləmədən dərhal bron olunur. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.')+'</p>'
+    +'<p class="note">'+(isNovoen(x)?'Ev sahibi qəbul etsə, 2 saat ərzində behi onun kartına göndərib ekran görüntüsünü saytda yükləyirsiniz. Qalan məbləği evdə ev sahibinə ödəyirsiniz.':bookModeOf(x)==='request'&&!isDriverListing(x)?'Ev sahibi təsdiqləyəndən sonra ödəniş edilir. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.':'Təsdiq gözləmədən dərhal bron olunur. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.')+'</p>'
   +'</div></aside></div>';
   renderBanks(); calc();
   document.getElementById('overlay').classList.add('open');
@@ -3640,6 +3796,7 @@ function openAdminDetail(id){
     +'<div style="display:grid;gap:8px;font-size:14.5px;font-weight:600">'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ev sahibi</span>'+esc(x.host)+' · '+esc(x.ownerEmail||'—')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Görüntülü təsdiq üçün WhatsApp</span>'+(x.whatsapp?('<a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+' →</a>'):'<span style="color:var(--nar)">Qeyd edilməyib</span>')+'</div>'
+      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ev sahibi növü</span>'+(isNovoen(x)?'VÖEN-siz (fərdi) · beh '+esc(String(x.depPct||''))+'% · kart '+esc(fmtCard(x.depCard||''))+' · '+esc(x.depCardName||''):'VÖEN-li')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">VÖEN</span>'+esc(x.voen||'—')+'</div>'
       +(x.iban?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Bank / IBAN (köhnə qeyd)</span>'+esc(x.bank||'—')+' · '+esc(x.iban)+'</div>':'')
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ünvan (dəqiq)</span>'+esc(x.d)+', '+esc(x.c)+(x.lat!=null?' ('+x.lat+', '+x.lng+')':'')+'</div>'
@@ -3671,6 +3828,7 @@ function previewPendingEdit(id){
     +'<div style="font-size:12.5px;font-weight:800;color:var(--warn)">Bu, TƏSDİQLƏNMƏMİŞ dəyişiklik təklifinin önizləməsidir</div>'
     +'<div style="display:grid;gap:8px;font-size:14.5px;font-weight:600;margin-top:10px">'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ev sahibi</span>'+esc(merged.host)+' · '+esc(merged.ownerEmail||'—')+'</div>'
+      +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Ev sahibi növü</span>'+(isNovoen(merged)?'VÖEN-siz (fərdi) · beh '+esc(String(merged.depPct||''))+'% · kart '+esc(fmtCard(merged.depCard||''))+' · '+esc(merged.depCardName||''):'VÖEN-li')+'</div>'
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">VÖEN</span>'+esc(merged.voen||'—')+'</div>'
       +(merged.iban?'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">Bank / IBAN (köhnə qeyd)</span>'+esc(merged.bank||'—')+' · '+esc(merged.iban)+'</div>':'')
       +'<div><span style="color:var(--muted);font-weight:700;font-size:12.5px;display:block">WhatsApp</span>'+esc(merged.whatsapp||'—')+'</div>'
@@ -3937,6 +4095,9 @@ function clampGuestInput(el,max,final){
   else if(v<1){ if(final) el.value=1; else el.value=1; }
   else if(String(el.value)!==String(v)) el.value=v;
 }
+function novoenBoxHtml(x){
+  return '<div class="novbox"><b>👤 Fərdi ev sahibi (VÖEN-siz).</b> Bu ev sorğu ilə bron olunur: ev sahibi <b>6 saat</b> ərzində cavab verir. Qəbul etsə, <b>2 saat ərzində</b> '+esc(String(x.depPct||30))+'% beh məbləğini onun kartına göndərib ödəniş ekran görüntüsünü saytda yükləyirsiniz. <b>Beh heç bir halda geri qaytarılmır.</b> Ödəniş platforma tərəfindən qorunmur. VÖEN-li (rəsmi qeydiyyatlı) ev sahiblərində ödəniş Epoint ilə qorunur və daha etibarlıdır.</div>';
+}
 function bookBtnLabel(x){ return (bookModeOf(x)==='request'&&!isDriverListing(x)) ? 'Sorğu göndər' : 'Dərhal rezervasiya et'; }
 function calc(){
   var x=byId(state.openId); if(!x) return;
@@ -3969,6 +4130,15 @@ function calc(){
   var rentRows = c.hasSpecial
     ? c.groups.map(function(g){ return '<div><span>'+azr(g.rate)+(g.special?' (xüsusi qiymət)':(g.rate!==x.p?' (endirimli qiymət)':''))+' × '+g.n+' gecə</span><b class="money">'+az2(g.rate*g.n)+'</b></div>'; }).join('')
     : '<div><span>'+az(c.rate)+(c.rate!==x.p?' (endirimli qiymət)':'')+' × '+n+' gecə</span><b class="money">'+az2(c.rent)+'</b></div>';
+  if(isNovoen(x)){
+    var _dp=Math.round(c.base*(x.depPct||30))/100;
+    box.innerHTML=rentRows
+      +(c.clean?'<div><span>Təmizlik haqqı</span><b class="money">'+az2(c.clean)+'</b></div>':'')
+      +'<div class="total"><span>Ümumi (qonaqdan əlavə faiz alınmır)</span><span class="money">'+az2(c.base)+'</span></div>'
+      +'<div class="depline"><span>Beh ('+esc(String(x.depPct||30))+'%) · geri qaytarılmır</span><b class="money">'+az2(_dp)+'</b></div>'
+      +'<div class="depline" style="color:var(--muted)"><span>Qalan, evdə ev sahibinə</span><b class="money">'+az2(c.base-_dp)+'</b></div>';
+    return;
+  }
   box.innerHTML=rentRows
     +(c.clean?'<div><span>Təmizlik haqqı</span><b class="money">'+az2(c.clean)+'</b></div>':'')
     +'<div><span>Xidmət haqqı (10%)</span><b class="money">'+az2(c.guestFee)+'</b></div>'
@@ -4051,7 +4221,12 @@ function book(id){
      statusu da eyni funksiyada YENİDƏN, serverdə hesablanır/yoxlanılır — client-in göndərdiyi rəqəmlər
      yalnız "faktiki daxil edilən gecə/qonaq sayı" üçün istifadə olunur. */
   var btn=document.getElementById('bookBtn'); if(btn){ btn.disabled=true; btn.textContent='Göndərilir...'; }
-  fbFunctions.httpsCallable('createBooking')({lid:x.id, d1:a, d2:b, guests:g, adults:state.bmix.a, kids06:state.bmix.c1, kids712:state.bmix.c2, termsVersion:TERMS_VERSION}).then(function(res){
+  fbFunctions.httpsCallable(isNovoen(x)?'createDepositRequest':'createBooking')({lid:x.id, d1:a, d2:b, guests:g, adults:state.bmix.a, kids06:state.bmix.c1, kids712:state.bmix.c2, termsVersion:TERMS_VERSION, depAccepted:true}).then(function(res){
+    if(isNovoen(x)){
+      toast('Sorğunuz ev sahibinə göndərildi. Cavab 6 saat ərzində gözlənilir. Qəbul etsə, behi göndərmək üçün 2 saatınız olacaq. Sorğunu Rezervasiyalarım bölməsindən izləyin');
+      closeDetail(); go('rez');
+      return new Promise(function(r){ r(); });
+    }
     if(res.data && res.data.mode==='request'){
       toast('Sorğunuz ev sahibinə göndərildi. Cavab 6 saat ərzində gözlənilir. Sorğunu Rezervasiyalarım bölməsindən izləyə və ləğv edə bilərsiniz');
       closeDetail(); go('rez');
@@ -4278,12 +4453,13 @@ function renderBookings(){
   loadClaims();
   var el=document.getElementById('mybookings');
   var mine = state.bookings.filter(function(b){ return state.user && b.email===state.user.email; });
-  if(!mine.length){
+  var depMine = (state.depBookings||[]).filter(function(b){ return state.user && b.email===state.user.email; });
+  if(!mine.length && !depMine.length){
     el.innerHTML='<div class="empty"><h3>Hələ rezervasiyan yoxdur</h3><p>Evlərə bax, tarix seç və dərhal bron et.</p><button class="btn sm dark" onclick="go(\'kesf\')">Evlərə bax</button>'
       +(state.user?'<p style="font-size:11.5px;color:var(--muted);margin-top:14px;word-break:break-all">Hesab: '+esc(state.user.email)+' · server girişi: '+esc((typeof fbAuth!=='undefined'&&fbAuth&&fbAuth.currentUser&&fbAuth.currentUser.email)||'yoxdur')+' · sinxron: '+(_bkUnsubs.guest?'aktiv':'işləmir')+(_bkErr.guest?' · xəta: '+esc(_bkErr.guest):'')+'</p>':'')
       +'</div>'; return;
   }
-  el.innerHTML=mine.map(function(b){
+  el.innerHTML=depGuestListHtml(depMine)+mine.map(function(b){
     var R=b.rules||DEFAULT_RULES;
     b.__viewerIsHost=false;
     return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div>'
@@ -5183,18 +5359,40 @@ function claimListing(id){
     toast('Təsdiq edildi. Tezliklə sizinlə görüntülü əlaqə saxlanılacaq');
   }).catch(function(e){ toast('Təsdiq alınmadı: '+((e&&e.message)||e)); });
 }
+/* ===== VÖEN-li / VÖEN-siz ev sahibi seçimi ===== */
+function curHostType(){ var r=document.querySelector('input[name="h-htype"]:checked'); return r?r.value:'voen'; }
+function htypeChange(){
+  var nv=curHostType()==='novoen';
+  var $=function(i){return document.getElementById(i);};
+  if($('novoenBlock')) $('novoenBlock').style.display=nv?'block':'none';
+  if($('epBlock')) $('epBlock').style.display=nv?'none':'contents';
+  if($('voenWrap')) $('voenWrap').style.display=nv?'none':'';
+  if($('bankNote')) $('bankNote').style.display=nv?'none':'';
+  if($('h-voen')) $('h-voen').required=!nv;
+  var bmb=$('bm-create-box'); if(bmb) bmb.style.display=nv?'none':'';
+}
+function fmtCard(n){ return String(n||'').replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim(); }
 function addListing(e){
   e.preventDefault();
   if(needLogin()) return;
   var v=function(id){return document.getElementById(id).value;};
   var ck=function(id){return document.getElementById(id).checked;};
-  var voen=v('h-voen').replace(/\D/g,'');
-  if(voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
+  var hType=curHostType();
+  var voen=hType==='novoen'?'':v('h-voen').replace(/\D/g,'');
+  if(hType!=='novoen' && voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
+  var depPct=null, depCard=null, depCardName=null;
+  if(hType==='novoen'){
+    depPct=parseInt(v('h-deppct'),10); depCard=v('h-depcard').replace(/\D/g,''); depCardName=v('h-depcardname').trim().slice(0,60);
+    if(!(depPct>=10&&depPct<=50)){ toast("Beh faizi 10 ilə 50 arasında olmalıdır"); return; }
+    if(depCard.length!==16){ toast("Kart nömrəsi 16 rəqəm olmalıdır"); return; }
+    if(depCardName.length<3){ toast("Kart sahibinin adını yaz"); return; }
+    if(!ck('h-novoen-ok')){ toast("VÖEN-siz ev sahibi qaydalarını qəbul etməlisən"); return; }
+  }
   var lat=parseFloat(v('h-lat')), lng=parseFloat(v('h-lng'));
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
-  var epReq=readEpointRequest(); if(epReq===false) return;
+  var epReq=hType==='novoen'?null:readEpointRequest(); if(epReq===false) return;
   var onBehalf=!!(state.isAdminUser && state.proxyEmail), ownerEm=state.user.email;
   if(onBehalf){
     ownerEm=String(state.proxyEmail).toLowerCase();
@@ -5274,14 +5472,15 @@ function addListing(e){
       driverCap:(ck('h-gp-drivers')?(parseInt(v('h-drvcap'),10)||null):null),
       rt:5,rv:0,sc:(id%6),host:v('h-name').slice(0,50),sup:false,mine:!onBehalf,st:'pending',ownerEmail:ownerEm,claim:(onBehalf?{pending:true,by:state.user.email,at:Date.now()}:null),
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
-      voen:voen,whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, termsVersion:TERMS_VERSION, termsAcceptedAt:(onBehalf?null:Date.now()), privacyVersion:PRIVACY_VERSION,
+      voen:voen,whatsapp:whatsapp, lat:lat, lng:lng, epointIdRequest:epReq||null, hostType:hType,termsVersion:TERMS_VERSION, termsAcceptedAt:(onBehalf?null:Date.now()), privacyVersion:PRIVACY_VERSION,
       cover:coverUrl, coverThumb:(results[0]&&r3[0][2])||null, rooms:roomsClean,
       addrFingerprint:addrFingerprint, geoBucket:geoBucket, photoHashes:photoHashes,
-      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
+      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),iddoc:ck('r-iddoc'),marriage:ck('r-marriage'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
+    if(hType==='novoen'){ listing.depPct=depPct; listing.depCard=depCard; listing.depCardName=depCardName; listing.bookMode='request'; }
     return syncNewListingWithKey(listing);
   }).then(function(){
-    e.target.reset(); fillRegions(); resetRoomBuilderDraft(); resetPriceTiersDraft();
+    e.target.reset(); fillRegions(); resetRoomBuilderDraft(); resetPriceTiersDraft(); htypeChange();
     draftClear();
     document.getElementById('h-price').value=90; document.getElementById('h-guests').value=4;
     document.getElementById('h-rooms').value=2; document.getElementById('h-clean').value=20;
@@ -5293,6 +5492,8 @@ function addListing(e){
     document.getElementById('r-noshoes').checked=false;
     document.getElementById('r-novisitors').checked=false;
     document.getElementById('r-camera').checked=false;
+    document.getElementById('r-iddoc').checked=false;
+    document.getElementById('r-marriage').checked=false;
     renderHost(); renderAdmin(); render();
     if(onBehalf){ state.proxyEmail=null; proxyBannerUpdate(); document.getElementById('a-owner-email').value=''; document.getElementById('a-owner-email2').value=''; go('admin'); goSub('proxy'); toast('Elan '+ownerEm+' adından yaradıldı. Ev sahibinə e-poçt getdi, o daxil olub təsdiqləməlidir'); return; }
     document.getElementById('verifyCallText').textContent =
@@ -5309,7 +5510,8 @@ function addListing(e){
    Aktiv/gələcək rezervasiyası olan ev üçün müraciət ümumiyyətlə qəbul edilmir. */
 function listingBlockingBookings(id){
   var t=today();
-  return state.bookings.filter(function(b){
+  var depB=(state.depBookings||[]).filter(function(b){ return b.lid==id && ['requested','depwait','depsent','confirmed','arrival_pending','noshow_pending','review'].indexOf(b.status)>=0; });
+  return depB.concat(state.bookings.filter(function(b){
     if(b.lid!=id) return false;
     if(b.status==='refunded') return false;
     if(b.status==='hold') return b.paymentStatus!=='failed';
@@ -5317,7 +5519,7 @@ function listingBlockingBookings(id){
     if(b.status==='complaint') return true;
     if(b.status==='released') return (b.d2||'')>=t;
     return false;
-  });
+  }));
 }
 /* ============ rezervasiya rejimi: dərhal bron / sorğu ilə bron ============ */
 function modeTagHtml(x){
@@ -5325,7 +5527,7 @@ function modeTagHtml(x){
     ? '<span class="modetag req" title="Bu evi dərhal yox, ev sahibinin təsdiqi ilə bron etmək olur"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a5a00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg><span class="lbl">Sorğu ilə</span></span>'
     : '<span class="modetag" title="Ödəniş etdiyiniz anda bron təsdiqlənir"><svg width="14" height="14" viewBox="0 0 24 24" fill="#FFC83D" stroke="#FFC83D" stroke-width="1" stroke-linejoin="round"><path d="M13.5 2 4.5 13.5H11L10 22l9-12h-6.5z"/></svg><span class="lbl">Dərhal bron</span></span>';
 }
-function bookModeOf(x){ return x && x.bookMode==='request' ? 'request' : 'instant'; }
+function bookModeOf(x){ return x && (x.bookMode==='request'||x.hostType==='novoen') ? 'request' : 'instant'; }
 function bookModeChipHtml(x){
   return bookModeOf(x)==='request' ? '<span class="modechip req">📩 Sorğu ilə bron</span>' : '<span class="modechip">⚡ Dərhal bron</span>';
 }
@@ -5641,14 +5843,14 @@ function renderHost(){
       +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ty)+' · '+x.g+' qonaq · '+az(x.p)+'/gecə</div>'
       +(isDriverListing(x)?spotsHtmlHost(x):'')
       +'<div class="m">VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(String(x.iban).slice(0,8))+'…':'')+'</div>'
-      +(x.st==='approved'&&!isEpointId(x.epointId)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
+      +(x.st==='approved'&&!isEpointId(x.epointId)&&!isNovoen(x)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
       +claimBoxHtml(x)
       +(x.st==='pending'&&!(x.claim&&x.claim.pending)?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
       +(x.deleteRequest?'<div class="m" style="color:var(--warn);font-weight:700;white-space:normal">Silmə müraciətiniz admin baxışındadır</div>':'')
       +(!x.deleteRequest&&x.deleteRejected?'<div class="m" style="color:var(--nar);font-weight:700;white-space:normal">Silmə müraciəti rədd edildi: '+esc(x.deleteRejected.reason)+'</div>':'')
       +'<div style="margin-top:8px">'+listingTag(x.st)+(x.pendingEdit?' <span class="pendingbadge">Dəyişiklik admin təsdiqini gözləyir</span>':'')+' '+bookModeChipHtml(x)+'</div></div>'
       +'<div class="act"><div class="money" style="font-size:18px">'+az(x.p)+'</div>'
-      +(isDriverListing(x)?'':'<button class="btn sm ghost" onclick="openBookMode('+x.id+')">Rejimi dəyiş</button>')
+      +((isDriverListing(x)||isNovoen(x))?'':'<button class="btn sm ghost" onclick="openBookMode('+x.id+')">Rejimi dəyiş</button>')
       +(x.st==='approved'?'<button class="btn sm ghost" onclick="openDetail('+x.id+')">Bax</button>':'')
       +'<button class="btn sm ghost" onclick="openEdit('+x.id+')">Redaktə et</button>'
       +(x.deleteRequest?'':'<button class="btn sm ghost" onclick="removeListing('+x.id+')">Sil</button>')+'</div></div>';
@@ -5669,9 +5871,10 @@ function renderHost(){
   }
   var hb = state.bookings.filter(function(b){ return b.lid===state.hostBkListingId && (bkWasPaid(b) || b.status==='requested' || (b.status==='hold' && b.payDeadline && b.paymentStatus==='pending')); });
   var hel = document.getElementById('hostbookings');
-  state.hostBkCount = hb.length; applyHostBkToggle();
-  if(!hb.length){ hel.innerHTML='<div class="empty"><h3>Hələ rezervasiya yoxdur</h3><p>Elanların təsdiqləndikcə buradakı siyahı dolacaq.</p></div>'; return; }
-  hel.innerHTML = hb.map(function(b){
+  var dhb = (state.depBookings||[]).filter(function(b){ return b.lid===state.hostBkListingId && b.hostEmail===(state.user&&state.user.email); });
+  state.hostBkCount = hb.length+dhb.length; applyHostBkToggle();
+  if(!hb.length && !dhb.length){ hel.innerHTML='<div class="empty"><h3>Hələ rezervasiya yoxdur</h3><p>Elanların təsdiqləndikcə buradakı siyahı dolacaq.</p></div>'; return; }
+  hel.innerHTML = depHostListHtml(dhb) + hb.map(function(b){
     b.__viewerIsHost=true;
     return '<div class="bk"><div class="th">'+bookingThumb(b)+'</div><div>'
       +'<h4>'+esc(b.title)+'</h4>'
@@ -6064,7 +6267,7 @@ function draftCollect(){
   for(var i=0;i<els.length;i++){
     var el=els[i], id=el.id; if(!id||el.type==='file') continue;
     if(!(id.indexOf('h-')===0||id.indexOf('r-')===0)) continue;
-    if(id==='h-terms'||id==='h-privacy'||id==='h-epoint') { if(id!=='h-epoint') continue; }
+    if(id==='h-terms'||id==='h-privacy'||id==='h-novoen-ok'||id==='h-depcard') continue;
     fields[id]=(el.type==='checkbox')?el.checked:el.value;
   }
   var rooms=(state.pendingRooms||[]).map(function(r){ var c={}; for(var k in r){ if(k!=='photos'&&k!=='photoFiles') c[k]=r[k]; } c.photos=[]; c.photoFiles=[]; return c; });
@@ -6146,6 +6349,7 @@ function resetListingFormToCreateMode(){
   var form=document.getElementById('listingForm');
   if(form) form.reset();
   fillRegions(); resetRoomBuilderDraft(); resetPriceTiersDraft();
+  var _hts=document.querySelectorAll('input[name="h-htype"]'); for(var _i=0;_i<_hts.length;_i++) _hts[_i].disabled=false; htypeChange();
   document.getElementById('h-price').value=90; document.getElementById('h-guests').value=4;
   document.getElementById('h-rooms').value=2; document.getElementById('h-clean').value=20;
   document.getElementById('h-minstay').value=1; document.getElementById('h-maxstay').value=''; document.getElementById('h-minguest').value='';
@@ -6158,6 +6362,8 @@ function resetListingFormToCreateMode(){
   document.getElementById('r-noshoes').checked=false;
   document.getElementById('r-novisitors').checked=false;
   document.getElementById('r-camera').checked=false;
+  document.getElementById('r-iddoc').checked=false;
+  document.getElementById('r-marriage').checked=false;
   document.getElementById('r-extra').value='';
   document.getElementById('listingFormHeading').textContent='Yeni elan yerləşdir';
   document.getElementById('cancelEditBtn').style.display='none';
@@ -6234,6 +6440,8 @@ function openEdit(id){
   document.getElementById('r-noshoes').checked=!!R.noshoes;
   document.getElementById('r-novisitors').checked=!!R.novisitors;
   document.getElementById('r-camera').checked=!!R.camera;
+  document.getElementById('r-iddoc').checked=!!R.iddoc;
+  document.getElementById('r-marriage').checked=!!R.marriage;
   document.getElementById('r-in').value=R.cin||"14:00";
   document.getElementById('r-out').value=R.cout||"12:00";
   document.getElementById('r-extra').value=R.extra||'';
@@ -6244,6 +6452,16 @@ function openEdit(id){
   document.getElementById('h-whatsapp').value=waDigits;
   formatAzPhone(document.getElementById('h-whatsapp'));
   document.getElementById('h-epoint').value=live.epointId||live.epointIdRequest||'';
+  var _isNv=(live.hostType==='novoen');
+  document.getElementById(_isNv?'ht-novoen':'ht-voen').checked=true;
+  var _hts2=document.querySelectorAll('input[name="h-htype"]'); for(var _j=0;_j<_hts2.length;_j++) _hts2[_j].disabled=true; /* növ elan yarandıqdan sonra dəyişdirilmir */
+  if(_isNv){
+    document.getElementById('h-deppct').value=String(live.depPct||30);
+    document.getElementById('h-depcard').value=fmtCard(live.depCard||'');
+    document.getElementById('h-depcardname').value=live.depCardName||'';
+    document.getElementById('h-novoen-ok').checked=true;
+  }
+  htypeChange();
 
   if(live.lat!=null && live.lng!=null && !isNaN(live.lat) && !isNaN(live.lng)){
     setPinLatLng(live.lat,live.lng,true,16);
@@ -6268,13 +6486,21 @@ function submitListingEdit(e){
   if(!x){ toast("Elan tapılmadı"); state.editingListingId=null; return; }
   var v=function(id){return document.getElementById(id).value;};
   var ck=function(id){return document.getElementById(id).checked;};
-  var voen=v('h-voen').replace(/\D/g,'');
-  if(voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
+  var hType=(x.hostType==='novoen')?'novoen':'voen';
+  var voen=hType==='novoen'?'':v('h-voen').replace(/\D/g,'');
+  if(hType!=='novoen' && voen.length!==10){ toast("VÖEN 10 rəqəmdən ibarət olmalıdır"); return; }
+  var depPct=null, depCard=null, depCardName=null;
+  if(hType==='novoen'){
+    depPct=parseInt(v('h-deppct'),10); depCard=v('h-depcard').replace(/\D/g,''); depCardName=v('h-depcardname').trim().slice(0,60);
+    if(!(depPct>=10&&depPct<=50)){ toast("Beh faizi 10 ilə 50 arasında olmalıdır"); return; }
+    if(depCard.length!==16){ toast("Kart nömrəsi 16 rəqəm olmalıdır"); return; }
+    if(depCardName.length<3){ toast("Kart sahibinin adını yaz"); return; }
+  }
   var lat=parseFloat(v('h-lat')), lng=parseFloat(v('h-lng'));
   if(isNaN(lat)||isNaN(lng)){ toast("Xəritədən evin yerini seç"); return; }
   var whatsapp=fullAzPhone('h-whatsapp');
   if(whatsapp.replace(/\D/g,'').length<12){ toast("Görüntülü təsdiq üçün düzgün WhatsApp nömrəsi qeyd et (9 rəqəm)"); return; }
-  var epReq=readEpointRequest(); if(epReq===false) return;
+  var epReq=hType==='novoen'?null:readEpointRequest(); if(epReq===false) return;
   if(!state.coverData){ toast("Evin üz şəklini yüklə"); return; }
   if(allDraftPhotos().length>HOST_PHOTO_LIMIT){ toast("Bu ev üçün şəkil limitini (maksimum "+HOST_PHOTO_LIMIT+") aşırsan, bəzi şəkilləri sil"); return; }
   if(!state.pendingRooms.length){ toast("Ən azı bir otaq/sahə əlavə et (məsələn yataq otağı)"); return; }
@@ -6344,8 +6570,9 @@ function submitListingEdit(e){
       desc:v('h-desc').slice(0,400)||"Ev sahibi tərəfindən təsvir əlavə edilməyib.",
       voen:voen, whatsapp:whatsapp, lat:lat, lng:lng,
       cover:coverUrl, coverThumb:results[2]||null, rooms:roomsClean,
-      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
+      rules:{kids:ck('r-kids'),pets:ck('r-pets'),smoke:ck('r-smoke'),party:ck('r-party'),quiet:ck('r-quiet'),noshoes:ck('r-noshoes'),novisitors:ck('r-novisitors'),camera:ck('r-camera'),iddoc:ck('r-iddoc'),marriage:ck('r-marriage'),cin:v('r-in'),cout:v('r-out'),extra:v('r-extra').slice(0,100)}
     };
+    if(hType==='novoen'){ x.pendingEdit.depPct=depPct; x.pendingEdit.depCard=depCard; x.pendingEdit.depCardName=depCardName; }
     return syncListing(x);
   }).then(function(){
     resetListingFormToCreateMode();
@@ -7196,7 +7423,7 @@ var MD_CATS=[['pending','Təsdiq gözləyir'],['noid','Epoint ID gözləyir'],['
 function mdCat(x){
   if(x.deletePending) return 'deleting';
   if(x.st==='pending') return 'pending';
-  if(x.st==='approved') return isEpointId(x.epointId)?'approved':'noid';
+  if(x.st==='approved') return (isEpointId(x.epointId)||isNovoen(x))?'approved':'noid';
   return 'rejected';
 }
 function mdSet(k,v){ MD[k]=v; MD.page=1; renderMod(); }
@@ -7232,6 +7459,10 @@ function modPendingCard(x){
       +'<button class="btn sm ghost" onclick="approveListing('+x.id+',false)">Rədd et</button>'+'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDeleteListings(['+x.id+'])">Sil</button>'+'</div></div>';
 }
 function modApprovedCard(x){
+        if(isNovoen(x)) return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div><h4>'+esc(x.t)+'</h4>'
+          +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
+          +'<div class="m"><span class="tag hold" style="background:#8a5a00;color:#fff">VÖEN-siz · fərdi ev sahibi</span> Beh: '+esc(String(x.depPct||''))+'% · Kart: '+esc(fmtCard(x.depCard||'')||'—')+' · '+esc(x.depCardName||'')+'</div>'
+          +'</div><div class="act"><button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button><button class="btn sm" style="background:var(--nar);color:#fff" onclick="askDeleteListings(['+x.id+'])">Sil</button></div></div>';
         var okId=isEpointId(x.epointId);
         return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div><h4>'+esc(x.t)+'</h4>'
           +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+'</div>'
@@ -7330,6 +7561,7 @@ function renderAdmin(){
 
   renderHostsAdmin();
   renderMarketStatsAdmin();
+  renderDepAdmin();
 
   var cmp=state.bookings.filter(function(b){return b.complaint;});
   var open=cmp.filter(function(b){return b.complaint.st==='pending';});
@@ -7373,7 +7605,7 @@ function renderAdmin(){
     var p=x.pendingEdit;
     function row(label,oldV,newV){ return oldV===newV ? '' : '<div><span>'+label+'</span><b>'+esc(oldV)+' → '+esc(newV)+'</b></div>'; }
     var R=p.rules||DEFAULT_RULES;
-    var rulesTxt = 'Uşaq:'+(R.kids?'bəli':'xeyr')+' Heyvan:'+(R.pets?'bəli':'xeyr')+' Siqaret:'+(R.smoke?'bəli':'xeyr')+' Tədbir:'+(R.party?'bəli':'xeyr');
+    var rulesTxt = 'Uşaq:'+(R.kids?'bəli':'xeyr')+' Heyvan:'+(R.pets?'bəli':'xeyr')+' Siqaret:'+(R.smoke?'bəli':'xeyr')+' Tədbir:'+(R.party?'bəli':'xeyr')+' Şəxsiyyət sənədi:'+(R.iddoc?'bəli':'xeyr')+' Nikah şəhadətnaməsi:'+(R.marriage?'bəli':'xeyr');
     return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">Cari qiymət: '+az(x.p)+'/gecə · min/maks gecə: '+(x.minNights||1)+' / '+(x.maxNights||'limitsiz')+' (dərhal tətbiq olunub)</div>'
       +'<div class="split">'
