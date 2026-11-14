@@ -339,6 +339,9 @@ details,details>summary{min-width:0;max-width:100%}.tblwrap{max-width:100%}
 .calday.booked .dnum{color:#F4EFE4}
 .calday.booked .dguest{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .calday.dead{background:repeating-linear-gradient(135deg,rgba(138,106,18,.18),rgba(138,106,18,.18) 6px,rgba(138,106,18,.32) 6px,rgba(138,106,18,.32) 12px);border-color:var(--warn);color:var(--warn)}
+.calday.pending{background:#E8A317;color:#2b1d00;cursor:default}
+.calday.pending .dnum{color:#2b1d00}
+.calday.pending .dguest{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .calday.blocked{background:#5b4a8f;color:#F4EFE4}
 .calday.blocked .dnum{color:#F4EFE4}
 .calday.blocked .dguest{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
@@ -773,7 +776,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div id="calRateEditor"></div>
       <div class="callegend">
         <span><i class="calchip free"></i> Boş, bron oluna bilər</span>
-        <span><i class="calchip booked"></i> Saytdan bron olunub</span>
+        <span><i class="calchip pending" style="background:#E8A317"></i> Sorğu/beh gözləyir (fərdi ev sahibi)</span>
+        <span><i class="calchip booked"></i> Saytdan bron olunub / təsdiqlənib</span>
         <span><i class="calchip blocked"></i> Əl ilə bağlanıb (kənar bron)</span>
         <span><i class="calchip dead"></i> Boşdur, amma minimum gecə şərtinə görə heç kimə göstərilmir — "Aç" düyməsi ilə bu şərtdən azad edə bilərsən</span>
         <span><i class="calchip special"></i> Xüsusi qiymət qoyulub (təqvimdə həmin günün qiyməti göstərilir)</span>
@@ -1572,7 +1576,16 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <div class="modal" id="safetyModal" role="dialog" aria-modal="true" aria-label="Təhlükəsizlik siyasəti">
   <div class="box">
     <h3>Ödəniş və təhlükəsizlik siyasəti</h3>
-    <div class="note" style="text-align:left;display:grid;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
+    <div class="note" id="safetyBodyNovoen" style="display:none;text-align:left;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
+      <p><b>1. Şəxsiyyət yoxlaması.</b> Rezervasiya etmək üçün qeydiyyat zamanı şəxsiyyət təsdiqi tələb olunur. Ev sahibi və elan da Buralar.az tərəfindən yoxlanılıb. Şübhəli və ya təkrarlanan sənədlər sistem tərəfindən avtomatik aşkarlanır və admin tərəfindən əlavə yoxlanılır.</p>
+      <p><b>2. Ödəniş necə aparılır.</b> Bu elan fərdi ev sahibinə aiddir və ödəniş birbaşa ev sahibi ilə aparılır. Ev sahibi sorğunuzu qəbul etdikdən sonra 2 saat ərzində beh məbləğini onun kartına köçürür və ödəniş ekran görüntüsünü saytda yükləyirsiniz. Qalan məbləği evə gələndə ev sahibinə ödəyirsiniz. Ödənişlər Buralar.az hesabından keçmir.</p>
+      <p><b>3. Beh.</b> Beh bronunuzu qəti təsdiqləyir və adətən geri qaytarılmır. Tərəflər qarşılıqlı razılaşsalar, beh geri qaytarıla bilər. Ev sahibi təsdiqlənmiş bronu ləğv edərsə və ya sizi əsassız qəbul etməzsə, behi sizə qaytarmalıdır. Belə mübahisələri Buralar.az idarəetməsi araşdırıb həll edir.</p>
+      <p><b>4. Evə yerləşmə.</b> Evə yerləşdikdən sonra saytda "Evə yerləşdim" düyməsinə basırsınız. Ev sahibi gəldiyinizi bildirərsə, 48 saat ərzində etiraz edə bilərsiniz. Gəlmədiyiniz halda ev sahibinin "qonaq gəlmədi" bildirişini saytda təsdiq və ya rədd edirsiniz, mübahisəni admin həll edir.</p>
+      <p><b>5. Fırıldaqçılığa qarşı tədbir.</b> Ödəniş ekran görüntüləri saxlanılır və mübahisə zamanı admin tərəfindən yoxlanılır. Saxta sənəd və ya saxta ödəniş sübutu aşkarlansa, hesab bloklana bilər. Yalnız saytda təsdiqlənmiş rezervasiyaya görə ödəniş edin və ödənişi başqa yolla (sayt xaricində) aparmayın.</p>
+      <p><b>6. Evə dəyən ziyan.</b> Evə və ya əşyalara vurduğunuz ziyana görə siz cavabdehsiniz. Ziyan məsələsində tərəflər əvvəlcə birbaşa razılaşmağa çalışır, mübahisə olarsa idarəetmə sübutlara baxmağa kömək edir.</p>
+      <p><b>7. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz yalnız bron edən/bron olunan qarşı tərəfə açıqlanır. Dəqiq ünvan və ev sahibinin WhatsApp nömrəsi bron təsdiqləndikdən sonra sizə göstərilir.</p>
+    </div>
+    <div class="note" id="safetyBodyVoen" style="text-align:left;display:grid;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
       <p><b>1. Şəxsiyyət yoxlaması.</b> Buralar.az-da rezervasiya etmək üçün qeydiyyat zamanı şəxsiyyət təsdiqi tələb olunur. Şübhəli və ya təkrarlanan sənədlər sistem tərəfindən avtomatik aşkarlanır və admin tərəfindən əlavə yoxlanılır.</p>
       <p><b>2. Ödənişin saxlanması.</b> Ödədiyiniz məbləğ dərhal ev sahibinə keçmir — girişdən 24 saat sonra köçürülür. Bu müddət ərzində problem yaranarsa, şikayət göndərə bilərsiniz.</p>
       <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə tamamilə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
@@ -4180,6 +4193,11 @@ var PRIVACY_VERSION='2026-10-v1';
 function openSafetyModal(id){
   state.safetyBookId=id;
   var c=document.getElementById('tosAccept'); if(c) c.checked=false;
+  var _l=null; try{ _l=byId(id); }catch(e){}
+  var nv=isNovoen(_l);
+  var bn=document.getElementById('safetyBodyNovoen'), bv=document.getElementById('safetyBodyVoen');
+  if(bn) bn.style.display=nv?'grid':'none';
+  if(bv) bv.style.display=nv?'none':'grid';
   openModal('safetyModal');
 }
 function confirmSafetyAndBook(){
@@ -5943,6 +5961,13 @@ function blocksFor(id){
    təqvimdə göstərmək və "ölü gün" hesablamaq üçün ikisi də eyni şəkildə "tutulmuş" sayılır. */
 function occupiedRangesFor(id){
   var out = activeBookingsFor(id).map(function(b){ return {d1:b.d1,d2:b.d2,type:'booking',label:b.guest||'Qonaq',code:b.code}; });
+  /* VÖEN-siz (beh) bronları: sorğu/beh gözləyənlər sarı, təsdiqlənənlər tünd rəngdə */
+  (state.depBookings||[]).forEach(function(b){
+    if(b.lid!=id) return;
+    var pend=(b.status==='requested'&&Date.now()<=(b.requestExpiresAt||0))||(b.status==='depwait'&&Date.now()<=(b.payDeadline||0)+600000)||b.status==='depsent';
+    var conf=['confirmed','arrival_pending','checkedin','noshow_pending','review','refund_pending'].indexOf(b.status)>=0;
+    if(pend||conf) out.push({d1:b.d1,d2:b.d2,type:'booking',pending:pend,label:b.guest||'Qonaq',code:b.code});
+  });
   blocksFor(id).forEach(function(bl){ out.push({d1:bl.d1,d2:bl.d2,type:'block',label:'Bağlı (kənar bron)',code:bl.id}); });
   return out.sort(function(a,c){return a.d1<c.d1?-1:1;});
 }
@@ -6254,6 +6279,7 @@ function renderHostCalendar(){
     var inSel=!!(state.calSel && state.calSel.a && (state.calSel.b ? (ds>=state.calSel.a && ds<=state.calSel.b) : ds===state.calSel.a));
     if(ds<tdy){ cls+=" past"; inner+='<div class="dprice">'+azr(shown)+'</div>'; }
     else if(occ && occ.type==='block'){ cls+=" blocked"; inner+='<div class="dguest">Bağlı</div><div class="dguest" style="opacity:.75">Kənar bron</div>'; }
+    else if(occ && occ.pending){ cls+=" pending"; inner+='<div class="dguest">Sorğu gözləyir</div><div class="dguest" style="opacity:.8">'+esc(occ.label)+'</div>'; }
     else if(occ){ cls+=" booked"; inner+='<div class="dguest">'+esc(occ.label)+'</div><div class="dguest" style="opacity:.75">'+occ.code+'</div>'; }
     else if(gap && !gap.opened){ cls+=" dead"; inner+='<div class="dprice">Min. '+ (x.minNights||1) +' gecə</div>'
       +'<button type="button" class="dpOpenBtn" onclick="toggleDeadGap('+x.id+',\''+gap.d1+'\',\''+gap.d2+'\',false)">Aç</button>'; }
