@@ -863,7 +863,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="full">
         <div style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:8px">Uzun qalmaya endirim (istəyə bağlı) — məsələn 1 gecə 100 ₼, 3+ gecə 90 ₼, 7+ gecə 75 ₼</div>
         <div class="tierrow">
-          <span>Neçə gecədən başlayaraq:</span><input type="number" id="tier-n" min="2" max="365" placeholder="3">
+          <span>Neçə gecədən başlayaraq:</span><input type="number" id="tier-n" min="2" max="9999" placeholder="3">
           <span>Gecəlik qiymət (₼):</span><input type="number" id="tier-p" min="10" max="3000" placeholder="90">
           <button type="button" class="btn sm ghost" style="margin-left:0;width:auto" onclick="addPriceTier()">+ Əlavə et</button>
         </div>
@@ -3963,13 +3963,24 @@ function lowestNightlyRate(x){
   var tiers=priceTiersOf(x);
   return tiers.reduce(function(m,t){return Math.min(m,t.price);},x.p);
 }
+/* Bütün rəqəm sahələri: max atributunu aşan və ya həddindən uzun rəqəm yazmaq olmur */
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(!el||el.tagName!=='INPUT'||el.type!=='number') return;
+  var mx=parseFloat(el.getAttribute('max')); if(isNaN(mx)) return;
+  var v=el.value; if(v==='') return;
+  var intPart=String(v).split('.')[0].replace('-','');
+  if(intPart.length>String(Math.floor(mx)).length || parseFloat(v)>mx){ el.value=String(mx); }
+});
 function addPriceTier(){
   var n=parseInt(document.getElementById('tier-n').value,10);
   var p=parseFloat(document.getElementById('tier-p').value);
   var _min=parseInt(document.getElementById('h-minstay').value,10)||1;
   if(!n||n<2){ toast("Gecə sayı ən azı 2 olmalıdır (1 gecə baza qiymətdir)"); return; }
+  if(n>9999){ toast("Gecə sayı ən çox 9999 ola bilər"); return; }
   if(n<_min){ toast("Minimum "+_min+" gecəlik verirsən, ona görə endirim pilləsi "+_min+" gecədən aşağı ola bilməz"); return; }
   if(!p||p<=0){ toast("Gecəlik qiyməti düzgün yaz"); return; }
+  if(p>3000){ toast("Gecəlik qiymət ən çox 3000 ₼ ola bilər"); return; }
   var baseP=parseFloat(document.getElementById('h-price').value)||0;
   if(baseP && p>=baseP){ toast("Uzun qalma qiyməti baza qiymətdən ("+baseP+" ₼) aşağı olmalıdır"); return; }
   var lowerNights=state.pendingTiers.filter(function(t){return t.minNights<n;}).sort(function(x,y){return y.minNights-x.minNights;})[0];
