@@ -1132,8 +1132,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="full" id="novoenBlock" style="display:none">
         <h4>Beh və kart (VÖEN-siz ev sahibi)</h4>
         <div class="frm-inner" style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
-          <label>Beh faizi (10–50%)<select id="h-deppct">
-            <option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30" selected>30%</option><option value="40">40%</option><option value="50">50%</option></select></label>
+          <label>Beh: 1 günlük qiymətin faizi<select id="h-deppct">
+            <option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30" selected>30%</option><option value="40">40%</option><option value="50">50%</option><option value="100">100% (1 tam gün)</option></select></label>
           <label>Kart sahibinin adı<input id="h-depcardname" maxlength="60" placeholder="ELNUR MAMMADOV" autocomplete="off"></label>
           <label class="full" style="grid-column:1/-1">Beh qəbul edəcəyin kartın nömrəsi (16 rəqəm)<input id="h-depcard" inputmode="numeric" maxlength="19" autocomplete="off" placeholder="0000 0000 0000 0000" oninput="this.value=this.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim()"></label>
         </div>
@@ -3810,7 +3810,7 @@ function openAdminDetail(id){
     +'</div>'
     +'<hr class="sep" style="margin:6px 0">'
     +(x.st==='pending'
-      ? '<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="width:100%;margin:6px 0 10px"><button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
+      ? (isNovoen(x)?'':'<label style="font-weight:700;font-size:13px">Ev sahibinin Epoint tacir ID-si</label><input id="ep-d-'+x.id+'" placeholder="123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="width:100%;margin:6px 0 10px">')+'<button class="btn ok" onclick="if(approveListing('+x.id+',true)!==false)closeDetail()">Elanı təsdiqlə</button><button class="btn ghost" onclick="approveListing('+x.id+',false);closeDetail()">Elanı rədd et</button>'
       : '<p class="note">Bu elan artıq baxılıb ('+(x.st==='approved'?'təsdiqlənib':'rədd edilib')+').</p>')
   +'</div></aside>';
   document.getElementById('detailBody').innerHTML = galleryHtmlFor(x) + '<div class="detail">' + leftInfoHtml(x) + adminAside + '</div>';
@@ -4109,7 +4109,7 @@ function clampGuestInput(el,max,final){
   else if(String(el.value)!==String(v)) el.value=v;
 }
 function novoenBoxHtml(x){
-  return '<div class="novbox"><b>👤 Fərdi ev sahibi (VÖEN-siz).</b> Bu ev sorğu ilə bron olunur: ev sahibi <b>6 saat</b> ərzində cavab verir. Qəbul etsə, <b>2 saat ərzində</b> '+esc(String(x.depPct||30))+'% beh məbləğini onun kartına göndərib ödəniş ekran görüntüsünü saytda yükləyirsiniz. <b>Beh heç bir halda geri qaytarılmır.</b> Ödəniş platforma tərəfindən qorunmur. VÖEN-li (rəsmi qeydiyyatlı) ev sahiblərində ödəniş Epoint ilə qorunur və daha etibarlıdır.</div>';
+  return '<div class="novbox"><b>👤 Fərdi ev sahibi (VÖEN-siz).</b> Bu ev sorğu ilə bron olunur: ev sahibi <b>6 saat</b> ərzində cavab verir. Qəbul etsə, <b>2 saat ərzində</b> '+(x.depPct===100?'1 günlük qiymət (100%) məbləğində':'1 günlük qiymətin '+esc(String(x.depPct||30))+'%-i qədər')+' beh məbləğini onun kartına göndərib ödəniş ekran görüntüsünü saytda yükləyirsiniz. <b>Beh heç bir halda geri qaytarılmır.</b> Ödəniş platforma tərəfindən qorunmur. VÖEN-li (rəsmi qeydiyyatlı) ev sahiblərində ödəniş Epoint ilə qorunur və daha etibarlıdır.</div>';
 }
 function bookBtnLabel(x){ return (bookModeOf(x)==='request'&&!isDriverListing(x)) ? 'Sorğu göndər' : 'Dərhal rezervasiya et'; }
 function calc(){
@@ -4144,11 +4144,11 @@ function calc(){
     ? c.groups.map(function(g){ return '<div><span>'+azr(g.rate)+(g.special?' (xüsusi qiymət)':(g.rate!==x.p?' (endirimli qiymət)':''))+' × '+g.n+' gecə</span><b class="money">'+az2(g.rate*g.n)+'</b></div>'; }).join('')
     : '<div><span>'+az(c.rate)+(c.rate!==x.p?' (endirimli qiymət)':'')+' × '+n+' gecə</span><b class="money">'+az2(c.rent)+'</b></div>';
   if(isNovoen(x)){
-    var _dp=Math.round(c.base*(x.depPct||30))/100;
+    var _dp=Math.round((c.rent/n)*(x.depPct||30))/100;
     box.innerHTML=rentRows
       +(c.clean?'<div><span>Təmizlik haqqı</span><b class="money">'+az2(c.clean)+'</b></div>':'')
       +'<div class="total"><span>Ümumi (qonaqdan əlavə faiz alınmır)</span><span class="money">'+az2(c.base)+'</span></div>'
-      +'<div class="depline"><span>Beh ('+esc(String(x.depPct||30))+'%) · geri qaytarılmır</span><b class="money">'+az2(_dp)+'</b></div>'
+      +'<div class="depline"><span>Beh (1 gecəlik qiymətin '+esc(String(x.depPct||30))+'%-i) · geri qaytarılmır</span><b class="money">'+az2(_dp)+'</b></div>'
       +'<div class="depline" style="color:var(--muted)"><span>Qalan, evdə ev sahibinə</span><b class="money">'+az2(c.base-_dp)+'</b></div>';
     return;
   }
@@ -5396,7 +5396,7 @@ function addListing(e){
   var depPct=null, depCard=null, depCardName=null;
   if(hType==='novoen'){
     depPct=parseInt(v('h-deppct'),10); depCard=v('h-depcard').replace(/\D/g,''); depCardName=v('h-depcardname').trim().slice(0,60);
-    if(!(depPct>=10&&depPct<=50)){ toast("Beh faizi 10 ilə 50 arasında olmalıdır"); return; }
+    if(!((depPct>=10&&depPct<=50)||depPct===100)){ toast("Beh 1 günlük qiymətin 10–50%-i və ya 100%-i ola bilər"); return; }
     if(depCard.length!==16){ toast("Kart nömrəsi 16 rəqəm olmalıdır"); return; }
     if(depCardName.length<3){ toast("Kart sahibinin adını yaz"); return; }
     if(!ck('h-novoen-ok')){ toast("VÖEN-siz ev sahibi qaydalarını qəbul etməlisən"); return; }
@@ -5855,7 +5855,7 @@ function renderHost(){
     return '<div class="bk"><div class="th">'+listingThumb(x)+'</div><div>'
       +'<h4>'+esc(x.t)+'</h4><div class="m">'+esc(x.c)+' · '+esc(x.d)+' · '+esc(x.ty)+' · '+x.g+' qonaq · '+az(x.p)+'/gecə</div>'
       +(isDriverListing(x)?spotsHtmlHost(x):'')
-      +'<div class="m">VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(String(x.iban).slice(0,8))+'…':'')+'</div>'
+      +'<div class="m">'+(isNovoen(x)?'VÖEN-siz (fərdi)':'VÖEN '+esc(x.voen))+(x.iban?' · '+esc(x.bank||'')+' · '+esc(String(x.iban).slice(0,8))+'…':'')+'</div>'
       +(x.st==='approved'&&!isEpointId(x.epointId)&&!isNovoen(x)?'<div class="m" style="color:var(--warn);font-weight:700">Ödəniş üçün Epoint qeydiyyatı gözlənilir: elan bundan sonra saytda görünəcək</div>':'')
       +claimBoxHtml(x)
       +(x.st==='pending'&&!(x.claim&&x.claim.pending)?'<div class="m" style="color:var(--warn);font-weight:700">Görüntülü təsdiq üçün '+esc(x.whatsapp||'—')+' nömrəsi ilə əlaqə saxlanılacaq</div>':'')
@@ -6505,7 +6505,7 @@ function submitListingEdit(e){
   var depPct=null, depCard=null, depCardName=null;
   if(hType==='novoen'){
     depPct=parseInt(v('h-deppct'),10); depCard=v('h-depcard').replace(/\D/g,''); depCardName=v('h-depcardname').trim().slice(0,60);
-    if(!(depPct>=10&&depPct<=50)){ toast("Beh faizi 10 ilə 50 arasında olmalıdır"); return; }
+    if(!((depPct>=10&&depPct<=50)||depPct===100)){ toast("Beh 1 günlük qiymətin 10–50%-i və ya 100%-i ola bilər"); return; }
     if(depCard.length!==16){ toast("Kart nömrəsi 16 rəqəm olmalıdır"); return; }
     if(depCardName.length<3){ toast("Kart sahibinin adını yaz"); return; }
   }
@@ -6787,10 +6787,12 @@ function approveListing(id,ok){
   var x=state.custom.filter(function(l){return l.id===id;})[0]; if(!x) return;
   if(ok && x.claim && x.claim.pending){ toast('Ev sahibi ('+(x.ownerEmail||'')+') elanı hələ təsdiqləməyib. Əvvəlcə o daxil olub təsdiq etməlidir'); return false; }
   if(ok){
-    var inp=document.getElementById('ep-'+id)||document.getElementById('ep-d-'+id);
-    var val=String(inp&&inp.value?inp.value:(x.epointId||'')).trim().toLowerCase();
-    if(!isEpointId(val)){ toast('Təsdiq üçün ev sahibinin Epoint tacir ID-sini yaz (məs. 123456)'); return false; }
-    x.epointId = val;
+    if(!isNovoen(x)){ /* VÖEN-siz ev sahibində Epoint yoxdur */
+      var inp=document.getElementById('ep-'+id)||document.getElementById('ep-d-'+id);
+      var val=String(inp&&inp.value?inp.value:(x.epointId||'')).trim().toLowerCase();
+      if(!isEpointId(val)){ toast('Təsdiq üçün ev sahibinin Epoint tacir ID-sini yaz (məs. 123456)'); return false; }
+      x.epointId = val;
+    }
   }
   x.st = ok?'approved':'rejected';
   syncListing(x); renderAdmin(); renderHost(); render();
@@ -7458,14 +7460,15 @@ function modPendingCard(x){
       +'<div class="m">'+esc(x.c)+' ('+regionOf(x.c)+') · '+esc(x.d)+' · '+esc(x.ty)+' · '+az(x.p)+'/gecə</div>'
       +ownerKycLineHtml(x)
       +'<div class="m">'+claimBadgeHtml(x)+(x.claim&&x.claim.by?'<span style="color:var(--muted)">'+esc(x.claim.by)+' yaradıb</span>':'')+'</div>'
-      +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+' · VÖEN '+esc(x.voen)+(x.iban?' · '+esc(x.bank||'')+' · '+esc(x.iban):'')+'</div>'
+      +'<div class="m">Ev sahibi: '+esc(x.host)+' · '+esc(x.ownerEmail||'')+(isNovoen(x)?' · VÖEN-siz (fərdi)':' · VÖEN '+esc(x.voen))+(x.iban?' · '+esc(x.bank||'')+' · '+esc(x.iban):'')+'</div>'
       +'<div class="m">'+(x.whatsapp?('WhatsApp (görüntülü təsdiq): <a href="https://wa.me/'+esc(x.whatsapp.replace(/\D/g,''))+'" target="_blank" rel="noopener" style="color:var(--ok);font-weight:800">'+esc(x.whatsapp)+'</a>'):'<span style="color:var(--nar)">WhatsApp qeyd edilməyib</span>')+'</div>'
       +'<div class="m">'+(roomCount?roomCount+' otaq/sahə · ':'')+photoCount+' şəkil yükləndi</div>'
       +(x.duplicateFlag?'<div class="split" style="border-color:var(--nar);background:rgba(164,33,59,.06)">'+(x.duplicateReasons||[]).map(function(r){return '<div><span style="color:var(--nar);font-weight:700">⚠ TƏKRAR ŞÜBHƏSİ: '+esc(r)+'</span></div>';}).join('')+'</div>':'')
       +'<div class="split"><div><span>Uşaq</span><b>'+(R.kids?'olar':'olmaz')+'</b></div><div><span>Heyvan</span><b>'+(R.pets?'olar':'olmaz')+'</b></div>'
       +'<div><span>Siqaret</span><b>'+(R.smoke?'olar':'olmaz')+'</b></div><div><span>Tədbir</span><b>'+(R.party?'olar':'olmaz')+'</b></div></div>'
-      +'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>'
-      +siblingIdHtml(x,'ep-')
+      +(isNovoen(x)?'<div class="m" style="margin-top:8px"><span class="tag hold" style="background:#8a5a00;color:#fff">VÖEN-siz · fərdi</span> Epoint ID tələb olunmur. Beh: '+esc(String(x.depPct||''))+'% · Kart: '+esc(fmtCard(x.depCard||'')||'—')+'</div>'
+        :'<div class="m" style="margin-top:8px"><b>Epoint tacir ID:</b> <input id="ep-'+x.id+'" placeholder="123456" value="'+esc(x.epointId||x.epointIdRequest||'')+'" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:160px"> <span style="color:var(--muted);font-size:12.5px">'+(x.epointIdRequest?'Ev sahibinin yazdığı ID. Təsdiqdən əvvəl Epoint kabinetində yoxla.':'Ev sahibi hələ ID yazmayıb.')+'</span></div>')
+      +(isNovoen(x)?'':siblingIdHtml(x,'ep-'))
       +'</div><div class="act">'
       +'<button class="btn sm dark" onclick="openAdminDetail('+x.id+')">Ətraflı bax</button>'
       +'<button class="btn sm ok" onclick="approveListing('+x.id+',true)">Təsdiqlə</button>'
