@@ -3399,7 +3399,7 @@ function listingThumb(x){
 }
 
 /* ===== VÖEN-siz (beh) bronları: kartlar və əməliyyatlar ===== */
-var DEP_ST={requested:['Ev sahibinin cavabı gözlənilir','wait'],depwait:['Beh göndərilməsi gözlənilir','wait'],depsent:['Beh təsdiqi gözlənilir','wait'],confirmed:['Təsdiqlənib','ok'],arrival_pending:['Gəlişin təsdiqi gözlənilir','wait'],checkedin:['Evə yerləşib','ok'],noshow_pending:['"Gəlmədi" təsdiqi gözlənilir','wait'],refund_pending:['Beh qaytarılması təklifi','wait'],refunded:['Beh qaytarılıb (razılaşma)','hold'],noshow:['Qonaq gəlmədi','hold'],review:['Admin baxır','hold'],declined:['Rədd edilib','hold'],cancelled:['Ləğv edilib','hold'],expired:['Vaxtı bitib','hold']};
+var DEP_ST={requested:['Ev sahibinin cavabı gözlənilir','wait'],depwait:['Beh göndərilməsi gözlənilir','wait'],depsent:['Beh təsdiqi gözlənilir','wait'],confirmed:['Təsdiqlənib','ok'],arrival_pending:['Gəlişin təsdiqi gözlənilir','wait'],checkedin:['Evə yerləşib','ok'],noshow_pending:['"Gəlmədi" təsdiqi gözlənilir','wait'],refund_pending:['Beh qaytarılması təklifi','wait'],refund_return:['Behin qaytarılması gözlənilir','wait'],refunded:['Beh qaytarılıb (razılaşma)','hold'],noshow:['Qonaq gəlmədi','hold'],review:['Admin baxır','hold'],declined:['Rədd edilib','hold'],cancelled:['Ləğv edilib','hold'],expired:['Vaxtı bitib','hold']};
 function depTag(b){ var t=DEP_ST[b.status]||[b.status,'wait']; return '<span class="tag '+t[1]+'">'+esc(t[0])+'</span>'; }
 function depLeft(ms){ var m=Math.max(0,Math.round((ms-Date.now())/60000)); return m>=60?(Math.floor(m/60)+' saat '+(m%60)+' dəq'):(m+' dəq'); }
 function depHead(b,sub){
@@ -3409,7 +3409,13 @@ function depHead(b,sub){
 }
 function depRefundHtml(b,who){
   /* who: 'guest' | 'host'. Razılaşma ilə beh qaytarılması */
-  if(b.status==='confirmed') return {info:'',act:'<button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'proposeRefund\')">Beh qaytarılmasını təklif et</button>'};
+  if(b.status==='confirmed') return {info:'<div class="m" style="white-space:normal;color:var(--warn)">Diqqət: beh qarşılıqlı razılıqla qaytarılsa belə platformanın komissiyası <b>istənilən halda</b> tutulur və borc kimi qalır.</div>',act:'<button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'proposeRefund\')">Beh qaytarılmasını təklif et</button>'};
+  if(b.status==='refund_return'){
+    return who==='host'
+      ? {info:'<div class="m" style="white-space:normal;color:var(--nar)">Razılaşma olub. Behi ('+az2(b.depAmt)+') qonağın kartına qaytar və <b>'+depLeft(b.refundReturnDeadline)+'</b> ərzində köçürmənin ekran görüntüsünü yüklə. Tarixlər artıq açılıb.</div>',act:'<button class="btn sm" onclick="depRefundProof(\''+b.code+'\')">Qaytarma ekran görüntüsü yüklə</button>'}
+      : {info:'<div class="m" style="white-space:normal">Razılaşma olub. Ev sahibi '+az2(b.depAmt)+' behi 48 saat ərzində qaytarmalı və ekran görüntüsünü yükləməlidir.</div>',act:''};
+  }
+  if(b.status==='refunded') return {info:'<div class="m" style="white-space:normal">Beh qaytarılıb.'+(b.refundProofUrl?' <a href="'+esc(b.refundProofUrl)+'" target="_blank" rel="noopener">Qaytarma ekran görüntüsü</a>':'')+'</div>',act:''};
   if(b.status==='refund_pending'){
     if(b.refundBy===who) return {info:'<div class="m" style="white-space:normal">Beh qaytarılması təklifini göndərdin, digər tərəfin cavabı gözlənilir.</div>',act:'<button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'withdrawRefund\')">Təklifi geri götür</button>'};
     return {info:'<div class="m" style="white-space:normal;color:var(--nar)">'+(who==='guest'?'Ev sahibi':'Qonaq')+' behin qaytarılmasını təklif edir. Razılaşsanız bron ləğv olunur, tarixlər açılır, beh qaytarılır. Platforma komissiyası ('+az2(b.commissionAmt?Math.min(b.commissionAmt,(b.depAmt||0)/2):0)+') qüvvədə qalır və ev sahibi tərəfindən ödənilir.</div>',act:'<button class="btn sm" onclick="depAct(\''+b.code+'\',\'acceptRefund\')">Razıyam</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'declineRefund\')">Razı deyiləm</button>'};
@@ -3433,7 +3439,7 @@ function depGuestListHtml(list){
       act=_rf.act+'<button class="btn sm" onclick="depAct(\''+b.code+'\',\'checkedIn\')">Evə yerləşdim</button>'+(b.status==='arrival_pending'?'<button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'notArrived\')">Yerləşməmişəm</button>':'');
     }
     else if(b.status==='noshow_pending'){ info='<div class="m" style="color:var(--nar);white-space:normal">Ev sahibi gəlmədiyinizi bildirib. Təsdiq etsəniz tarixlər azad olur, beh ev sahibində qalır.</div>'; act='<button class="btn sm" onclick="depAct(\''+b.code+'\',\'confirmNoShow\')">Gəlmədim, təsdiq edirəm</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'denyNoShow\')">Etiraz edirəm</button>'; }
-    else if(b.status==='refund_pending'){ var _r2=depRefundHtml(b,'guest'); info=_r2.info; act=_r2.act; }
+    else if(b.status==='refund_pending'||b.status==='refund_return'||b.status==='refunded'){ var _r2=depRefundHtml(b,'guest'); info=_r2.info; act=_r2.act; }
     else if(b.status==='review') info='<div class="m">Mübahisəni admin həll edəcək.</div>';
     return depHead(b,az2(b.total)+' · beh '+az2(b.depAmt)+' ('+b.depPct+'%)')+ph+info+'</div><div class="act">'+act+'</div></div>';
   }).join('');
@@ -3446,21 +3452,32 @@ function depHostListHtml(list){
     else if(b.status==='depwait') info='<div class="m">Qonaq '+depLeft(b.payDeadline)+' ərzində '+az2(b.depAmt)+' beh göndərməlidir.</div>';
     else if(b.status==='depsent'){ info='<div class="m" style="white-space:normal;color:var(--nar)">Qonaq beh göndərdiyini bildirib. Kartınıza '+az2(b.depAmt)+' gəldisə təsdiqləyin.'+(b.proofUrl?' <a href="'+esc(b.proofUrl)+'" target="_blank" rel="noopener">Ekran görüntüsü</a>':'')+'</div>'; act='<button class="btn sm" onclick="depAct(\''+b.code+'\',\'confirmDeposit\')">Beh gəldi</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'noDeposit\')">Beh gəlmədi</button>'; }
     else if(b.status==='confirmed'){ info='<div class="m" style="white-space:normal">Qonaq: '+g+' · '+esc(b.phone||'—')+'<br>Qalan məbləğ: '+az2(Math.max(0,(b.total||0)-(b.depAmt||0)))+'. Bron ləğv edilə bilməz; ləğv etsəniz behi qaytarmalısınız.</div>'; var _rh=depRefundHtml(b,'host'); info+=_rh.info; act=_rh.act+'<button class="btn sm" onclick="depAct(\''+b.code+'\',\'hostArrived\')">Qonaq gəldi</button><button class="btn sm ghost" onclick="depAct(\''+b.code+'\',\'noShow\')">Qonaq gəlmədi</button>'; }
-    else if(b.status==='refund_pending'){ var _r3=depRefundHtml(b,'host'); info=_r3.info; act=_r3.act; }
+    else if(b.status==='refund_pending'||b.status==='refund_return'||b.status==='refunded'){ var _r3=depRefundHtml(b,'host'); info=_r3.info; act=_r3.act; }
     else if(b.status==='arrival_pending') info='<div class="m">Qonağın təsdiqi gözlənilir (48 saat).</div>';
     else if(b.status==='checkedin') info='<div class="m" style="white-space:normal">Platforma komissiyası: <b>'+az2(b.commissionAmt)+'</b> · '+(b.commissionDueAt?fmtDate(new Date(b.commissionDueAt).toISOString().slice(0,10))+' tarixinə qədər ödənilməlidir':'')+'</div>';
     else if(b.status==='noshow_pending') info='<div class="m">Qonağın cavabı gözlənilir.</div>';
     else if(b.status==='review') info='<div class="m">Mübahisəni admin həll edəcək.</div>';
-    if(b.commissionStatus==='due' && b.status!=='checkedin' && b.status!=='refund_pending') info+='<div class="m" style="white-space:normal">Platforma komissiyası (10%): <b>'+az2(b.commissionAmt)+'</b> · borc kimi qeyd olunub'+(b.commissionDueAt?', '+fmtDate(new Date(b.commissionDueAt).toISOString().slice(0,10))+' tarixinə qədər ödənilməlidir':'')+'</div>';
+    if(b.commissionStatus==='due' && b.status!=='checkedin' && b.status!=='refund_pending' && b.status!=='refund_return') info+='<div class="m" style="white-space:normal">Platforma komissiyası (10%): <b>'+az2(b.commissionAmt)+'</b> · borc kimi qeyd olunub'+(b.commissionDueAt?', '+fmtDate(new Date(b.commissionDueAt).toISOString().slice(0,10))+' tarixinə qədər ödənilməlidir':'')+'</div>';
     return depHead(b,g+' · '+az2(b.total)+' · beh '+az2(b.depAmt)+' ('+b.depPct+'%)')+info+'</div><div class="act">'+act+'</div></div>';
   }).join('');
 }
 function depAct(code,action,extra){
-  var msgs={cancel:'Sorğu ləğv edilsin?',respond:null,confirmDeposit:'Beh kartınıza gəlib?',noDeposit:'Beh gəlməyib? Mübahisə admin tərəfindən həll olunacaq.',checkedIn:'Evə yerləşdiyinizi təsdiq edirsiniz?',hostArrived:'Qonaq evə gəlib?',notArrived:'Yerləşmədiyinizi bildirirsiniz? Admin baxacaq.',proposeRefund:'Behin qarşılıqlı razılıqla qaytarılmasını təklif edirsən? Digər tərəf razılaşsa bron ləğv olunur, platforma komissiyası isə qüvvədə qalır.',acceptRefund:'Behin qaytarılmasına razısan? Bron ləğv olunacaq.',declineRefund:'Təklifi rədd edirsən?',withdrawRefund:'Təklifi geri götürürsən?',noShow:'Qonaq gəlmədi? Qonaq təsdiqləsə tarixlər azad olacaq, beh sizdə qalacaq.',confirmNoShow:'Gəlmədiyinizi təsdiq edirsiniz? Beh geri qaytarılmır.',denyNoShow:'Etiraz edirsiniz? Admin baxacaq.'};
+  var msgs={cancel:'Sorğu ləğv edilsin?',respond:null,confirmDeposit:'Beh kartınıza gəlib?',noDeposit:'Beh gəlməyib? Mübahisə admin tərəfindən həll olunacaq.',checkedIn:'Evə yerləşdiyinizi təsdiq edirsiniz?',hostArrived:'Qonaq evə gəlib?',notArrived:'Yerləşmədiyinizi bildirirsiniz? Admin baxacaq.',proposeRefund:'Behin qarşılıqlı razılıqla qaytarılmasını təklif edirsən? Digər tərəf razılaşsa bron ləğv olunur. Platformanın komissiyası isə istənilən halda tutulur və ev sahibinin borcu kimi qalır. Behi ev sahibi qaytarıb ekran görüntüsünü yükləməlidir.',acceptRefund:'Behin qaytarılmasına razısan? Bron ləğv olunacaq, ev sahibi behi qaytarıb ekran görüntüsü yükləməlidir. Platformanın komissiyası isə istənilən halda tutulur.',declineRefund:'Təklifi rədd edirsən?',withdrawRefund:'Təklifi geri götürürsən?',noShow:'Qonaq gəlmədi? Qonaq təsdiqləsə tarixlər azad olacaq, beh sizdə qalacaq.',confirmNoShow:'Gəlmədiyinizi təsdiq edirsiniz? Beh geri qaytarılmır.',denyNoShow:'Etiraz edirsiniz? Admin baxacaq.'};
   if(msgs[action] && !confirm(msgs[action])) return;
   if(!fbOnline||!fbFunctions){ toast('Bağlantı yoxdur'); return; }
   var data=Object.assign({code:code,action:action},extra||{});
   fbFunctions.httpsCallable('depositAction')(data).then(function(){ toast('Əməliyyat qeydə alındı'); }).catch(function(e){ toast((e&&e.message)||'Xəta baş verdi'); });
+}
+function depRefundProof(code){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f) return;
+    toast('Yüklənir...');
+    uploadImageToStorage(f,'deposits/'+code+'/refund').then(function(url){
+      return fbFunctions.httpsCallable('depositAction')({code:code,action:'sendRefundProof',url:url});
+    }).then(function(){ toast('Göndərildi. Beh qaytarılması qeydə alındı.'); }).catch(function(e){ toast((e&&e.message)||'Yükləmə alınmadı'); });
+  };
+  inp.click();
 }
 function depProof(code){
   var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
@@ -3478,7 +3495,7 @@ function renderDepAdmin(){
   var all=state.depBookings||[];
   el.innerHTML=all.length?all.map(function(b){
     var act='';
-    if(['review','confirmed','arrival_pending','depsent','noshow_pending','refund_pending'].indexOf(b.status)>=0)
+    if(['review','confirmed','arrival_pending','depsent','noshow_pending','refund_pending','refund_return'].indexOf(b.status)>=0)
       act='<button class="btn sm" onclick="adminDep(\''+b.code+'\',\'checkedin\')">Evə yerləşib</button><button class="btn sm ghost" onclick="adminDep(\''+b.code+'\',\'noshow\')">Gəlmədi</button>'
         +(b.status==='review'||b.status==='depsent'?'<button class="btn sm ghost" onclick="adminDep(\''+b.code+'\',\'confirm\')">Təsdiqlə</button>':'')
         +'<button class="btn sm ghost" onclick="adminDep(\''+b.code+'\',\'cancel\')">Ləğv et</button>';
@@ -3486,6 +3503,7 @@ function renderDepAdmin(){
       +'<div class="m">'+az2(b.total)+' · beh '+az2(b.depAmt)+' · komissiya '+az2(b.commissionAmt)+(b.commissionStatus==='due'?' (borc)':'')+'</div>'
       +(b.reviewReason?'<div class="m" style="color:var(--nar)">Səbəb: '+esc(b.reviewReason)+'</div>':'')
       +(b.proofUrl?'<div class="m"><a href="'+esc(b.proofUrl)+'" target="_blank" rel="noopener">Beh ekran görüntüsü</a></div>':'')
+      +(b.refundProofUrl?'<div class="m"><a href="'+esc(b.refundProofUrl)+'" target="_blank" rel="noopener">Qaytarma ekran görüntüsü</a></div>':'')
       +'</div><div class="act">'+act+'</div></div>';
   }).join(''):'<div class="empty"><h3>VÖEN-siz bron yoxdur</h3></div>';
 }
