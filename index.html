@@ -270,7 +270,9 @@ label.bmopt{display:flex!important;flex-direction:row;align-items:flex-start;gap
 .novbox b{font-weight:800}
 .htypebox{display:grid;gap:8px}
 .htype{display:flex !important;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;font-weight:600}
-.htype input{margin-top:4px;width:18px;height:18px;flex:none}
+label.htype{display:flex!important;flex-direction:row;align-items:flex-start;gap:10px}
+.htype input,.box .htype input[type=radio],form.frm .htype input[type=radio]{margin:3px 0 0;flex:none;width:18px!important;min-width:18px;height:18px;padding:0}
+.htype>span{min-width:0;flex:1 1 0}
 .htype b{display:block;font-size:15px}
 .htype small{display:block;color:var(--muted);font-weight:500;font-size:13px;line-height:1.4;margin-top:2px}
 .htype:has(input:checked){border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset}
