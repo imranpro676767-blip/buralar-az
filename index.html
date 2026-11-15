@@ -3193,7 +3193,7 @@ function goSub(s){
   var pane=document.getElementById('s-'+s); if(pane) pane.classList.add('active');
   document.querySelectorAll('.adm-nav button[data-sub]').forEach(function(b){ b.setAttribute('aria-selected', b.getAttribute('data-sub')===s?'true':'false'); });
   var h=ADM_HEAD[s]||['',''];
-  var hd=document.getElementById('admHead'); if(hd) hd.innerHTML='<h2>'+h[0]+'</h2><p>'+h[1]+'</p>';
+  var hd=document.getElementById('admHead'); if(hd) hd.innerHTML='<h2>'+h[0]+'</h2><p>'+h[1]+'</p><p style="margin-top:6px"><span class="tag '+(state.admScope==='novoen'?'hold':'done')+'">'+(state.admScope==='novoen'?'VÖEN-siz evlər bölməsi':'VÖEN-li evlər bölməsi')+'</span></p>';
   var st=document.getElementById('adminstats'); if(st) st.style.display=(s==='dash'||s==='rezall'||s==='fin'||s==='stats')?'':'none';
   if(s==='rezall' && typeof renderRez==='function') renderRez();
   if(s==='dash' && typeof renderDash==='function') renderDash();
@@ -7285,7 +7285,7 @@ function renderDash(){
     ['Ziyan iddiaları (qərar gözləyir)',dashN('dmgcount'),"DM.cat='needs';DM.page=1;goSub('dmg')"],
     ['Rəy şikayətləri',dashN('repcount'),"goSub('rep')"],
     ['Dəstək mesajları',dashN('supportcount'),"goSub('support')"],
-    ['Silinməyə gözləyənlər',state.custom.filter(function(x){return x.deletePending;}).length+state.customers.filter(function(c){return c.deletePending;}).length,"MD.cat='deleting';MD.page=1;goSub('mod')"],
+    ['Silinməyə gözləyənlər',state.custom.filter(function(x){return admOk(x) && x.deletePending;}).length+state.customers.filter(function(c){return c.deletePending;}).length,"MD.cat='deleting';MD.page=1;goSub('mod')"],
     ['Yoxlanılmamış müştərilər',pendCust,"CU.cat='other';CU.page=1;goSub('cust')"],
     ['Ödəniş gözləyən bronlar',pendPay,"REZ.cat='pending';REZ.page=1;goSub('rezall')"]
   ];
