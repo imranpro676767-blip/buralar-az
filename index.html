@@ -394,8 +394,10 @@ details,details>summary{min-width:0;max-width:100%}.tblwrap{max-width:100%}
 #adminContent>.adm-nav{grid-column:1;grid-row:1/span 60;position:sticky;top:calc(var(--hdrH,64px) + 12px);display:flex;flex-direction:column;gap:2px;margin:18px 0 0;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;max-height:calc(100vh - var(--hdrH,64px) - 28px);overflow-y:auto}
 .adm-nav .adm-grp{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 5px}
 .adm-nav .adm-grp:first-child{padding-top:2px}
-.trustnote{margin:0 0 14px;padding:11px 14px;border:1px solid var(--line);border-left:4px solid var(--ok);background:var(--card);border-radius:12px;font-size:13.5px;line-height:1.5;color:var(--muted)}
-.trustnote b{color:var(--ink)}
+.trustnote{margin:0 0 14px;padding:12px 16px;border:1px solid #1E9E5A;border-left:6px solid #1E9E5A;background:rgba(30,158,90,.14);border-radius:12px;font-size:14px;line-height:1.55;color:var(--ink)}
+.trustnote b{color:var(--ink);font-weight:800}
+.grpdiv.warn{padding:12px 16px;border:1px solid #E0A100;border-left:6px solid #E0A100;background:rgba(255,193,7,.16);border-radius:12px}
+.grpdiv.warn p{color:var(--ink)}
 .grpdiv{grid-column:1/-1;margin:6px 0 0;padding:2px 2px 0}
 .grpdiv h3{margin:0 0 4px;font-size:18px}
 .grpdiv p{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
@@ -767,6 +769,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qonaqlar bron etməzdən əvvəl sənə sual verə bilər — bütün yazışma sayt daxilində qalır, telefon nömrəsi paylaşımı bloklanır.</p>
     <div class="blist" id="hostmessages"></div>
 
+    <div id="depDebtBox"></div>
     <h3 style="margin:28px 0 12px">Evlərimdəki rezervasiyalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qalıb getmiş qonaqları qiymətləndirə, lazım gələrsə haqlarında sübutlu şikayət göndərə bilərsən.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
@@ -1219,6 +1222,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="adm-grp">Əməliyyatlar</div>
         <button data-sub="dash" aria-selected="true" onclick="goSub('dash')">İcmal</button>
         <button data-scope="voen" data-sub="rezall" aria-selected="false" onclick="goSub('rezall')">Rezervasiyalar</button>
+        <button data-scope="novoen" data-sub="depdebt" aria-selected="false" onclick="goSub('depdebt')">Komissiya borcları <span id="depdebtcount"></span></button>
         <button data-scope="novoen" data-sub="depall" aria-selected="false" onclick="goSub('depall')">Beh bronları <span id="depcount"></span></button>
         <button data-scope="voen" data-sub="cmp" aria-selected="false" onclick="goSub('cmp')">Rezervasiya şikayətləri <span id="cmpcount"></span></button>
         <button data-scope="voen" data-sub="dmg" aria-selected="false" onclick="goSub('dmg')">Ziyan iddiaları <span id="dmgcount"></span></button>
@@ -1339,6 +1343,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       </div>
       <div class="sub" id="s-edits"><div class="blist" id="editlist"></div></div>
       <div class="sub" id="s-dels"><div class="blist" id="dellist"></div></div>
+      <div class="sub" id="s-depdebt"><div id="depCardForm"></div><div class="blist" id="depdebtlist"></div></div>
       <div class="sub" id="s-depall"><div class="blist" id="depadmlist"></div></div>
       <div class="sub" id="s-cmp"><div class="blist" id="cmplist"></div></div>
       <div class="sub" id="s-rep"><div class="blist" id="replist"></div></div>
@@ -2015,7 +2020,7 @@ function unsyncListing(id,tk){
    etdiyi rezervasiya bütün digər qonaqlara/ev sahiblərinə/admin panelinə dərhal görünsün və
    eyni tarixlərə iki fərqli qonaq bron edə bilməsin. */
 function renderAllShared(){
-  render(); renderBookings(); renderHost(); if(state.adminAuth) renderAdmin();
+  render(); renderBookings(); renderHost(); renderDepDebtBox(); if(state.adminAuth) renderAdmin();
 }
 function makeCollectionSync(stateKey, collectionName, idField){
   return {
@@ -3167,6 +3172,7 @@ function adminLogout(){
 var SUBTABS=['rezall','cust','mod','hosts','stats','edits','dels','cmp','rep','notif','hnotice','dmg','msg','support','sanc','fin'];
 var ADM_HEAD={
   audit:['Fəaliyyət jurnalı','Admin hesablarının girişləri və əməliyyatları (yalnız sahib).'],
+  depdebt:['Komissiya borcları (VÖEN-siz evlər)','Ev sahiblərinin platformaya borcu, ödəniş yoxlaması, nəzarət və blok.'],
   depall:['Beh bronları (VÖEN-siz evlər)','Fərdi ev sahiblərinin bronları: ekran görüntüləri, qərarlar və komissiya borcları.'],
   dash:['İcmal','Bu gün nə gözləyir, gəlir və yaxınlaşan girişlər.'],
   rezall:['Rezervasiyalar','Bütün bronlar: status, tarix aralığı və axtarışla süz.'],
@@ -3521,6 +3527,102 @@ function depProof(code){
   };
   inp.click();
 }
+
+/* ===== VÖEN-siz: komissiya borcları (ev sahibi + admin) ===== */
+state.platCard=null;
+var _platCardLoading=false;
+function loadPlatCard(){
+  if(state.platCard||_platCardLoading||!fbOnline||!fbFunctions) return;
+  _platCardLoading=true;
+  fbFunctions.httpsCallable('getPlatformCard')({}).then(function(r){ state.platCard=r.data||{card:null}; _platCardLoading=false; renderDepDebtBox(); renderDepDebtAdmin(); })
+    .catch(function(){ _platCardLoading=false; });
+}
+function fmtCard16(c){ return String(c||'').replace(/(\d{4})(?=\d)/g,'$1 '); }
+function myDebts(){ return (state.depBookings||[]).filter(function(b){ return state.user && b.hostEmail===state.user.email && (b.commissionStatus==='due'||b.commissionStatus==='paid_pending'); }); }
+function renderDepDebtBox(){
+  var el=document.getElementById('depDebtBox'); if(!el) return;
+  var list=myDebts();
+  if(!list.length){ el.innerHTML=''; return; }
+  loadPlatCard();
+  var now=Date.now();
+  var due=list.filter(function(b){return b.commissionStatus==='due';});
+  var total=due.reduce(function(s,b){return s+(+b.commissionAmt||0);},0);
+  var overdue=due.filter(function(b){return b.commissionDueAt && b.commissionDueAt<now;});
+  var oldest=overdue.reduce(function(m,b){return Math.min(m,b.commissionDueAt);},Infinity);
+  var days=overdue.length?Math.floor((now-oldest)/86400000):0;
+  var warn='';
+  if(overdue.length) warn='<div class="note" style="text-align:left;color:var(--nar);font-weight:700;margin:8px 0">Ödəniş müddəti keçib. Hesabınız nəzarətə alına bilər, yeni bronlar bağlanır. '+(days>=3?'Ödəniş edilməsə, hesab tezliklə bloklanacaq.':'3 gün ərzində ödənilməsə, hesab bloklanacaq.')+'</div>';
+  var pc=state.platCard;
+  var card = pc&&pc.card ? '<div style="margin:8px 0;padding:10px 12px;border:1px dashed var(--line);border-radius:12px"><div class="m">Komissiyanı bu karta köçürün:</div><div style="font-size:18px;font-weight:800;letter-spacing:1px">'+esc(fmtCard16(pc.card))+'</div><div class="m">'+esc(pc.holder||'')+(pc.bank?' · '+esc(pc.bank):'')+'</div></div>'
+    : '<div class="note" style="text-align:left">Ödəniş rekvizitləri yüklənir…</div>';
+  var rows=list.map(function(b){
+    var late=b.commissionStatus==='due' && b.commissionDueAt && b.commissionDueAt<now;
+    var st= b.commissionStatus==='paid_pending' ? '<span class="tag wait">Ödəniş yoxlanılır</span>' : '<button class="btn sm" onclick="depCommProof(\''+b.code+'\')">Ödəniş ekran görüntüsü yüklə</button>';
+    return '<div class="dash-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)"><div><b>'+esc(b.code)+'</b> · '+esc(b.title||'')+'<div class="m">'+az2(b.commissionAmt)+(b.commissionDueAt?' · son tarix '+fmtDate(new Date(b.commissionDueAt).toISOString().slice(0,10)):'')+(late?' <span style="color:var(--nar);font-weight:700">· gecikib</span>':'')+'</div></div><div>'+st+'</div></div>';
+  }).join('');
+  el.innerHTML='<div class="dash-card" style="margin:22px 0 0;border:1px solid '+(overdue.length?'var(--nar)':'var(--line)')+'"><h4 style="margin:0 0 4px">Platforma komissiyası (borc)</h4>'
+    +'<div class="m" style="white-space:normal">Ödənilməli məbləğ: <b>'+az2(total)+'</b>. Komissiyanı qonağın giriş tarixindən sonra 3 gün ərzində ödəməlisən.</div>'
+    +warn+card+rows+'</div>';
+}
+function depCommProof(code){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f) return;
+    toast('Yüklənir...');
+    uploadImageToStorage(f,'deposits/'+code+'/comm').then(function(url){
+      return fbFunctions.httpsCallable('depositAction')({code:code,action:'sendCommissionProof',url:url});
+    }).then(function(){ toast('Göndərildi. Admin ödənişi yoxlayacaq.'); }).catch(function(e){ toast((e&&e.message)||'Yükləmə alınmadı'); });
+  };
+  inp.click();
+}
+function renderDepDebtAdmin(){
+  var box=document.getElementById('depdebtlist'); if(!box) return;
+  var frm=document.getElementById('depCardForm');
+  if(frm && !frm.getAttribute('data-ready')){
+    frm.setAttribute('data-ready','1');
+    frm.innerHTML='<div class="dash-card" style="margin-bottom:16px"><h4>Platformanın biznes kartı (komissiya ödənişi)</h4><div class="m" style="white-space:normal">Bu rekvizitlər yalnız borcu olan fərdi ev sahiblərinə göstərilir.</div>'
+      +'<div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:10px"><label>Kart nömrəsi (16 rəqəm)<input id="dc-card" inputmode="numeric" maxlength="19" placeholder="0000 0000 0000 0000"></label><label>Kart sahibi<input id="dc-holder" maxlength="60"></label><label>Bank (istəyə görə)<input id="dc-bank" maxlength="60"></label></div>'
+      +'<div style="margin-top:10px"><button class="btn sm" onclick="saveDepPlatCard()">Yadda saxla</button></div></div>';
+  }
+  loadPlatCard();
+  var pc=state.platCard;
+  if(pc&&pc.card){ var c=document.getElementById('dc-card'); if(c&&!c.value) c.value=fmtCard16(pc.card); var h=document.getElementById('dc-holder'); if(h&&!h.value) h.value=pc.holder||''; var bk=document.getElementById('dc-bank'); if(bk&&!bk.value) bk.value=pc.bank||''; }
+  var now=Date.now(), groups={};
+  (state.depBookings||[]).forEach(function(b){
+    if(b.commissionStatus!=='due' && b.commissionStatus!=='paid_pending') return;
+    var k=b.hostEmail||'—'; (groups[k]=groups[k]||[]).push(b);
+  });
+  var hosts=Object.keys(groups);
+  var over=0;
+  var html=hosts.map(function(em){
+    var arr=groups[em];
+    var due=arr.filter(function(b){return b.commissionStatus==='due';});
+    var tot=due.reduce(function(s,b){return s+(+b.commissionAmt||0);},0);
+    var od=due.filter(function(b){return b.commissionDueAt&&b.commissionDueAt<now;});
+    var oldest=od.reduce(function(m,b){return Math.min(m,b.commissionDueAt);},Infinity);
+    var days=od.length?Math.floor((now-oldest)/86400000):0;
+    if(od.length) over++;
+    var sc=sanctionOf(em); var stTag='<span class="tag done">Normal</span>';
+    if(sc&&sc.status==='banned') stTag='<span class="tag cancel">Bloklanıb</span>'; else if(sc&&sc.status==='watch') stTag='<span class="tag hold">Nəzarətdə</span>'; else if(od.length) stTag='<span class="tag wait">Gecikib ('+days+' gün)</span>';
+    var unblock=(sc&&sc.status==='banned')?'<button class="btn sm ghost" onclick="adminSanction(\''+esc(em)+'\',\'unban\')">Blokdan çıxar</button>':((sc&&sc.status==='watch')?'<button class="btn sm ghost" onclick="adminSanction(\''+esc(em)+'\',\'clear\')">Nəzarəti götür</button>':'');
+    var rows=arr.map(function(b){
+      var late=b.commissionStatus==='due'&&b.commissionDueAt&&b.commissionDueAt<now;
+      return '<div class="dash-row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)"><div><b>'+esc(b.code)+'</b> · '+az2(b.commissionAmt)+' · '+(b.commissionStatus==='paid_pending'?'<span class="tag wait">Yoxlanılır</span>':(late?'<span style="color:var(--nar);font-weight:700">gecikib</span>':'<span class="m">gözlənilir</span>'))
+        +(b.commissionProofUrl?' · <a href="'+esc(b.commissionProofUrl)+'" target="_blank" rel="noopener">Ödəniş şəkli</a>':'')+'</div><div style="display:flex;gap:6px;flex-wrap:wrap">'
+        +'<button class="btn sm" onclick="adminDep(\''+b.code+'\',\'commissionPaid\')">Ödənilib</button>'
+        +(b.commissionStatus==='paid_pending'?'<button class="btn sm ghost" onclick="adminDep(\''+b.code+'\',\'commissionReject\')">Rədd et</button>':'')+'</div></div>';
+    }).join('');
+    return '<div class="bk" style="display:block"><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between"><div><h4 style="margin:0">'+esc(em)+'</h4><div class="m">Ümumi borc: <b>'+az2(tot)+'</b> · '+stTag+'</div></div><div>'+unblock+'</div></div>'+rows+'</div>';
+  }).join('');
+  box.innerHTML=html||'<div class="empty"><h3>Komissiya borcu yoxdur</h3></div>';
+  var ce=document.getElementById('depdebtcount'); if(ce) ce.textContent=over?('('+over+')'):'';
+}
+function saveDepPlatCard(){
+  var card=(document.getElementById('dc-card').value||'').replace(/\D/g,''), holder=document.getElementById('dc-holder').value.trim(), bank=document.getElementById('dc-bank').value.trim();
+  if(!/^\d{16}$/.test(card)){ toast('Kart nömrəsi 16 rəqəm olmalıdır'); return; }
+  if(holder.length<3){ toast('Kart sahibinin adını yaz'); return; }
+  fbFunctions.httpsCallable('adminSetPlatformCard')({card:card,holder:holder,bank:bank}).then(function(){ state.platCard={card:card,holder:holder,bank:bank}; toast('Rekvizitlər saxlanıldı'); renderDepDebtBox(); }).catch(function(e){ toast((e&&e.message)||'Xəta'); });
+}
 function renderDepAdmin(){
   var el=document.getElementById('depadmlist'); if(!el) return;
   var all=state.depBookings||[];
@@ -3578,7 +3680,7 @@ function render(scroll,keepPage){
   document.getElementById('grid').innerHTML = (list.map(function(x,_i){
     var _div='';
     if(_i===0 && _hasV && full.some(isNovoen)) _div='<div class="grpdiv"><h3>Rəsmi qeydiyyatlı ev sahibləri</h3><p>Ödəniş Epoint ilə qorunur, platforma tərəfindən tövsiyə olunur.</p></div>';
-    if(_i===_firstN) _div='<div class="grpdiv"'+(_i>0?' style="margin-top:22px"':'')+'><h3>Fərdi ev sahibləri</h3><p>Ev sahibi və ev platformamız tərəfindən yoxlanılıb. Ödəniş birbaşa ev sahibi ilə aparılır (beh sistemi). Daha etibarlı və qorunan ödəniş üçün rəsmi qeydiyyatlı evləri tövsiyə edirik.</p></div>';
+    if(_i===_firstN) _div='<div class="grpdiv warn"'+(_i>0?' style="margin-top:22px"':'')+'><h3>Fərdi ev sahibləri</h3><p>Ev sahibi və ev platformamız tərəfindən yoxlanılıb. Ödəniş birbaşa ev sahibi ilə aparılır (beh sistemi). Daha etibarlı və qorunan ödəniş üçün rəsmi qeydiyyatlı evləri tövsiyə edirik.</p></div>';
     var thumb = x.cover ? '<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return _div+'<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
       +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+modeTagHtml(x)+coverPriceHtml(x)+'</div>'
@@ -7722,7 +7824,7 @@ function renderAdmin(){
 
   renderHostsAdmin();
   renderMarketStatsAdmin();
-  renderDepAdmin();
+  renderDepAdmin(); renderDepDebtAdmin();
 
   var cmp=state.bookings.filter(function(b){return b.complaint;});
   var open=cmp.filter(function(b){return b.complaint.st==='pending';});
