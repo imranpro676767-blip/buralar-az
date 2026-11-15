@@ -394,10 +394,8 @@ details,details>summary{min-width:0;max-width:100%}.tblwrap{max-width:100%}
 #adminContent>.adm-nav{grid-column:1;grid-row:1/span 60;position:sticky;top:calc(var(--hdrH,64px) + 12px);display:flex;flex-direction:column;gap:2px;margin:18px 0 0;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;max-height:calc(100vh - var(--hdrH,64px) - 28px);overflow-y:auto}
 .adm-nav .adm-grp{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 5px}
 .adm-nav .adm-grp:first-child{padding-top:2px}
-.trustnote{margin:0 0 14px;padding:12px 16px;border:1px solid #1E9E5A;border-left:6px solid #1E9E5A;background:rgba(30,158,90,.14);border-radius:12px;font-size:14px;line-height:1.55;color:var(--ink)}
-.trustnote b{color:var(--ink);font-weight:800}
-.grpdiv.warn{padding:12px 16px;border:1px solid #E0A100;border-left:6px solid #E0A100;background:rgba(255,193,7,.16);border-radius:12px}
-.grpdiv.warn p{color:var(--ink)}
+.trustnote{margin:0 0 14px;padding:11px 14px;border:1px solid var(--line);border-left:4px solid var(--ok);background:var(--card);border-radius:12px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.trustnote b{color:var(--ink)}
 .grpdiv{grid-column:1/-1;margin:6px 0 0;padding:2px 2px 0}
 .grpdiv h3{margin:0 0 4px;font-size:18px}
 .grpdiv p{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
@@ -3680,7 +3678,7 @@ function render(scroll,keepPage){
   document.getElementById('grid').innerHTML = (list.map(function(x,_i){
     var _div='';
     if(_i===0 && _hasV && full.some(isNovoen)) _div='<div class="grpdiv"><h3>Rəsmi qeydiyyatlı ev sahibləri</h3><p>Ödəniş Epoint ilə qorunur, platforma tərəfindən tövsiyə olunur.</p></div>';
-    if(_i===_firstN) _div='<div class="grpdiv warn"'+(_i>0?' style="margin-top:22px"':'')+'><h3>Fərdi ev sahibləri</h3><p>Ev sahibi və ev platformamız tərəfindən yoxlanılıb. Ödəniş birbaşa ev sahibi ilə aparılır (beh sistemi). Daha etibarlı və qorunan ödəniş üçün rəsmi qeydiyyatlı evləri tövsiyə edirik.</p></div>';
+    if(_i===_firstN) _div='<div class="grpdiv"'+(_i>0?' style="margin-top:22px"':'')+'><h3>Fərdi ev sahibləri</h3><p>Ev sahibi və ev platformamız tərəfindən yoxlanılıb. Ödəniş birbaşa ev sahibi ilə aparılır (beh sistemi). Daha etibarlı və qorunan ödəniş üçün rəsmi qeydiyyatlı evləri tövsiyə edirik.</p></div>';
     var thumb = x.cover ? '<img loading="lazy" decoding="async" src="'+(x.coverThumb||x.cover)+'" alt="'+esc(x.t)+'" style="width:100%;height:100%;object-fit:cover;display:block">' : scene(x.sc,x.id);
     return _div+'<div class="card" tabindex="0" role="button" onclick="openDetail('+x.id+')" onkeydown="if(event.key===\'Enter\')openDetail('+x.id+')">'
       +'<div class="ph">'+thumb+(x.sup?'<span class="badge">Seçilmiş ev sahibi</span>':'')+verifiedBadgeHtml()+modeTagHtml(x)+coverPriceHtml(x)+'</div>'
