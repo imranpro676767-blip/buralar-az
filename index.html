@@ -394,10 +394,10 @@ details,details>summary{min-width:0;max-width:100%}.tblwrap{max-width:100%}
 #adminContent>.adm-nav{grid-column:1;grid-row:1/span 60;position:sticky;top:calc(var(--hdrH,64px) + 12px);display:flex;flex-direction:column;gap:2px;margin:18px 0 0;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;max-height:calc(100vh - var(--hdrH,64px) - 28px);overflow-y:auto}
 .adm-nav .adm-grp{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 5px}
 .adm-nav .adm-grp:first-child{padding-top:2px}
-.trustnote{margin:0 0 14px;padding:12px 16px;border:1px solid #1E9E5A;border-left:6px solid #1E9E5A;background:rgba(30,158,90,.14);border-radius:12px;font-size:14px;line-height:1.55;color:var(--ink)}
-.trustnote b{color:var(--ink);font-weight:800}
+.trustnote{margin:0 0 14px;padding:12px 16px;border:1px solid #1E9E5A;border-left:6px solid #1E9E5A;background:rgba(30,158,90,.14);border-radius:12px;font-size:14px;line-height:1.55;color:var(--text)}
+.trustnote b{color:var(--text);font-weight:800}
 .grpdiv.warn{padding:12px 16px;border:1px solid #E0A100;border-left:6px solid #E0A100;background:rgba(255,193,7,.16);border-radius:12px}
-.grpdiv.warn p{color:var(--ink)}
+.grpdiv.warn p{color:var(--text)}
 .grpdiv{grid-column:1/-1;margin:6px 0 0;padding:2px 2px 0}
 .grpdiv h3{margin:0 0 4px;font-size:18px}
 .grpdiv p{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
@@ -4016,7 +4016,7 @@ function leftInfoHtml(x){
     +'<hr class="sep"><h3 style="margin-bottom:10px;font-size:18px">Ödəniş və geri qaytarma</h3>'
     +(isNovoen(x)
       ? '<p style="margin:0;max-width:64ch;color:var(--muted);font-weight:500">Bu ev fərdi ev sahibinə məxsusdur. Sorğunu ev sahibi təsdiqləyir, sonra qonaq beh məbləğini ev sahibinin kartına köçürür və ekran görüntüsünü yükləyir. Ödəniş saytdan keçmir, platforma bu ödənişin tərəfi deyil. Beh geri qaytarılmır; yalnız tərəflər razılaşarsa (ev sahibi qaytarır) və ya ev sahibi rezervasiyanı ləğv edib ya əsassız imtina edərsə qaytarılır. Qalan məbləğ ev sahibi ilə razılaşdırılmış qaydada ödənilir.</p>'
-      : '<p style="margin:0;max-width:64ch;color:var(--muted);font-weight:500">Ödəniş kartla edilir və girişdən 24 saat sonra ev sahibinin hesabına köçürülür. Rezervasiya ləğv edildikdə məbləğ geri qaytarılmır. Yalnız ev elandakı evə uyğun gəlmədikdə və ya ev sahibi açarı təqdim etmədikdə şikayət göndərmək olar; idarəetmə təsdiqləyərsə məbləğin 100%-i qaytarılır.</p>'
+      : '<p style="margin:0;max-width:64ch;color:var(--muted);font-weight:500">Ödəniş kartla edilir və girişdən 24 saat sonra ev sahibinin hesabına köçürülür. Rezervasiya ləğv edildikdə məbləğ geri qaytarılmır. Yalnız ev elandakı evə uyğun gəlmədikdə və ya ev sahibi açarı təqdim etmədikdə şikayət göndərmək olar; idarəetmə təsdiqləyərsə məbləğin 100%-i qaytarılır.</p>')
   +'</div>';
 }
 /* Artıq rezerv edilmiş ev üçün "Evə bax" — tarix seçimi və yenidən ödəniş imkanı olmadan,
