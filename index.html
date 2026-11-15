@@ -3280,7 +3280,7 @@ function renderChips(){
   }
   document.getElementById('chipsPool').innerHTML=pt;
   var mt='<button class="chip" aria-pressed="'+(state.bmode==='Hamısı')+'" onclick="setBMode(\'Hamısı\')">Hamısı</button>'
-    +'<button class="chip" aria-pressed="'+(state.bmode==='instant')+'" onclick="setBMode(\'instant\')">⚡ Dərhal bron</button>'
+    +(state.htype==='novoen'?'':'<button class="chip" aria-pressed="'+(state.bmode==='instant')+'" onclick="setBMode(\'instant\')">⚡ Dərhal bron</button>')
     +'<button class="chip" aria-pressed="'+(state.bmode==='request')+'" onclick="setBMode(\'request\')">✉️ Sorğu ilə</button>';
   document.getElementById('chipsMode').innerHTML=mt;
   var ht='<button class="chip" aria-pressed="'+(state.htype==='Hamısı')+'" onclick="setHType(\'Hamısı\')">Hamısı</button>'
@@ -3288,7 +3288,7 @@ function renderChips(){
     +'<button class="chip" aria-pressed="'+(state.htype==='novoen')+'" onclick="setHType(\'novoen\')">Fərdi ev sahibləri</button>';
   var ch=document.getElementById('chipsHost'); if(ch) ch.innerHTML=ht;
 }
-function setHType(t){ state.htype=(state.htype===t?'Hamısı':t); render(); }
+function setHType(t){ state.htype=(state.htype===t?'Hamısı':t); if(state.htype==='novoen' && state.bmode==='instant') state.bmode='Hamısı'; render(); }
 function setRegion(r){ state.region=(state.region===r?'Hamısı':r); render(); }
 function setType(t){ state.type=(state.type===t?'Hamısı':t); render(); }
 function setPool(p){ state.pool=(state.pool===p&&p!=='Hamısı'?'Hamısı':p); if(state.pool!=='var') state.pwarm=''; render(); }
