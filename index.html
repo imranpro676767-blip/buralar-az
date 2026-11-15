@@ -394,6 +394,11 @@ details,details>summary{min-width:0;max-width:100%}.tblwrap{max-width:100%}
 #adminContent>.adm-nav{grid-column:1;grid-row:1/span 60;position:sticky;top:calc(var(--hdrH,64px) + 12px);display:flex;flex-direction:column;gap:2px;margin:18px 0 0;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;max-height:calc(100vh - var(--hdrH,64px) - 28px);overflow-y:auto}
 .adm-nav .adm-grp{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 5px}
 .adm-nav .adm-grp:first-child{padding-top:2px}
+.scrollbox{scrollbar-width:thin;scrollbar-color:var(--nar) var(--line)}
+.scrollbox::-webkit-scrollbar{width:8px}
+.scrollbox::-webkit-scrollbar-track{background:var(--line);border-radius:8px}
+.scrollbox::-webkit-scrollbar-thumb{background:var(--nar);border-radius:8px}
+.scrollhint{font-size:12.5px;font-weight:800;color:var(--nar);text-align:center;margin:6px 0 0}
 .trustnote{margin:0 0 14px;padding:12px 16px;border:1px solid #1E9E5A;border-left:6px solid #1E9E5A;background:rgba(30,158,90,.14);border-radius:12px;font-size:14px;line-height:1.55;color:var(--text)}
 .trustnote b{color:var(--text);font-weight:800}
 .grpdiv.warn{padding:12px 16px;border:1px solid #E0A100;border-left:6px solid #E0A100;background:rgba(255,193,7,.16);border-radius:12px}
@@ -1605,7 +1610,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <div class="modal" id="safetyModal" role="dialog" aria-modal="true" aria-label="Təhlükəsizlik siyasəti">
   <div class="box">
     <h3>Ödəniş və təhlükəsizlik siyasəti</h3>
-    <div class="note" id="safetyBodyNovoen" style="display:none;text-align:left;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
+    <div class="note scrollbox" id="safetyBodyNovoen" style="display:none;text-align:left;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
       <p><b>1. Şəxsiyyət yoxlaması.</b> Rezervasiya etmək üçün qeydiyyat zamanı şəxsiyyət təsdiqi tələb olunur. Ev sahibi və elan da Buralar.az tərəfindən yoxlanılıb. Şübhəli və ya təkrarlanan sənədlər sistem tərəfindən avtomatik aşkarlanır və admin tərəfindən əlavə yoxlanılır.</p>
       <p><b>2. Ödəniş necə aparılır.</b> Bu elan fərdi ev sahibinə aiddir və ödəniş birbaşa ev sahibi ilə aparılır. Ev sahibi sorğunuzu qəbul etdikdən sonra 2 saat ərzində beh məbləğini onun kartına köçürür və ödəniş ekran görüntüsünü saytda yükləyirsiniz. Qalan məbləği evə gələndə ev sahibinə ödəyirsiniz. Ödənişlər Buralar.az hesabından keçmir.</p>
       <p><b>3. Beh.</b> Beh bronunuzu qəti təsdiqləyir və adətən geri qaytarılmır. Tərəflər qarşılıqlı razılaşsalar, beh geri qaytarıla bilər. Ev sahibi təsdiqlənmiş bronu ləğv edərsə və ya sizi əsassız qəbul etməzsə, behi sizə qaytarmalıdır. Belə mübahisələri Buralar.az idarəetməsi araşdırıb həll edir.</p>
@@ -1615,7 +1620,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p style="font-weight:700"><a href="#" onclick="openModal('tosNovoenModal');return false" style="color:var(--nar)">Fərdi ev sahibləri üçün İstifadə Şərtləri</a> · <a href="#" onclick="openModal('privacyNovoenModal');return false" style="color:var(--nar)">Məxfilik siyasəti</a></p>
       <p><b>7. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz yalnız bron edən/bron olunan qarşı tərəfə açıqlanır. Dəqiq ünvan və ev sahibinin WhatsApp nömrəsi bron təsdiqləndikdən sonra sizə göstərilir.</p>
     </div>
-    <div class="note" id="safetyBodyVoen" style="text-align:left;display:grid;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
+    <div class="note scrollbox" id="safetyBodyVoen" style="text-align:left;display:grid;gap:10px;max-height:52vh;overflow:auto;padding-right:4px">
       <p><b>1. Şəxsiyyət yoxlaması.</b> Buralar.az-da rezervasiya etmək üçün qeydiyyat zamanı şəxsiyyət təsdiqi tələb olunur. Şübhəli və ya təkrarlanan sənədlər sistem tərəfindən avtomatik aşkarlanır və admin tərəfindən əlavə yoxlanılır.</p>
       <p><b>2. Ödənişin saxlanması.</b> Ödədiyiniz məbləğ dərhal ev sahibinə keçmir — girişdən 24 saat sonra köçürülür. Bu müddət ərzində problem yaranarsa, şikayət göndərə bilərsiniz.</p>
       <p><b>3. Geri qaytarma.</b> Geri qaytarma yalnız iki halda mümkündür: ev elandakı təsvirə tamamilə uyğun gəlmirsə, və ya ev sahibi açarı təqdim etməyibsə. Admin təsdiqləsə, məbləğin 100%-i geri qaytarılır. Sadəcə fikir dəyişikliyinə görə geri qaytarma edilmir.</p>
@@ -1623,6 +1628,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>5. Evə dəyən ziyan.</b> Evə və ya əşyalara vurduğunuz ziyana görə siz cavabdehsiniz. Ev sahibi çıxışdan sonra 48 saat ərzində sübutla ziyan iddiası göndərə bilər; sizə bildiriş gələcək və 72 saat ərzində qəbul edə və ya sübutla etiraz edə bilərsiniz. Etiraz olarsa idarəetmə sübutlara baxıb qərar verir. Qəbul etdiyiniz və ya təsdiqlənmiş ziyanı ödəməsəniz hesabınız nəzarətə alına və ya bloklana bilər.</p>
       <p><b>6. Şəxsi məlumatların qorunması.</b> Şəxsiyyət sənədiniz və digər şəxsi məlumatlarınız yalnız admin tərəfindən görünür. Telefon nömrəniz isə yalnız bron edən/bron olunan qarşı tərəfə (ev sahibi ↔ qonaq) — rezervasiya edildiyi andan etibarən — açıqlanır, başqa heç bir istifadəçiyə göstərilmir.</p>
     </div>
+    <p class="scrollhint">↓ Hamısını oxumaq üçün aşağı sürüşdürün</p>
     <label style="display:flex;gap:10px;align-items:flex-start;text-align:left;font-size:14px;margin:12px 0;cursor:pointer">
       <input type="checkbox" id="tosAccept" style="margin-top:3px;width:18px;height:18px;flex:none">
       <span><a href="#" id="tosLinkSafety" onclick="openModal('tosModal');return false" style="color:var(--nar);font-weight:700">İstifadə Şərtlərini</a> oxudum və qəbul edirəm. Başa düşürəm ki, Buralar.az vasitəçidir, evdə baş verən hadisələrə görə (o cümlədən uşaqların və hovuzun təhlükəsizliyi) məsuliyyət mənə və ev sahibinə aiddir, Buralar.az-a deyil.</span>
@@ -1698,7 +1704,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <div class="modal" id="tosNovoenModal" role="dialog" aria-modal="true" aria-label="Fərdi ev sahibləri üçün istifadə şərtləri">
   <div class="box" style="width:min(680px,100%)">
     <h3>Fərdi ev sahibləri üçün İstifadə Şərtləri</h3>
-    <div class="note" id="tosNovoenBody" style="text-align:left;display:grid;gap:10px;max-height:62vh;overflow:auto;padding-right:4px">
+    <div class="note scrollbox" id="tosNovoenBody" style="text-align:left;display:grid;gap:10px;max-height:62vh;overflow:auto;padding-right:4px">
       <p style="color:var(--muted)">Versiya: FS-2026-11-v1. Bu şərtlər yalnız saytın "Fərdi ev sahibləri" bölməsindəki (rəsmi VÖEN qeydiyyatı olmayan ev sahiblərinin) elanlarına və bu elanlar üzrə rezervasiyalara aiddir. Ümumi İstifadə Şərtləri ilə birlikdə tətbiq olunur; ziddiyyət olduqda bu bölmə üçün aşağıdakı şərtlər üstündür.</p>
       <p><b>1. Platformanın rolu və ödənişin xarakteri.</b> Buralar.az yalnız vasitəçidir. Bu bölmədə ödənişlər (beh və qalan məbləğ) Buralar.az-dan keçmir: beh qonaq tərəfindən birbaşa ev sahibinin bank kartına köçürülür, qalan məbləğ evdə ev sahibinə ödənilir. Buralar.az bu vəsaitləri qəbul etmir, saxlamır, ötürmür və geri qaytarmır. Rəsmi qeydiyyatlı (VÖEN-li) ev sahiblərinə tətbiq olunan Epoint ilə ödəniş qoruması və "Zəmanətli" statusu bu bölməyə şamil edilmir.</p>
       <p><b>2. Ev sahibinin statusu.</b> Fərdi ev sahibi evi icarəyə verməkdən əldə etdiyi gəlirə görə vergi və digər qanuni öhdəliklərə öz adından özü cavabdehdir. Buralar.az ev sahibinin vergi və ya digər hüquqi statusuna görə məsuliyyət daşımır. Ev sahibi evi icarəyə vermək üçün qanuni hüququ olduğunu, elan məlumatlarının doğru olduğunu təsdiq edir.</p>
@@ -1721,7 +1727,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <div class="modal" id="privacyNovoenModal" role="dialog" aria-modal="true" aria-label="Fərdi ev sahibləri üçün məxfilik siyasəti">
   <div class="box" style="width:min(640px,100%)">
     <h3>Fərdi ev sahibləri üçün Məxfilik siyasəti</h3>
-    <div class="note" id="privacyNovoenBody" style="text-align:left;display:grid;gap:10px;max-height:60vh;overflow:auto;padding-right:4px">
+    <div class="note scrollbox" id="privacyNovoenBody" style="text-align:left;display:grid;gap:10px;max-height:60vh;overflow:auto;padding-right:4px">
       <p style="color:var(--muted)">Versiya: FS-2026-11-v1. Bu siyasət ümumi Məxfilik siyasətini tamamlayır və yalnız "Fərdi ev sahibləri" bölməsinə aiddir.</p>
       <p><b>1. Əlavə toplanan məlumatlar.</b> Ev sahibindən: beh qəbul etdiyi bank kartının nömrəsi və kart sahibinin adı, evin dəqiq ünvanı, WhatsApp nömrəsi. Qonaqdan: rezervasiya məlumatları və beh ödənişinin ekran görüntüsü. Ev sahibindən: behin qaytarılması və platforma komissiyasının ödənişi üzrə ekran görüntüləri. VÖEN və IBAN bu bölmədə tələb olunmur.</p>
       <p><b>2. Nə üçün istifadə olunur.</b> Rezervasiyanı həyata keçirmək, qonağa behi göndərməyə imkan vermək, ödənişləri və komissiya borclarını yoxlamaq, mübahisələri həll etmək, fırıldaqçılığın və təkrar qeydiyyatın qarşısını almaq üçün. Məlumatlar reklam məqsədilə üçüncü tərəflərə satılmır.</p>
