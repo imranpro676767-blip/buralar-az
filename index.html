@@ -944,6 +944,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <label>İkimərtəbəli çarpayı (2 nəfərlik)<input id="rm-bed-bunk" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
           <label>Açılan divan (2 nəfərlik)<input id="rm-bed-sofa" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
           <label>Uşaq çarpayısı (1 nəfərlik)<input id="rm-bed-crib" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
+          <label>Əlavə yataq / raskladuşka (1 nəfərlik)<input id="rm-bed-extra" type="number" min="0" max="10" value="0" inputmode="numeric" oninput="bedSleepsHint()"></label>
+          <div class="full" style="font-size:12.5px;color:var(--muted);font-weight:600;margin-top:-4px">Əlavə yataq: otaqda daimi yerləşməyən, lazım olanda açılan/gətirilən raskladuşka, qatlanan yataq və ya döşək. Tək yataq yerinə bunu seç, qonağa da belə göstəriləcək.</div>
           <div class="full" id="rm-bed-hint" style="font-size:13px;font-weight:800;color:var(--ok)"></div>
           <label>İsitmə sistemi
             <select id="rm-b-heat">
@@ -5043,14 +5045,14 @@ var KITCHEN_MAP=[["stove", "Ocaq / plitə"], ["oven", "Soba (duxovka)"], ["micro
 var HAMAM_AMENITY_OPTIONS=["Dəsmal","Tərlik","Xalat","Duş","Oturacaq yerləri"];
 /* ===== Otaqda yataq sayları: tək / cüt / ikimərtəbəli / açılan divan → yatacaq sayı ===== */
 function bedCounts(r){
-  if(r && r.beds) return {single:+r.beds.single||0,double:+r.beds.double||0,bunk:+r.beds.bunk||0,sofa:+r.beds.sofa||0,crib:+r.beds.crib||0};
+  if(r && r.beds) return {single:+r.beds.single||0,double:+r.beds.double||0,bunk:+r.beds.bunk||0,sofa:+r.beds.sofa||0,crib:+r.beds.crib||0,extra:+r.beds.extra||0};
   var t=String((r&&r.bedType)||'');
   if(/Single/i.test(t)) return {single:1,double:0,bunk:0,sofa:0,crib:0};
   if(/Twin/i.test(t)) return {single:2,double:0,bunk:0,sofa:0,crib:0};
   if(/Bunk/i.test(t)) return {single:0,double:0,bunk:1,sofa:0,crib:0};
   return {single:0,double:1,bunk:0,sofa:0,crib:0}; /* köhnə qeydlər: Double/Queen/King */
 }
-function bedSleeps(b){ return b.single+2*b.double+2*b.bunk+2*b.sofa+(b.crib||0); }
+function bedSleeps(b){ return b.single+2*b.double+2*b.bunk+2*b.sofa+(b.crib||0)+(b.extra||0); }
 function bedSummaryText(b){
   var a=[];
   if(b.single) a.push(b.single+' tək yataq');
@@ -5058,11 +5060,12 @@ function bedSummaryText(b){
   if(b.bunk) a.push(b.bunk+' ikimərtəbəli çarpayı');
   if(b.sofa) a.push(b.sofa+' açılan divan');
   if(b.crib) a.push(b.crib+' uşaq çarpayısı');
+  if(b.extra) a.push(b.extra+' əlavə yataq (raskladuşka)');
   return a.join(' + ')||'—';
 }
 function readBedCounts(){
   var g=function(id){ var n=parseInt(document.getElementById(id).value,10); return (isNaN(n)||n<0)?0:Math.min(n,10); };
-  return {single:g('rm-bed-single'),double:g('rm-bed-double'),bunk:g('rm-bed-bunk'),sofa:g('rm-bed-sofa'),crib:g('rm-bed-crib')};
+  return {single:g('rm-bed-single'),double:g('rm-bed-double'),bunk:g('rm-bed-bunk'),sofa:g('rm-bed-sofa'),crib:g('rm-bed-crib'),extra:g('rm-bed-extra')};
 }
 function bedSleepsHint(){
   var el=document.getElementById('rm-bed-hint'); if(!el) return;
@@ -5072,7 +5075,7 @@ function bedSleepsHint(){
 }
 function setBedCounts(b){
   document.getElementById('rm-bed-single').value=b.single; document.getElementById('rm-bed-double').value=b.double;
-  document.getElementById('rm-bed-bunk').value=b.bunk; document.getElementById('rm-bed-sofa').value=b.sofa; document.getElementById('rm-bed-crib').value=b.crib||0; bedSleepsHint();
+  document.getElementById('rm-bed-bunk').value=b.bunk; document.getElementById('rm-bed-sofa').value=b.sofa; document.getElementById('rm-bed-crib').value=b.crib||0; document.getElementById('rm-bed-extra').value=b.extra||0; bedSleepsHint();
 }
 /* Elanın ümumi yatacaq sayı (yataq otaqları üzrə) — qonaq tutumundan az ola bilməz */
 function totalSleepsOf(rooms){
@@ -5086,7 +5089,7 @@ function addRoomToPending(){
   var ck=function(id){return document.getElementById(id).checked;}, v=function(id){return document.getElementById(id).value;};
   if(kind==='bedroom'||kind==='hall'){
     var _bc=readBedCounts();
-    if(kind==='bedroom' && !bedSleeps(_bc)){ toast("Bu otaqda ən azı bir yataq yaz (tək, cüt, ikimərtəbəli, açılan divan və ya uşaq çarpayısı)"); return; }
+    if(kind==='bedroom' && !bedSleeps(_bc)){ toast("Bu otaqda ən azı bir yataq yaz (tək, cüt, ikimərtəbəli, açılan divan, uşaq çarpayısı və ya əlavə yataq)"); return; }
     room.beds=_bc; room.sleeps=bedSleeps(_bc); room.bedType=bedSleeps(_bc)?bedSummaryText(_bc):'Yataq yeri yoxdur'; room.heating=v('rm-b-heat'); room.privateBathroom=(kind==='bedroom')&&ck('rm-b-bath');
     room.amenities=[];
     if(ck('rm-b-ac')) room.amenities.push('Kondisioner');
