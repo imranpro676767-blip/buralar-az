@@ -481,6 +481,14 @@ table.tbl tr.clk:hover td{background:var(--paper)}
 .bk{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center}
 .bk .th{border-radius:10px;overflow:hidden;aspect-ratio:1/1;background:var(--sand)}
 .bk .th svg{width:100%;height:100%;display:block}
+.bk.cust{grid-template-columns:112px 1fr;align-items:start}
+.bk.cust .th{width:112px;height:112px;aspect-ratio:auto}
+.bk.cust .cuwhen{display:inline-flex;align-items:center;gap:6px;margin:2px 0 4px;padding:3px 10px;border-radius:999px;background:var(--sand);font-size:12.5px;font-weight:800;color:var(--ink2,var(--text))}
+.bk.cust .cuact{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-top:12px;border-top:1px solid var(--line)}
+.bk.cust .cuact .btn{width:auto;margin:0}
+.bk.cust .cuact .cugap{flex:1 1 auto}
+.bk.cust .cuact .sanctag{margin-right:4px}
+@media (max-width:700px){.bk.cust{grid-template-columns:84px 1fr}.bk.cust .th{width:84px;height:84px}.bk.cust .cuact .btn{flex:1 1 calc(50% - 8px)}}
 .bk h4{font-size:15.5px}
 .bk .m{color:var(--muted);font-size:13.5px;font-weight:600}
 .bk .act{display:grid;gap:8px;justify-items:end;align-content:start}
@@ -7234,23 +7242,26 @@ function renderCustomers(){
         +'<span style="color:var(--nar);white-space:nowrap">Siyahı ▾</span></summary>'
         +'<div style="display:grid;gap:8px;margin-top:8px;max-height:340px;overflow:auto">'+staysRows+'</div></details>';
     }
-    return '<div class="bk" style="grid-template-columns:84px 1fr auto">'
+    var _rw=c.registeredAt?new Date(c.registeredAt):null, _rwTxt=(_rw&&!isNaN(_rw))?_rw.toLocaleDateString('az-AZ',{timeZone:'Asia/Baku',day:'2-digit',month:'2-digit',year:'numeric'})+' · '+_rw.toLocaleTimeString('az-AZ',{timeZone:'Asia/Baku',hour:'2-digit',minute:'2-digit'}):'—';
+    return '<div class="bk cust">'
       +'<a href="'+c.idPhoto+'" target="_blank" rel="noopener" onclick="logAdmin(\'view:idPhoto\',\''+esc(c.email||'')+'\',\'Şəxsiyyət şəklinə baxdı\')" title="Şəxsiyyət vəsiqəsini tam ölçüdə aç / yüklə" class="th" style="border-radius:10px;overflow:hidden;display:block"><img src="'+c.idPhoto+'" alt="Şəxsiyyət vəsiqəsi" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.parentNode.insertAdjacentHTML(\'beforeend\',\'<span style=&quot;display:block;padding:8px;font-size:12px;font-weight:800;color:var(--nar)&quot;>Şəkil açılmır</span>\')"></a>'
       +'<div><h4>'+esc(c.name)+'</h4>'
       +'<div class="m">'+esc(c.email)+' · '+esc(c.phone)+' · FİN '+esc(c.fin)+'</div>'
-      +'<div class="m">Qeydiyyat: '+new Date(c.registeredAt).toLocaleDateString('az-AZ')+' · '+cntText+'</div>'
+      +'<div class="cuwhen" title="Sorğunun göndərildiyi vaxt (Bakı vaxtı ilə)">🕒 Sorğu göndərilib: '+_rwTxt+'</div>'
+      +'<div class="m">'+cntText+'</div>'
       +'<div class="m">'+guestRatingBadgeHtml(c.email)+'</div>'
       +(function(){ var cs=claimsOf(c.email,'guest'); return cs&&cs.length?'<div class="m" style="color:var(--nar);font-weight:700">Ziyan iddiası: '+cs.length+' ('+az2(cs.reduce(function(s,x){return s+(+x.amount||0);},0))+')</div>':''; })()
       +'<div style="margin-top:6px">'+custTag(c.status)+'</div>'+delBannerHtml(c.deletePending)
       +(c.flags&&c.flags.length?'<div class="split" style="border-color:var(--warn)">'+c.flags.map(function(f){return '<div><span style="color:var(--warn)">⚠ '+esc(f)+'</span></div>';}).join('')+'</div>':'')
       +(c.status==='rejected'&&c.rejectionReason?'<div class="split" style="border-color:var(--nar)"><div><span style="color:var(--nar)">✕ İmtina səbəbi: '+esc(c.rejectionReason)+'</span></div></div>':'')
       +'<div class="split" style="margin-top:8px">'+stays+'</div>'
-      +'</div><div class="act">'
-      +custDelBtn(c)
-      +(c.status!=='banned'?'<button class="btn sm" onclick="requestIdReupload(\''+esc(c.email)+'\')" title="Şəkil açılmırsa və ya oxunmursa müştəridən yenisini istə">'+(c.idPhotoRequested?'Şəkil istənilib ✓':'Şəkli yenidən istə')+'</button>':'')
+      +'</div><div class="cuact">'
       +(c.status!=='verified'&&c.status!=='banned'?'<button class="btn sm ok" onclick="approveCustomer(\''+c.email+'\')">Təsdiqlə</button>':'')
       +(c.status!=='rejected'&&c.status!=='banned'?'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="rejectCustomer(\''+c.email+'\')">İmtina et</button>':'')
-      +'<div style="margin-top:8px;display:grid;gap:6px">'+(sancTagHtml(c.email)?('<div>'+sancTagHtml(c.email)+'</div>'):'')+sancButtonsHtml(c.email)+'</div>'
+      +(c.status!=='banned'?'<button class="btn sm ghost" onclick="requestIdReupload(\''+esc(c.email)+'\')" title="Şəkil açılmırsa və ya oxunmursa müştəridən yenisini istə">'+(c.idPhotoRequested?'Şəkil istənilib ✓':'Şəkli yenidən istə')+'</button>':'')
+      +'<span class="cugap"></span>'
+      +(sancTagHtml(c.email)?'<span class="sanctag">'+sancTagHtml(c.email)+'</span>':'')+sancButtonsHtml(c.email)
+      +custDelBtn(c)
       +'</div></div>';
   }).join('');
 }
