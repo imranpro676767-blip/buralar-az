@@ -131,6 +131,7 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .hero .motif{position:absolute;inset:0;opacity:.12;pointer-events:none;overflow:hidden}
 .hero .herobg{position:absolute;inset:0;overflow:hidden;pointer-events:none;display:none}
 .hero .herobg.has{display:block}
+.hero .herobg.has ~ .motif{display:none}
 .hero .hb{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s ease;transform:scale(1.04)}
 .hero .hb.on{opacity:1;animation:hbzoom 7s ease-out forwards}
 @keyframes hbzoom{from{transform:scale(1.04)}to{transform:scale(1.12)}}
