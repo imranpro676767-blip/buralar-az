@@ -129,6 +129,24 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 
 .hero{background:var(--ink);color:#F4EFE4;position:relative;z-index:5;padding:26px 0 0}
 .hero .motif{position:absolute;inset:0;opacity:.12;pointer-events:none;overflow:hidden}
+.hero .herobg{position:absolute;inset:0;overflow:hidden;pointer-events:none;display:none}
+.hero .herobg.has{display:block}
+.hero .hb{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s ease;transform:scale(1.04)}
+.hero .hb.on{opacity:1;animation:hbzoom 7s ease-out forwards}
+@keyframes hbzoom{from{transform:scale(1.04)}to{transform:scale(1.12)}}
+.hero .herobg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,35,31,.55),rgba(11,35,31,.72))}
+.hero h1.ht-wrap{display:grid}
+.hero h1 .ht{grid-area:1/1;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;visibility:hidden}
+.hero h1 .ht.on{opacity:1;transform:none;visibility:visible}
+@media (prefers-reduced-motion:reduce){.hero .hb.on{animation:none}.hero .hb{transition:none}.hero h1 .ht{transition:none}}
+.dz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:10px 0 22px}
+.dz-slot{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px;display:grid;gap:6px}
+.dz-slot .pv{aspect-ratio:16/10;border-radius:8px;background:var(--sand) center/cover no-repeat;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--muted)}
+.dz-slot .row{display:flex;gap:6px}
+.dz-slot .row .btn{flex:1;padding:6px 8px;font-size:12px}
+.dz-txt{display:grid;gap:8px;margin:10px 0 18px}
+.dz-txt label{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center;font-weight:800;font-size:13px}
+.dz-txt input{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:600;width:100%}
 .hero-inner{position:relative;display:grid;gap:22px;padding-bottom:30px}
 .hero h1{font-size:clamp(30px,5.3vw,50px);max-width:17ch}
 .hero p.sub{margin:0;max-width:54ch;color:rgba(244,239,228,.76);font-size:16.5px}
@@ -668,6 +686,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 <!-- KƏŞF -->
 <section class="panel active" id="p-kesf">
   <div class="hero">
+    <div class="herobg" id="heroBg" aria-hidden="true"></div>
     <svg class="motif" aria-hidden="true" width="100%" height="100%">
       <defs><pattern id="carpet" width="72" height="72" patternUnits="userSpaceOnUse">
         <path d="M36 6 60 36 36 66 12 36z" fill="none" stroke="#E6D6B8" stroke-width="1.4"/>
@@ -679,7 +698,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </svg>
     <div class="wrap hero-inner">
       <div>
-        <h1>Bakıdan uzaq kəndlərə qədər — Azərbaycanda bütün <span style="color:var(--brand-green)">buralar</span>ın evləri bir yerdə</h1>
+        <h1 id="heroTitle">Bakıdan uzaq kəndlərə qədər — Azərbaycanda bütün <span style="color:var(--brand-green)">buralar</span>ın evləri bir yerdə</h1>
         <p class="sub">Azərbaycanın hər şəhər və rayonunda gündəlik kirayə evlər. Yerli kartla ödə, açarı al, rahat qal.</p>
       </div>
       <div class="search">
@@ -1261,6 +1280,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="adm-grp">Analitika</div>
         <button data-sub="stats" aria-selected="false" onclick="goSub('stats')">Bazar statistikası</button>
         <button data-scope="voen" data-sub="fin" aria-selected="false" onclick="goSub('fin')">Maliyyə</button>
+        <div class="adm-grp">Dizayn</div>
+        <button data-sub="design" aria-selected="false" onclick="goSub('design')">Ana səhifə dizaynı</button>
         <div class="adm-grp" id="auditGrp" style="display:none">Komanda</div>
         <button data-sub="audit" id="auditNavBtn" style="display:none" aria-selected="false" onclick="goSub('audit')">Fəaliyyət jurnalı</button>
         <button class="adm-out" onclick="adminLogout()">Admindən çıx</button>
@@ -1419,6 +1440,20 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <h3 style="margin:22px 0 8px">Son bloklanmış mesaj cəhdləri</h3>
         <p class="note" style="text-align:left;margin:0 0 8px">Telefon, link, sosial şəbəkə və ya e-poçt göndərməyə çalışıb sistemin dayandırdığı mesajlar (son 100).</p>
         <div id="violist"></div>
+      </div>
+
+      <div class="sub" id="s-design">
+        <h3 style="margin:0 0 4px">Arxa fon şəkilləri (maksimum 10)</h3>
+        <p class="note" style="text-align:left;margin:0">Ana səhifənin yuxarı hissəsində hər 5 saniyədən bir növbə ilə dəyişir. Geniş (üfüqi) şəkillər uyğundur. Şəkil yükləməsən, köhnə tünd fon qalır.</p>
+        <div class="dz-grid" id="dzImgs"></div>
+        <h3 style="margin:0 0 4px">Başlıq yazıları (maksimum 10)</h3>
+        <p class="note" style="text-align:left;margin:0">Hər 5 saniyədən bir növbə ilə dəyişir. Yaşıl vurğu üçün sözü ulduzla əhatə et: <b>*buralar*</b>. Boş buraxılan xanalar keçilir.</p>
+        <div class="dz-txt" id="dzTxts"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn" id="dzSave" onclick="dzSave()">Yadda saxla</button>
+          <button class="btn ghost" onclick="dzReset()">Standart görünüşə qayıt</button>
+          <span class="note" id="dzMsg" style="margin:0"></span>
+        </div>
       </div>
 
       <div class="sub" id="s-fin">
@@ -3254,6 +3289,7 @@ var ADM_HEAD={
   notif:['Bildirişlər','Platforma bildirişləri.'],
   hnotice:['Ev sahibi bildirişləri','Şərt yeniləmələri və məlumat bildirişləri.'],
   stats:['Bazar statistikası','Bölgələr, evlər və tələb üzrə göstəricilər.'],
+  design:['Ana səhifə dizaynı','Ana səhifənin yuxarı hissəsindəki fon şəkilləri və başlıq yazıları (hər 5 saniyədən bir dəyişir).'],
   fin:['Maliyyə','Ev sahiblərinə ödənişlər və komissiya.']
 };
 function goSub(s){
@@ -3261,6 +3297,7 @@ function goSub(s){
   if(s==='hnotice') setTimeout(loadAdminNotices,0);
   if(s==='dmg') setTimeout(loadAdminClaims,0);
   if(s==='audit') setTimeout(loadAudit,0);
+  if(s==='design') setTimeout(dzRender,0);
   if(s==='proxy') setTimeout(renderProxyList,0);
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
   var pane=document.getElementById('s-'+s); if(pane) pane.classList.add('active');
@@ -8165,6 +8202,97 @@ checkAdminRoute();
 <script>
 (function(){ function setH(){ var h=document.querySelector('header.top'); if(h) document.documentElement.style.setProperty('--hdrH',h.offsetHeight+'px'); }
   window.addEventListener('resize',setH); window.addEventListener('load',setH); setTimeout(setH,300); setTimeout(setH,1500); })();
+
+/* ============ Ana səhifə hero: fon şəkilləri + yazılar (admin "Dizayn" bölməsi), hər 5 saniyədən bir dəyişir ============ */
+var HERO_DEFAULT_TEXT='Bakıdan uzaq kəndlərə qədər — Azərbaycanda bütün *buralar*ın evləri bir yerdə';
+var HERO_SEC=5, HERO_MAX=10;
+state.heroCfg=null; var _heroTimer=null, _heroIdx=0;
+function heroEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function heroTextHtml(t){ return heroEsc(t).replace(/\*([^*]+)\*/g,'<span style="color:var(--brand-green)">$1</span>'); }
+function heroApply(){
+  var cfg=state.heroCfg||{}, imgs=(cfg.images||[]).filter(function(u){return typeof u==='string'&&/^https:\/\//.test(u);}).slice(0,HERO_MAX);
+  var txts=(cfg.texts||[]).map(function(t){return String(t||'').trim();}).filter(Boolean).slice(0,HERO_MAX);
+  if(!txts.length) txts=[HERO_DEFAULT_TEXT];
+  var bg=document.getElementById('heroBg'), h1=document.getElementById('heroTitle'); if(!bg||!h1) return;
+  if(_heroTimer){ clearInterval(_heroTimer); _heroTimer=null; }
+  bg.innerHTML=imgs.map(function(u){ return '<div class="hb" style="background-image:url(\''+u.replace(/'/g,'%27')+'\')"></div>'; }).join('');
+  bg.classList.toggle('has',imgs.length>0);
+  imgs.forEach(function(u){ var i=new Image(); i.src=u; });
+  h1.classList.add('ht-wrap');
+  h1.innerHTML=txts.map(function(t){ return '<span class="ht">'+heroTextHtml(t)+'</span>'; }).join('');
+  var bs=bg.querySelectorAll('.hb'), ts=h1.querySelectorAll('.ht');
+  function show(){
+    for(var i=0;i<bs.length;i++) bs[i].classList.toggle('on',i===_heroIdx%bs.length);
+    for(var j=0;j<ts.length;j++) ts[j].classList.toggle('on',j===_heroIdx%ts.length);
+  }
+  _heroIdx=0; show();
+  if(bs.length>1||ts.length>1){
+    _heroTimer=setInterval(function(){ if(document.hidden) return; _heroIdx++; show(); },HERO_SEC*1000);
+  }
+}
+function heroLoad(tries){
+  tries=tries||0;
+  if(!(typeof db!=='undefined' && db && fbOnline)){ if(tries<20) setTimeout(function(){heroLoad(tries+1);},500); return; }
+  db.collection('site_settings').doc('hero').get().then(function(d){
+    if(d.exists){ state.heroCfg=d.data(); heroApply(); }
+  }).catch(function(){});
+}
+/* --- admin bölməsi --- */
+var _dz={images:[],texts:[]};   /* images: {url, file, preview} */
+function dzRender(){
+  var cfg=state.heroCfg||{};
+  if(!_dz.loaded){ _dz.images=(cfg.images||[]).slice(0,HERO_MAX).map(function(u){return {url:u};}); _dz.texts=(cfg.texts||[]).slice(0,HERO_MAX); _dz.loaded=true; }
+  var h='';
+  for(var i=0;i<HERO_MAX;i++){
+    var im=_dz.images[i], src=im?(im.preview||im.url):'';
+    h+='<div class="dz-slot"><div class="pv" style="'+(src?'background-image:url(\''+src.replace(/'/g,'%27')+'\')':'')+'">'+(src?'':'Şəkil '+(i+1))+'</div>'
+      +'<div class="row"><label class="btn sm ghost" style="margin:0;cursor:pointer;text-align:center">'+(src?'Dəyiş':'Seç')+'<input type="file" accept="image/*" hidden onchange="dzPick('+i+',this)"></label>'
+      +(src?'<button class="btn sm" style="background:var(--nar);color:#fff" onclick="dzDel('+i+')">Sil</button>':'')+'</div></div>';
+  }
+  var g=document.getElementById('dzImgs'); if(g) g.innerHTML=h;
+  var t='';
+  for(var j=0;j<HERO_MAX;j++){
+    t+='<label><span>'+(j+1)+'</span><input type="text" maxlength="140" id="dzt'+j+'" value="'+heroEsc(_dz.texts[j]||'').replace(/"/g,'&quot;')+'" placeholder="'+(j===0?HERO_DEFAULT_TEXT.replace(/"/g,''):'Başlıq yazısı '+(j+1))+'"></label>';
+  }
+  var tx=document.getElementById('dzTxts'); if(tx) tx.innerHTML=t;
+}
+function dzPick(i,inp){
+  var f=inp.files&&inp.files[0]; if(!f) return;
+  if(!/^image\//.test(f.type)){ toast('Yalnız şəkil seç'); return; }
+  var arr=_dz.images; while(arr.length<i) arr.push(null);
+  var pv=URL.createObjectURL(f);
+  arr[i]={file:f,preview:pv}; dzRender();
+}
+function dzDel(i){ _dz.images[i]=null; dzRender(); }
+function dzCollectTexts(){ var o=[]; for(var j=0;j<HERO_MAX;j++){ var e=document.getElementById('dzt'+j); o.push(e?e.value.trim():''); } return o; }
+function dzSave(){
+  if(!state.isAdminUser){ toast('Yalnız admin'); return; }
+  var btn=document.getElementById('dzSave'), msg=document.getElementById('dzMsg');
+  var texts=dzCollectTexts().filter(Boolean);
+  var imgs=_dz.images.filter(Boolean);
+  btn.disabled=true; msg.textContent='Yadda saxlanılır...';
+  var urls=[];
+  imgs.reduce(function(p,im){
+    return p.then(function(){
+      if(im.url&&!im.file){ urls.push(im.url); return; }
+      msg.textContent='Şəkil yüklənir ('+(urls.length+1)+'/'+imgs.length+')...';
+      return uploadImageToStorage(im.file,'site/hero',{maxDim:2000,quality:0.82,forceJpeg:true}).then(function(u){ urls.push(u); im.url=u; im.file=null; });
+    });
+  },Promise.resolve()).then(function(){
+    return db.collection('site_settings').doc('hero').set({images:urls,texts:texts,updatedAt:Date.now()});
+  }).then(function(){
+    state.heroCfg={images:urls,texts:texts}; _dz.loaded=false; heroApply(); dzRender();
+    msg.textContent='Saxlanıldı. Ana səhifədə dərhal görünür.'; toast('Dizayn saxlanıldı');
+    try{ logAdmin('designHero','', 'Ana səhifə dizaynı yeniləndi ('+urls.length+' şəkil, '+texts.length+' yazı)'); }catch(e){}
+  }).catch(function(er){ msg.textContent='Xəta: '+(er&&er.message?er.message:er); }).then(function(){ btn.disabled=false; });
+}
+function dzReset(){
+  if(!confirm('Bütün fon şəkilləri və yazılar silinsin, standart görünüşə qayıdılsın?')) return;
+  db.collection('site_settings').doc('hero').set({images:[],texts:[],updatedAt:Date.now()}).then(function(){
+    state.heroCfg={images:[],texts:[]}; _dz.loaded=false; heroApply(); dzRender(); toast('Standart görünüşə qayıdıldı');
+  }).catch(function(er){ toast('Xəta: '+(er&&er.message||er)); });
+}
+heroLoad();
 </script>
 </body>
 </html>
