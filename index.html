@@ -786,6 +786,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <h2>Rezervasiyalarım</h2>
       <p>Ödəniş girişdən 24 saat sonra ev sahibinə köçürülür. Bu müddət ərzində ev elandakı ev deyilsə və ya açar təqdim olunmayıbsa, şikayət göndərə bilərsən.</p>
     </div>
+    <div id="penBoxGuest"></div>
     <div id="myClaims"></div>
     <div class="blist" id="mybookings"></div>
   </div>
@@ -819,6 +820,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div class="blist" id="hostmessages"></div>
 
     <div id="depDebtBox"></div>
+    <div id="penBoxHost"></div>
     <h3 style="margin:28px 0 12px">Evlərimdəki rezervasiyalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qalıb getmiş qonaqları qiymətləndirə, lazım gələrsə haqlarında sübutlu şikayət göndərə bilərsən.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
@@ -1219,6 +1221,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
             <li>Təsdiqlənmiş bronu sən ləğv edə bilməzsən. Bu qaydanı pozsan və ya qonağı əsassız qəbul etməsən, qonağın behini qaytarmalısan və məsələni admin həll edir.</li>
             <li>Qonaqla qarşılıqlı razılıqla beh geri qaytarıla bilər: bu halda bron ləğv olunur, amma platforma komissiyası (behin 50%-i, normal komissiyadan çox olmamaq şərti ilə) qüvvədə qalır və səndən tutulur.</li>
             <li>Təqvimə ciddi nəzarət et: boş olmayan tarixi "boş" göstərməyin cəzası var.</li>
+            <li><b>Pozuntu xalları və cərimə:</b> qaydaların pozulması xal yazır (3 xal xəbərdarlıq, 6 xal nəzarət, 10 xal blok, son 12 ay). Bəzi pozuntulara pul cəriməsi də olur (təsdiqlənmiş bronu ləğv etsən gecəlik qiymətin 20%-i, qonağı əsassız qəbul etməsən bir gecənin qiyməti, elandakı məlumat yalan olsa 30 ₼, platformadan kənar ödənişə çağırsan 50 ₼). Etiraz üçün 48 saat vaxtın var və ödəniş müddəti 3 gündür. Ətraflı: İstifadə Şərtlərinin 7-1-ci bəndi.</li>
           </ul>
           <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-weight:700"><input type="checkbox" id="h-novoen-ok" style="margin-top:3px;width:18px;height:18px;flex:none"><span>Yuxarıdakı qaydaları, <a href="#" onclick="openModal('tosNovoenModal');return false" style="color:var(--nar);font-weight:700">Fərdi ev sahibləri üçün İstifadə Şərtlərini</a> və <a href="#" onclick="openModal('privacyNovoenModal');return false" style="color:var(--nar);font-weight:700">Məxfilik siyasətini</a> oxudum və qəbul edirəm.</span></label>
         </div>
@@ -1284,6 +1287,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <button data-sub="cust" aria-selected="false" onclick="goSub('cust')">Müştərilər <span id="custcount"></span></button>
         <button data-sub="hosts" aria-selected="false" onclick="goSub('hosts')">Ev sahibləri <span id="hostscount"></span></button>
         <button data-sub="sanc" aria-selected="false" onclick="goSub('sanc')">Nəzarət <span id="sanccount"></span></button>
+        <button data-sub="pen" aria-selected="false" onclick="goSub('pen')">Cərimələr <span id="pencount"></span></button>
         <div class="adm-grp">Elanlar</div>
         <button data-scope="voen" data-sub="proxy" aria-selected="false" onclick="goSub('proxy')">+ Ev sahibi adından elan</button>
         <button data-sub="mod" aria-selected="false" onclick="goSub('mod')">Elan moderasiyası <span id="modcount"></span></button>
@@ -1456,6 +1460,25 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <h3 style="margin:22px 0 8px">Son bloklanmış mesaj cəhdləri</h3>
         <p class="note" style="text-align:left;margin:0 0 8px">Telefon, link, sosial şəbəkə və ya e-poçt göndərməyə çalışıb sistemin dayandırdığı mesajlar (son 100).</p>
         <div id="violist"></div>
+      </div>
+
+      <div class="sub" id="s-pen">
+        <div class="dash-card" style="margin-bottom:16px">
+          <h4>Yeni pozuntu yaz</h4>
+          <div style="display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-top:10px">
+            <label>İstifadəçinin e-poçtu<input id="pn-email" type="email" placeholder="ad@gmail.com"></label>
+            <label>Tərəf<select id="pn-role" onchange="penFormTypes()"><option value="host">Ev sahibi</option><option value="guest">Qonaq</option></select></label>
+            <label>Pozuntu<select id="pn-type" onchange="penFormHint()"></select></label>
+            <label>Bron kodu (istəyə bağlı)<input id="pn-code" placeholder="BD-000000 və ya bron kodu" style="text-transform:uppercase"></label>
+            <label>Məbləği əl ilə (₼, istəyə bağlı)<input id="pn-fine" type="number" min="0" max="5000" inputmode="decimal" placeholder="boş = qayda üzrə"></label>
+          </div>
+          <label style="display:block;margin-top:10px">Qeyd / səbəb (istifadəçiyə də göstərilir)<textarea id="pn-note" rows="2" style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-size:14px" maxlength="500"></textarea></label>
+          <div class="note" id="pn-hint" style="text-align:left;margin:8px 0"></div>
+          <button class="btn" id="pn-btn" onclick="penCreate()">Pozuntunu yaz</button>
+        </div>
+        <div class="rz-chips" id="penchips"></div>
+        <div class="rz-sum" id="pensum"></div>
+        <div class="blist" id="penlist"></div>
       </div>
 
       <div class="sub" id="s-design">
@@ -1774,6 +1797,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <p><b>5. Evə yerləşmə və "gəlmədi".</b> Qonaq evə yerləşdikdə saytda "Evə yerləşdim" düyməsinə basır. Ev sahibi qonağın gəldiyini bildirərsə, qonaq 48 saat ərzində etiraz etməzsə gəliş təsdiqlənmiş sayılır. Qonaq gəlməzsə, ev sahibi "Qonaq gəlmədi" bildirir; qonaq təsdiq edərsə tarixlər yenidən açılır və beh ev sahibində qalır. Cavab verilməzsə və ya tərəflər razılaşmazsa, mübahisəyə idarəetmə baxır.</p>
       <p><b>6. Platforma komissiyası.</b> Komissiya saytda göstərilən qiymətin (kirayə və təmizlik haqqı) 10%-dir və yalnız ev sahibindən tutulur; qonaqdan əlavə xidmət haqqı alınmır. Komissiya ev sahibi ilə qonaq arasında sonradan razılaşdırılan məbləğə görə dəyişmir. Komissiya borcu rezervasiya təsdiqləndikdə yaranır və qonağın giriş tarixindən sonra 3 gün ərzində platformanın biznes kartına ödənilməlidir; ödəniş ekran görüntüsü saytda yüklənir və idarəetmə tərəfindən təsdiqlənir. Qonaq gəlmədikdə və ya behin qarşılıqlı razılıqla qaytarıldığı hallarda komissiya behin 50%-i qədərdir, lakin normal komissiyadan çox olmur. Komissiya hər halda, beh qaytarılsa belə, qüvvədə qalır.</p>
       <p><b>7. Nəzarət və bloklama.</b> Komissiya vaxtında ödənilməzsə, ev sahibinin hesabı nəzarətə alınır və yeni rezervasiyalar bağlanır. Nəzarətdən sonra 3 gün ərzində də ödənilməzsə, hesab və elanlar avtomatik bloklanır. Borc ödənildikdə idarəetmə blokdan çıxara bilər. Saxta ödəniş sübutu, saxta sənəd və ya qaydaların digər ciddi pozuntusu hesabın bloklanmasına səbəb ola bilər. Bloklanmış şəxsin yeni hesab və ya elan açması (kart nömrəsi, ünvan, telefon/WhatsApp, şəxsiyyət məlumatları və s. üzrə) sistem tərəfindən aşkarlana və məhdudlaşdırıla bilər.</p>
+      <p><b>7-1. Pozuntular, xallar və cərimələr.</b> Ev sahibi və qonaq tərəfindən qaydaların pozulması (məsələn: təsdiqlənmiş bronun ləğvi, qonağı əsassız qəbul etməmək, elandakı məlumatın yalan olması, platformadan kənar ödəniş və ya əlaqəyə çağırış, gəlməmək, evə ziyan vurmaq, saxta sənəd) idarəetmə tərəfindən qeydə alınır və hər pozuntuya müəyyən xal yazılır. Xallar son 12 ay üçün toplanır: <b>3 xal</b> xəbərdarlıq, <b>6 xal</b> nəzarət (yeni bronlar bağlanır), <b>10 xal</b> hesabın bloklanmasıdır. Ev sahibinə bəzi pozuntulara görə əlavə olaraq pul cəriməsi yazıla bilər: bron təsdiqlənəndən sonra ləğvdə gecəlik qiymətin 20%-i, qonağı əsassız qəbul etməməkdə bir gecənin qiyməti, elandakı məlumatın yalan olmasında 30 ₼, platformadan kənar ödəniş və ya əlaqəyə çağırışda 50 ₼. Pul cəriməsi qonağa tətbiq olunmur. Pozuntu yazılanda tərəfə e-poçt və panel bildirişi göndərilir; tərəfin <b>48 saat</b> etiraz haqqı var, etiraz müddətində xal sayılmır və cərimə tətbiq olunmur. İdarəetmə etirazı baxır və pozuntunu ləğv edə, azalda və ya qüvvədə saxlaya bilər. Qüvvəyə minmiş pul cəriməsi 3 gün ərzində ödənilməlidir və komissiya borcu kimi eyni qaydada nəzarət və bloklama ilə nəticələnə bilər. Gəlməmə (no-show) təsdiqləndikdə qonağa xal avtomatik yazılır; saxta şəxsiyyət sənədi isə dərhal 10 xal və bloklama ilə nəticələnir.</p>
       <p><b>8. Mübahisələr.</b> İdarəetmənin bu bölmədəki qərarları yalnız platformanın daxili nəticələrinə aiddir (rezervasiyanın statusu, komissiya, hesabın vəziyyəti). İdarəetmə tərəflərin arasındakı pul mübahisəsində vəsaiti öz üzərinə götürmür və tərəflərin məhkəməyə və digər qanuni müraciət hüququnu məhdudlaşdırmır. Ödəniş ekran görüntüləri və rezervasiya qeydləri sübut kimi saxlanılır.</p>
       <p><b>9. Risklərin qəbulu.</b> Qonaq və ev sahibi bu bölmədə ödənişin Buralar.az tərəfindən qorunmadığını başa düşdüklərini və bundan irəli gələn risklərin (o cümlədən ödənişin qaytarılmaması, saxta və ya səhv köçürmə, tərəflərdən birinin öhdəliyini yerinə yetirməməsi) özlərinə aid olduğunu qəbul edirlər. Daha çox qorunma istəyən qonaqlara rəsmi qeydiyyatlı (VÖEN-li) evlər tövsiyə olunur. Qüvvədə olan qanunvericiliyin icazə verdiyi maksimum həddə Buralar.az bu bölmədəki ödənişlərdən, evin vəziyyətindən və tərəflərin hərəkətlərindən yaranan zərərə görə məsuliyyət daşımır; ümumi İstifadə Şərtlərindəki məsuliyyətin məhdudlaşdırılması bəndləri burada da tətbiq olunur.</p>
       <p><b>10. Davranış qaydaları.</b> Rezervasiyanı saytda qeydə almadan və ya platformanı yan keçərək razılaşmaq, saxta ekran görüntüsü təqdim etmək, qonağın və ya ev sahibinin məlumatlarını sui-istifadə etmək qadağandır. Yazışmalarda telefon nömrəsi, e-poçt, link və sosial şəbəkə paylaşmaq qadağandır. Ev sahibi qonaqdan şəxsiyyət sənədi və (qeyri-ailə üzvlərinin birgə gəlişi halında) nikah şəhadətnaməsi tələb etmək hüququnu elan qaydalarında göstərə bilər.</p>
@@ -2219,10 +2243,11 @@ function startUserBookingsSync(email){
   _listenDep('guest', db.collection('depBookings').where('email','==',email));
   _listenDep('host', db.collection('depBookings').where('hostEmail','==',email));
   _listenVoenUp('me', db.collection('voenUpgrades').doc(String(email).toLowerCase()));
+  _listenPen('me', db.collection('penalties').where('email','==',String(email).toLowerCase()), db.collection('penalty_state').doc(String(email).toLowerCase()));
 }
-function stopUserBookingsSync(){ _stopBookings('guest'); _stopBookings('host'); _stopDep('guest'); _stopDep('host'); _stopVoenUp('me'); _mergeBookings(); _mergeDep(); }
-function startAdminBookingsSync(){ if(!fbOnline || !db) return; _listenBookings('admin', db.collection('bookings')); _listenDep('admin', db.collection('depBookings')); _listenVoenUp('admin', db.collection('voenUpgrades')); }
-function stopAdminBookingsSync(){ _stopBookings('admin'); _stopDep('admin'); _stopVoenUp('admin'); _mergeBookings(); _mergeDep(); }
+function stopUserBookingsSync(){ _stopBookings('guest'); _stopBookings('host'); _stopDep('guest'); _stopDep('host'); _stopVoenUp('me'); _stopPen('me'); _mergeBookings(); _mergeDep(); }
+function startAdminBookingsSync(){ if(!fbOnline || !db) return; _listenBookings('admin', db.collection('bookings')); _listenDep('admin', db.collection('depBookings')); _listenVoenUp('admin', db.collection('voenUpgrades')); _listenPen('admin', db.collection('penalties'), db.collection('penalty_state')); }
+function stopAdminBookingsSync(){ _stopBookings('admin'); _stopDep('admin'); _stopVoenUp('admin'); _stopPen('admin'); _mergeBookings(); _mergeDep(); }
 var blocksSync = makeCollectionSync('blocks','blocks','id');
 var reviewsSync = makeCollectionSync('reviews','reviews','id');
 var reportsSync = makeCollectionSync('reports','reports','id');
@@ -3305,6 +3330,7 @@ var ADM_HEAD={
   notif:['Bildirişlər','Platforma bildirişləri.'],
   hnotice:['Ev sahibi bildirişləri','Şərt yeniləmələri və məlumat bildirişləri.'],
   stats:['Bazar statistikası','Bölgələr, evlər və tələb üzrə göstəricilər.'],
+  pen:['Cərimələr','Pozuntular, xallar, pul cəriməsi və etirazlar. Etiraz müddəti 48 saatdır; 3 xal xəbərdarlıq, 6 xal nəzarət, 10 xal blok.'],
   design:['Ana səhifə dizaynı','Ana səhifənin yuxarı hissəsindəki fon şəkilləri və başlıq yazıları (hər 5 saniyədən bir dəyişir).'],
   fin:['Maliyyə','Ev sahiblərinə ödənişlər və komissiya.']
 };
@@ -3314,6 +3340,7 @@ function goSub(s){
   if(s==='dmg') setTimeout(loadAdminClaims,0);
   if(s==='audit') setTimeout(loadAudit,0);
   if(s==='design') setTimeout(dzRender,0);
+  if(s==='pen') setTimeout(renderPenAdmin,0);
   if(s==='proxy') setTimeout(renderProxyList,0);
   document.querySelectorAll('.sub').forEach(function(x){x.classList.remove('active');});
   var pane=document.getElementById('s-'+s); if(pane) pane.classList.add('active');
@@ -3650,7 +3677,7 @@ var _platCardLoading=false;
 function loadPlatCard(){
   if(state.platCard||_platCardLoading||!fbOnline||!fbFunctions) return;
   _platCardLoading=true;
-  fbFunctions.httpsCallable('getPlatformCard')({}).then(function(r){ state.platCard=r.data||{card:null}; _platCardLoading=false; renderDepDebtBox(); renderDepDebtAdmin(); })
+  fbFunctions.httpsCallable('getPlatformCard')({}).then(function(r){ state.platCard=r.data||{card:null}; _platCardLoading=false; renderDepDebtBox(); renderDepDebtAdmin(); try{ renderPenBox(); }catch(e){} })
     .catch(function(){ _platCardLoading=false; });
 }
 function fmtCard16(c){ return String(c||'').replace(/(\d{4})(?=\d)/g,'$1 '); }
@@ -8324,6 +8351,154 @@ function dzReset(){
   }).catch(function(er){ toast('Xəta: '+(er&&er.message||er)); });
 }
 heroLoad();
+
+/* ============ Cərimə sistemi: client ============ */
+var PEN_TYPES_UI={
+  host_cancel:{role:'host',label:'Bron təsdiqləndikdən sonra ləğv etmək',points:3,hint:'Cərimə: gecəlik qiymətin 20%-i (bron kodu yaz).'},
+  host_refuse:{role:'host',label:'Qonağı əsassız qəbul etməmək',points:5,hint:'Cərimə: bir gecənin qiyməti (bron kodu yaz).'},
+  host_fake:{role:'host',label:'Elandakı məlumat/şəkil yalandır',points:3,hint:'Cərimə: 30 ₼.'},
+  host_slow:{role:'host',label:'Sorğuya vaxtında cavab verməmək (təkrar)',points:1,hint:'Yalnız xal, pul cəriməsi yoxdur.'},
+  host_offplatform:{role:'host',label:'Platformadan kənar ödəniş/əlaqəyə çağırmaq',points:4,hint:'Cərimə: 50 ₼.'},
+  guest_cancel:{role:'guest',label:'Bronu son anda ləğv etmək',points:2,hint:'Yalnız xal.'},
+  guest_noshow:{role:'guest',label:'Gəlməmək (no-show)',points:3,hint:'Yalnız xal (adətən avtomatik yazılır).'},
+  guest_damage:{role:'guest',label:'Evə ziyan vurmaq (təsdiqlənmiş iddia)',points:4,hint:'Yalnız xal. Ziyan iddiası ayrıca həll olunur.'},
+  guest_fakeid:{role:'guest',label:'Saxta şəxsiyyət sənədi',points:10,hint:'10 xal: dərhal qüvvəyə minir və blok verilir.'},
+  guest_offplatform:{role:'guest',label:'Platformadan kənar əlaqə/ödəniş cəhdi',points:4,hint:'Yalnız xal.'}
+};
+state.pens=[]; state.myPens=[]; state.penState=null; state.penStates={}; var _penUnsubs={};
+function _listenPen(kind, ref, stRef){
+  _stopPen(kind);
+  var u1=ref.onSnapshot(function(snap){ var a=[]; snap.forEach(function(d){ a.push(d.data()); }); a.sort(function(x,y){return (y.createdAt||0)-(x.createdAt||0);}); if(kind==='admin') state.pens=a; else state.myPens=a; renderPenBox(); if(state.adminAuth) renderPenAdmin(); }, function(e){ console.error('penalties xətası:', e); });
+  var u2=stRef.onSnapshot(function(snap){
+    if(kind==='admin'){ var m={}; snap.forEach(function(d){ m[d.id]=d.data(); }); state.penStates=m; }
+    else { state.penState=snap.exists?snap.data():null; }
+    renderPenBox(); if(state.adminAuth) renderPenAdmin();
+  }, function(e){ console.error('penalty_state xətası:', e); });
+  _penUnsubs[kind]=[u1,u2];
+}
+function _stopPen(kind){ var u=_penUnsubs[kind]; if(u){ u.forEach(function(f){ try{f();}catch(e){} }); _penUnsubs[kind]=null; } if(kind==='admin'){ state.pens=[]; state.penStates={}; } else { state.myPens=[]; state.penState=null; } }
+function penStatusTag(p){
+  if(p.status==='cancelled') return '<span class="tag">Ləğv olunub</span>';
+  if(p.status==='pending') return p.objection ? '<span class="tag wait">Etiraz baxılır</span>' : '<span class="tag wait">Etiraz müddəti</span>';
+  if(p.status==='reduced') return '<span class="tag done">Qüvvədə (azaldılıb)</span>';
+  return '<span class="tag done">Qüvvədə</span>';
+}
+function penFineTag(p){
+  if(!(p.fineAmt>0)) return '';
+  var m={due:'<span class="tag hold">Cərimə ödənilməlidir</span>',paid_pending:'<span class="tag wait">Ödəniş yoxlanılır</span>',paid:'<span class="tag done">Cərimə ödənilib</span>'}[p.fineStatus];
+  return m||'<span class="tag wait">Cərimə (etiraz müddətindən sonra)</span>';
+}
+function penDt(ts){ return ts?new Date(ts).toLocaleString('az-AZ',{timeZone:'Asia/Baku',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'; }
+function renderPenBox(){
+  var me=state.user&&state.user.email, g=document.getElementById('penBoxGuest'), h=document.getElementById('penBoxHost');
+  var html='';
+  if(me && (state.myPens||[]).length){
+    var mine=state.myPens.filter(function(p){return String(p.email).toLowerCase()===String(me).toLowerCase();});
+    var st=state.penState, pts=st?st.points:0, tier=st?st.tier:0, now=Date.now();
+    if(mine.length){
+      var needCard=mine.some(function(p){return p.fineStatus==='due';});
+      if(needCard) loadPlatCard();
+      var pc=state.platCard;
+      var rows=mine.map(function(p){
+        var act='';
+        if(p.status==='pending' && !p.objection && p.objectDeadline>now)
+          act='<div style="margin-top:8px"><textarea id="penObj_'+p.id+'" rows="2" maxlength="600" placeholder="Etirazını yaz (10–600 simvol)" style="width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 11px;font-size:14px"></textarea><div class="m" style="margin:4px 0">Etiraz müddəti: '+penDt(p.objectDeadline)+'-ə qədər</div><button class="btn sm" onclick="penObject(\''+p.id+'\')">Etiraz et</button></div>';
+        else if(p.objection) act='<div class="m" style="margin-top:6px;white-space:normal">Etirazın: '+esc(p.objection.text)+'</div>';
+        if(p.fineStatus==='due') act+='<div style="margin-top:8px">'+(pc&&pc.card?'<div class="m">Cəriməni bu karta köçür: <b>'+esc(fmtCard16(pc.card))+'</b> · '+esc(pc.holder||'')+'</div>':'<div class="m">Ödəniş rekvizitləri yüklənir…</div>')+'<button class="btn sm" style="margin-top:6px" onclick="penFineProof(\''+p.id+'\')">Ödəniş ekran görüntüsü yüklə</button><div class="m" style="margin-top:4px">Ödəniş müddəti: '+penDt(p.fineDueAt)+'</div></div>';
+        return '<div style="padding:10px 0;border-top:1px solid var(--line)"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between"><b>'+esc(p.label)+'</b><span>'+penStatusTag(p)+' '+penFineTag(p)+'</span></div>'
+          +'<div class="m" style="white-space:normal">'+p.points+' xal'+(p.fineAmt>0?' · cərimə '+az2(p.fineAmt):'')+' · '+penDt(p.createdAt)+(p.note?' · '+esc(p.note):'')+'</div>'+act+'</div>';
+      }).join('');
+      var tierTxt=tier>=3?'Bloklanma həddi':(tier===2?'Nəzarət (yeni bronlar bağlıdır)':(tier===1?'Xəbərdarlıq':'Normal'));
+      html='<div class="dash-card" style="margin:22px 0 0;border:1px solid '+(tier>=2?'var(--nar)':'var(--line)')+'"><h4 style="margin:0 0 4px">Pozuntular və xallar</h4>'
+        +'<div class="m" style="white-space:normal">Qüvvədə olan xallar (son 12 ay): <b>'+pts+' / 10</b> · Vəziyyət: <b>'+tierTxt+'</b>. 3 xal xəbərdarlıq, 6 xal nəzarət, 10 xal blokdur. Pozuntuya yazılandan sonra 48 saat ərzində etiraz edə bilərsən.</div>'+rows+'</div>';
+    }
+  }
+  if(g) g.innerHTML=html; if(h) h.innerHTML=html;
+  if(g&&h){ /* eyni qutu iki yerdə görünməsin: ev sahibi panelində və Rezervasiyalarım ayrı səhifələrdədir, hər ikisində lazımdır */ }
+}
+function penObject(id){
+  var t=document.getElementById('penObj_'+id); var text=t?t.value.trim():'';
+  if(text.length<10){ toast('Etirazı ən azı 10 simvolla yaz'); return; }
+  fbFunctions.httpsCallable('penaltyAction')({action:'objection',id:id,text:text}).then(function(){ toast('Etirazın göndərildi. Admin baxacaq.'); }).catch(function(e){ toast((e&&e.message)||'Alınmadı'); });
+}
+function penFineProof(id){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f) return; toast('Yüklənir...');
+    uploadImageToStorage(f,'deposits/'+id+'/fine').then(function(url){ return fbFunctions.httpsCallable('penaltyAction')({action:'sendFineProof',id:id,url:url}); })
+      .then(function(){ toast('Göndərildi. Admin ödənişi yoxlayacaq.'); }).catch(function(e){ toast((e&&e.message)||'Yükləmə alınmadı'); });
+  };
+  inp.click();
+}
+/* --- admin --- */
+var PEN_F={st:'all'};
+function penFormTypes(){
+  var role=document.getElementById('pn-role').value, sel=document.getElementById('pn-type'); if(!sel) return;
+  sel.innerHTML=Object.keys(PEN_TYPES_UI).filter(function(k){return PEN_TYPES_UI[k].role===role;}).map(function(k){ return '<option value="'+k+'">'+esc(PEN_TYPES_UI[k].label)+' ('+PEN_TYPES_UI[k].points+' xal)</option>'; }).join('');
+  penFormHint();
+}
+function penFormHint(){ var k=document.getElementById('pn-type').value, h=document.getElementById('pn-hint'); if(h&&PEN_TYPES_UI[k]) h.textContent=PEN_TYPES_UI[k].hint+' İstifadəçiyə e-poçt gedir və 48 saat etiraz haqqı olur (saxta sənəd və avtomatik gəlməmə istisnadır).'; }
+function penCreate(){
+  var email=document.getElementById('pn-email').value.trim().toLowerCase(), type=document.getElementById('pn-type').value, note=document.getElementById('pn-note').value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast('İstifadəçinin e-poçtunu düzgün yaz'); return; }
+  if(note.length<5){ toast('Qeyd yaz (ən azı 5 simvol)'); return; }
+  var b=document.getElementById('pn-btn'); b.disabled=true;
+  fbFunctions.httpsCallable('adminPenalty')({action:'create',email:email,type:type,note:note,bookingCode:document.getElementById('pn-code').value.trim(),fineOverride:document.getElementById('pn-fine').value}).then(function(){
+    toast('Pozuntu yazıldı, istifadəçiyə bildiriş getdi'); document.getElementById('pn-note').value=''; document.getElementById('pn-code').value=''; document.getElementById('pn-fine').value='';
+  }).catch(function(e){ toast((e&&e.message)||'Alınmadı'); }).then(function(){ b.disabled=false; });
+}
+function penAdm(action,id,extra){
+  var data=Object.assign({action:action,id:id},extra||{});
+  return fbFunctions.httpsCallable('adminPenalty')(data).then(function(){ toast('Edildi'); }).catch(function(e){ toast((e&&e.message)||'Alınmadı'); });
+}
+function penAskNote(txt){ var n=prompt(txt||'Qeyd (istifadəçiyə göstərilir, istəyə bağlı):',''); return n==null?null:n; }
+function penDecide(id,act){
+  var n=penAskNote(act==='cancel'?'Ləğv səbəbi (istəyə bağlı):':(act==='keep'?'Qeyd (istəyə bağlı):':'')); if(n===null) return;
+  penAdm(act,id,{note:n});
+}
+function penReduce(id){
+  var p=state.pens.filter(function(x){return x.id===id;})[0]; if(!p) return;
+  var pts=prompt('Yeni xal (0–'+p.points+'):',String(p.points)); if(pts===null) return;
+  var fine=''; if(p.fineAmt>0){ fine=prompt('Yeni cərimə ₼ (0–'+p.fineAmt+'):',String(p.fineAmt)); if(fine===null) return; }
+  var n=penAskNote('Qeyd (istəyə bağlı):'); if(n===null) return;
+  penAdm('reduce',id,{points:pts,fineAmt:fine,note:n});
+}
+function penSetFilter(f){ PEN_F.st=f; renderPenAdmin(); }
+function renderPenAdmin(){
+  var list=document.getElementById('penlist'); if(!list) return;
+  var sel=document.getElementById('pn-type'); if(sel && !sel.options.length) penFormTypes();
+  var all=state.pens||[];
+  var cnt=all.filter(function(p){return (p.status==='pending'&&p.objection)||p.fineStatus==='paid_pending';}).length;
+  var cb=document.getElementById('pencount'); if(cb) cb.textContent=cnt?'('+cnt+')':'';
+  var chips=[['all','Hamısı'],['obj','Etiraz var'],['pend','Etiraz müddəti'],['active','Qüvvədə'],['fine','Cərimə ödənişi'],['cancel','Ləğv']];
+  document.getElementById('penchips').innerHTML=chips.map(function(c){ return '<button class="chip" aria-pressed="'+(PEN_F.st===c[0])+'" onclick="penSetFilter(\''+c[0]+'\')">'+c[1]+'</button>'; }).join('');
+  var rows=all.filter(function(p){
+    if(PEN_F.st==='obj') return p.status==='pending'&&p.objection;
+    if(PEN_F.st==='pend') return p.status==='pending'&&!p.objection;
+    if(PEN_F.st==='active') return p.status==='active'||p.status==='reduced';
+    if(PEN_F.st==='fine') return p.fineStatus==='due'||p.fineStatus==='paid_pending';
+    if(PEN_F.st==='cancel') return p.status==='cancelled';
+    return true;
+  });
+  document.getElementById('pensum').innerHTML='<b>'+rows.length+'</b> pozuntu';
+  if(!rows.length){ list.innerHTML='<div class="empty">Pozuntu yoxdur.</div>'; return; }
+  list.innerHTML=rows.slice(0,200).map(function(p){
+    var st=state.penStates[String(p.email).toLowerCase()]; var pts=st?st.points:0;
+    var act='';
+    if(p.status==='pending') act+='<button class="btn sm ok" onclick="penDecide(\''+p.id+'\',\'keep\')">'+(p.objection?'Etirazı rədd et, qüvvəyə mindir':'İndi qüvvəyə mindir')+'</button>';
+    if(p.status!=='cancelled') act+='<button class="btn sm ghost" onclick="penReduce(\''+p.id+'\')">Azalt</button><button class="btn sm" style="background:var(--nar);color:#fff" onclick="penDecide(\''+p.id+'\',\'cancel\')">'+(p.objection?'Etirazı qəbul et (ləğv)':'Ləğv et')+'</button>';
+    if(p.fineStatus==='due'||p.fineStatus==='paid_pending') act+='<button class="btn sm ok" onclick="penAdm(\'finePaid\',\''+p.id+'\')">Cərimə ödənildi / tutuldu</button>';
+    if(p.fineStatus==='paid_pending') act+='<button class="btn sm ghost" onclick="penAdm(\'fineReject\',\''+p.id+'\')">Ödənişi rədd et</button>';
+    var proof=p.fineProofUrl?'<a href="'+esc(p.fineProofUrl)+'" target="_blank" rel="noopener" class="m" style="text-decoration:underline">Ödəniş şəkli</a>':'';
+    return '<div class="bk" style="grid-template-columns:1fr"><div><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between"><h4 style="margin:0">'+esc(p.label)+'</h4><span>'+penStatusTag(p)+' '+penFineTag(p)+'</span></div>'
+      +'<div class="m" style="white-space:normal">'+esc(p.email)+' · '+(p.role==='host'?'ev sahibi'+(p.hostType==='novoen'?' (VÖEN-siz)':' (VÖEN-li)'):'qonaq')+' · <b>'+p.points+' xal</b>'+(p.fineAmt>0?' · cərimə <b>'+az2(p.fineAmt)+'</b>':'')+' · cəmi xalı: '+pts+'/10</div>'
+      +'<div class="m" style="white-space:normal">Yazıldı: '+penDt(p.createdAt)+' ('+esc(p.by||'')+')'+(p.bookingCode?' · bron '+esc(p.bookingCode):'')+(p.status==='pending'?' · etiraz müddəti: '+penDt(p.objectDeadline):'')+'</div>'
+      +(p.note?'<div class="m" style="white-space:normal">Qeyd: '+esc(p.note)+'</div>':'')
+      +(p.objection?'<div class="split" style="border-color:var(--gold,#c9a24b);margin:8px 0;padding:8px 10px;white-space:normal"><b>Etiraz ('+penDt(p.objection.at)+'):</b> '+esc(p.objection.text)+'</div>':'')
+      +(p.decision?'<div class="m" style="white-space:normal">Qərar: '+esc(p.decision.result)+' · '+esc(p.decision.by||'')+(p.decision.note?' · '+esc(p.decision.note):'')+'</div>':'')
+      +proof+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">'+act+'</div></div></div>';
+  }).join('');
+}
 </script>
 </body>
 </html>
