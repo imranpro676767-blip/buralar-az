@@ -139,6 +139,18 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .hero h1.ht-wrap{display:grid}
 .hero h1 .ht{grid-area:1/1;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;visibility:hidden}
 .hero h1 .ht.on{opacity:1;transform:none;visibility:visible}
+.hero{--hbh:clamp(230px,62vw,300px)}
+@media (max-width:700px){
+  /* Telefonda şəkil başlığın arxasında kəsilmir: yuxarıda tam görünən ayrıca bannerdir, başlıq onun alt hissəsinin üstündədir, axtarış qutusu şəklin altındadır. */
+  .hero.hasimg{padding-top:0}
+  .hero.hasimg .herobg.has{position:relative;inset:auto;height:var(--hbh)}
+  .hero.hasimg .herobg::after{background:linear-gradient(180deg,rgba(11,35,31,0) 30%,rgba(11,35,31,.88) 100%)}
+  .hero.hasimg .hero-inner{padding-top:0}
+  .hero.hasimg .hero-inner>div:first-child{margin-top:calc(var(--hbh) * -1);height:var(--hbh);display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:14px;position:relative;z-index:2}
+  .hero.hasimg .hero-inner>div:first-child .sub{display:none}
+  .hero.hasimg h1{font-size:clamp(22px,6.4vw,28px);max-width:none;text-shadow:0 2px 12px rgba(0,0,0,.45)}
+  .hero.hasimg .hb{background-position:center}
+}
 @media (prefers-reduced-motion:reduce){.hero .hb.on{animation:none}.hero .hb{transition:none}.hero h1 .ht{transition:none}}
 .dz-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:10px 0 22px}
 .dz-slot{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px;display:grid;gap:6px}
@@ -8218,6 +8230,7 @@ function heroApply(){
   if(_heroTimer){ clearInterval(_heroTimer); _heroTimer=null; }
   bg.innerHTML=imgs.map(function(u){ return '<div class="hb" style="background-image:url(\''+u.replace(/'/g,'%27')+'\')"></div>'; }).join('');
   bg.classList.toggle('has',imgs.length>0);
+  var _hr=bg.parentNode; if(_hr) _hr.classList.toggle('hasimg',imgs.length>0);
   imgs.forEach(function(u){ var i=new Image(); i.src=u; });
   h1.classList.add('ht-wrap');
   h1.innerHTML=txts.map(function(t){ return '<span class="ht">'+heroTextHtml(t)+'</span>'; }).join('');
