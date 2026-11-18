@@ -131,6 +131,9 @@ nav.tabs button.hostTab[aria-selected="true"]{background:var(--brand-green);colo
 .hero .motif{position:absolute;inset:0;opacity:.12;pointer-events:none;overflow:hidden}
 .hero .herobg{position:absolute;inset:0;overflow:hidden;pointer-events:none;display:none}
 .hero .herobg.has{display:block}
+.hero:not(.hready) .motif{opacity:0}
+.hero:not(.hready) h1{opacity:0}
+.hero h1{transition:opacity .35s ease}
 .hero .herobg.has ~ .motif{display:none}
 .hero .hb{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s ease;transform:scale(1.04)}
 .hero .hb.on{opacity:1;animation:hbzoom 7s ease-out forwards}
@@ -8239,17 +8242,31 @@ function heroApply(){
     for(var i=0;i<bs.length;i++) bs[i].classList.toggle('on',i===_heroIdx%bs.length);
     for(var j=0;j<ts.length;j++) ts[j].classList.toggle('on',j===_heroIdx%ts.length);
   }
-  _heroIdx=0; show();
+  _heroIdx=0;
+  if(bs.length){ bs[0].style.transition='none'; }
+  show();
+  if(bs.length){ void bs[0].offsetWidth; setTimeout(function(){ if(bs[0]) bs[0].style.transition=''; },60); }
+  if(bg.parentNode) bg.parentNode.classList.add('hready');
   if(bs.length>1||ts.length>1){
     _heroTimer=setInterval(function(){ if(document.hidden) return; _heroIdx++; show(); },HERO_SEC*1000);
   }
 }
+function heroReady(){ var h=document.querySelector('.hero'); if(h) h.classList.add('hready'); }
+/* Əvvəlki ziyarətdən saxlanılmış tənzimləmə dərhal tətbiq olunur (şəkillər Firebase gözləmədən açılır). */
+try{ var _hc=JSON.parse(localStorage.getItem('buralar_hero')||'null'); if(_hc&&(_hc.images&&_hc.images.length||_hc.texts&&_hc.texts.length)){ state.heroCfg=_hc; heroApply(); } }catch(e){}
+setTimeout(heroReady,6000);
 function heroLoad(tries){
   tries=tries||0;
   if(!(typeof db!=='undefined' && db && fbOnline)){ if(tries<20) setTimeout(function(){heroLoad(tries+1);},500); return; }
   db.collection('site_settings').doc('hero').get().then(function(d){
-    if(d.exists){ state.heroCfg=d.data(); heroApply(); }
-  }).catch(function(){});
+    if(d.exists){
+      var nc=d.data(), same=false;
+      try{ same=JSON.stringify({i:nc.images,t:nc.texts})===JSON.stringify({i:(state.heroCfg||{}).images,t:(state.heroCfg||{}).texts}); }catch(e){}
+      if(!same){ state.heroCfg=nc; heroApply(); }
+      try{ localStorage.setItem('buralar_hero',JSON.stringify({images:nc.images||[],texts:nc.texts||[]})); }catch(e){}
+    }
+    heroReady();
+  }).catch(function(){ heroReady(); });
 }
 /* --- admin bölməsi --- */
 var _dz={images:[],texts:[]};   /* images: {url, file, preview} */
@@ -8295,7 +8312,7 @@ function dzSave(){
   },Promise.resolve()).then(function(){
     return db.collection('site_settings').doc('hero').set({images:urls,texts:texts,updatedAt:Date.now()});
   }).then(function(){
-    state.heroCfg={images:urls,texts:texts}; _dz.loaded=false; heroApply(); dzRender();
+    state.heroCfg={images:urls,texts:texts}; try{ localStorage.setItem('buralar_hero',JSON.stringify({images:urls,texts:texts})); }catch(e){} _dz.loaded=false; heroApply(); dzRender();
     msg.textContent='Saxlanıldı. Ana səhifədə dərhal görünür.'; toast('Dizayn saxlanıldı');
     try{ logAdmin('designHero','', 'Ana səhifə dizaynı yeniləndi ('+urls.length+' şəkil, '+texts.length+' yazı)'); }catch(e){}
   }).catch(function(er){ msg.textContent='Xəta: '+(er&&er.message?er.message:er); }).then(function(){ btn.disabled=false; });
@@ -8303,7 +8320,7 @@ function dzSave(){
 function dzReset(){
   if(!confirm('Bütün fon şəkilləri və yazılar silinsin, standart görünüşə qayıdılsın?')) return;
   db.collection('site_settings').doc('hero').set({images:[],texts:[],updatedAt:Date.now()}).then(function(){
-    state.heroCfg={images:[],texts:[]}; _dz.loaded=false; heroApply(); dzRender(); toast('Standart görünüşə qayıdıldı');
+    state.heroCfg={images:[],texts:[]}; try{ localStorage.removeItem('buralar_hero'); }catch(e){} _dz.loaded=false; heroApply(); dzRender(); toast('Standart görünüşə qayıdıldı');
   }).catch(function(er){ toast('Xəta: '+(er&&er.message||er)); });
 }
 heroLoad();
