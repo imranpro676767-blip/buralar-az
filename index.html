@@ -3508,6 +3508,8 @@ function filtered(){
   if(s==='desc') list.sort(function(a,b){return lowestNightlyRate(b)-lowestNightlyRate(a);});
   if(s==='rating') list.sort(function(a,b){return b.rt-a.rt;});
   if(!s || s==='rec') list=recOrder(list);
+  /* Pozuntu xalı 3+ olan ev sahiblərinin elanları (penRank>0) öz qrupunda sona keçir; yalnız tövsiyə/reytinq sıralamasında */
+  if(!s || s==='rec' || s==='rating'){ var _ok=list.filter(function(x){return !(x.penRank>0);}), _bad=list.filter(function(x){return x.penRank>0;}).sort(function(a,b){return (a.penRank||0)-(b.penRank||0);}); list=_ok.concat(_bad); }
   /* VÖEN-li (rəsmi qeydiyyatlı) evlər HƏMİŞƏ fərdi (VÖEN-siz) evlərdən yuxarıda; hər qrupun öz daxilində seçilmiş sıralama saxlanılır */
   var _v=list.filter(function(x){return !isNovoen(x);}), _n=list.filter(function(x){return isNovoen(x);});
   return _v.concat(_n);
