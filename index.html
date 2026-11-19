@@ -346,6 +346,13 @@ label.htype{display:flex!important;flex-direction:row;align-items:flex-start;gap
 
 .panel{padding:0 0 60px;display:none}
 .panel.active{display:block}
+.hsubnav{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 0 18px;padding:2px 0 8px;position:sticky;top:0;z-index:5;background:var(--paper)}
+.hsubnav::-webkit-scrollbar{display:none}
+.hsubnav button{flex:none;border:1.5px solid var(--line);background:var(--card);color:var(--text);padding:10px 16px;border-radius:999px;font-weight:800;font-size:14px;cursor:pointer;white-space:nowrap}
+.hsubnav button[aria-selected="true"]{background:var(--text);color:var(--paper);border-color:var(--text)}
+.hsubnav .hbadge{display:inline-block;margin-left:6px;background:var(--nar,#a4213b);color:#fff;border-radius:999px;padding:0 7px;font-size:12px;line-height:18px}
+.hsubnav .hbadge:empty{display:none}
+.hsec{display:none}.hsec.on{display:block}
 .pagehead{display:grid;gap:6px;margin:26px 0 18px}
 .pagehead h2{font-size:clamp(22px,3.6vw,30px)}
 .pagehead p{margin:0;color:var(--muted);max-width:66ch}
@@ -799,8 +806,19 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <h2>Ev sahibi paneli</h2>
       <p>Elan yerləşdirmək üçün VÖEN və bank hesabı tələb olunur. Elan idarəetmə tərəfindən təsdiqləndikdən və Epoint ödəniş hesabınız qoşulduqdan sonra saytda görünür. Səndən 3% komissiya tutulur. Rezervasiya ödənişi Epoint vasitəsilə avtomatik hesabına bölünür.</p>
     </div>
+    <div class="hsubnav" id="hsubnav" role="tablist" aria-label="Ev sahibi bölmələri">
+      <button type="button" role="tab" data-sec="umumi" onclick="hostSec('umumi')">🏠 Elanlarım</button>
+      <button type="button" role="tab" data-sec="gelir" onclick="hostSec('gelir')">📊 Gəlir və hesabatlar</button>
+      <button type="button" role="tab" data-sec="yazis" onclick="hostSec('yazis')">💬 Yazışmalar<span class="hbadge" id="hb-yazis"></span></button>
+      <button type="button" role="tab" data-sec="rez" onclick="hostSec('rez')">🧾 Rezervasiyalar</button>
+      <button type="button" role="tab" data-sec="teqvim" onclick="hostSec('teqvim')">📅 Təqvim</button>
+      <button type="button" role="tab" data-sec="yeni" onclick="hostSec('yeni')">➕ Yeni elan</button>
+    </div>
+    <div class="hsec on" data-sec="umumi">
     <div class="stats" id="hoststats"></div>
     <div id="hostNotices"></div>
+    <div id="depDebtBox"></div>
+    <div id="penBoxHost"></div>
 
     <h3 style="margin:0 0 12px">Mənim elanlarım</h3>
     <button id="tipsBadge" class="btn sm ghost" style="display:none;margin-bottom:12px;width:auto" onclick="openTipsModal()">💡 İpucu</button>
@@ -808,20 +826,24 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     <div id="voenUpBox"></div>
     <div class="blist" id="mylistings"></div>
 
-    <h3 style="margin:28px 0 12px">Gəlir və hesabatlar</h3>
+    </div>
+    <div class="hsec" data-sec="gelir">
+    <h3 style="margin:0 0 12px">Gəlir və hesabatlar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Hər ev üçün gəlir ayrıca göstərilir. Dövrü seçib hər evin hesabatına baxa və CSV kimi yükləyə bilərsən.</p>
     <select id="hostRepPeriod" style="margin-bottom:12px" onchange="state.hostRepPeriod=this.value;renderHostReports()">
       <option value="all">Bütün dövr</option><option value="month">Bu ay</option><option value="30">Son 30 gün</option><option value="year">Bu il</option>
     </select>
     <div id="hostReports"></div>
 
-    <h3 style="margin:28px 0 12px">Yazışmalar</h3>
+    </div>
+    <div class="hsec" data-sec="yazis">
+    <h3 style="margin:0 0 12px">Yazışmalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qonaqlar bron etməzdən əvvəl sənə sual verə bilər — bütün yazışma sayt daxilində qalır, telefon nömrəsi paylaşımı bloklanır.</p>
     <div class="blist" id="hostmessages"></div>
 
-    <div id="depDebtBox"></div>
-    <div id="penBoxHost"></div>
-    <h3 style="margin:28px 0 12px">Evlərimdəki rezervasiyalar</h3>
+    </div>
+    <div class="hsec" data-sec="rez">
+    <h3 style="margin:0 0 12px">Evlərimdəki rezervasiyalar</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Qalıb getmiş qonaqları qiymətləndirə, lazım gələrsə haqlarında sübutlu şikayət göndərə bilərsən.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
       <select id="hostBkListing" style="display:none" onchange="state.hostBkListingId=parseInt(this.value,10);state.hostBkOpen=true;renderHost()"></select>
@@ -829,8 +851,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </div>
     <div class="blist" id="hostbookings" style="display:none"></div>
     <div id="hostClaims"></div>
-
-    <h3 style="margin:28px 0 12px">Təqvim</h3>
+    </div>
+    <div class="hsec" data-sec="teqvim">
+    <h3 style="margin:0 0 12px">Təqvim</h3>
     <p class="note" style="text-align:left;margin:-8px 0 12px">Gələn rezervasiyalar bu təqvimə avtomatik düşür. Elanını yerləşdirərkən qoyduğun minimum/maksimum gecə şərtinə görə bəzi tək günlər heç kimə göstərilmir — həmin günlər aşağıda fərqli rənglə işarələnir ki, sən də bilə.</p>
     <div class="calwrap" id="calBox" style="display:none">
       <div class="calhead">
@@ -865,7 +888,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </div>
     <div class="empty" id="calEmpty"><h3>Təqvimə baxmaq üçün əvvəlcə təsdiqlənmiş elanın olmalıdır</h3></div>
 
-    <h3 style="margin:28px 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span id="listingFormHeading">Yeni elan yerləşdir</span><button type="button" id="cancelEditBtn" class="btn sm ghost" style="display:none;width:auto" onclick="cancelListingEdit()">İmtina et</button></h3>
+    </div>
+    <div class="hsec" data-sec="yeni">
+    <h3 style="margin:0 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span id="listingFormHeading">Yeni elan yerləşdir</span><button type="button" id="cancelEditBtn" class="btn sm ghost" style="display:none;width:auto" onclick="cancelListingEdit()">İmtina et</button></h3>
     <form class="frm" id="listingForm" onsubmit="handleListingFormSubmit(event)">
       <div class="full" id="h-proxy-banner" style="display:none;border:1px dashed var(--ok);border-radius:12px;padding:12px 14px;background:rgba(46,160,110,.09);align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
         <div><b>Ev sahibi adından yerləşdirirsən:</b> <span id="h-proxy-email"></span><div class="hint" style="margin:2px 0 0">Elan bu Gmail-ə bağlanacaq və ev sahibi təsdiqləməyənə qədər bron üçün açılmayacaq. İstifadə Şərtləri və Məxfilik qutularını ev sahibi təsdiqləyir.</div></div>
@@ -1244,6 +1269,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <p class="note" style="margin-top:8px">Elan göndərildikdən sonra idarəetmə yoxlayır. Təsdiqlənənə qədər saytda görünmür.</p>
       </div>
     </form>
+    </div>
   </div>
 </section>
 
@@ -2457,11 +2483,13 @@ function renderHostMessagesList(mine){
   var myIds = mine.map(function(x){return x.id;});
   var list = state.chatsHost.filter(function(c){ return myIds.indexOf(c.listingId)>=0; })
     .sort(function(a,b){return (b.lastAt||0)-(a.lastAt||0);});
+  var _hb=document.getElementById('hb-yazis'); if(_hb){ var _w=list.filter(function(c){ var m=c.messages&&c.messages.length?c.messages[c.messages.length-1]:null; return m&&m.from!=='host'; }).length; _hb.textContent=_w?String(_w):''; _hb.title=_w?'Cavab gözləyən yazışma':''; }
   if(!list.length){ el.innerHTML='<div class="empty"><h3>Hələ yazışma yoxdur</h3><p>Qonaqlar bron etməzdən əvvəl sənə sual verə bilər, burada görünəcək.</p></div>'; return; }
   el.innerHTML = list.map(function(c){
     var last = c.messages && c.messages.length ? c.messages[c.messages.length-1] : null;
     return '<div class="bk" style="grid-template-columns:1fr auto"><div>'
       +'<h4>'+esc(c.listingTitle||'')+' — '+esc(c.guestName||c.guestEmail)+'</h4>'
+      +(c.lastAt?whenHtml(c.lastAt,'Son mesaj',false):'')
       +(last?'<div class="m" style="white-space:normal">'+(last.from==='host'?'Sən: ':'Qonaq: ')+esc(last.text.slice(0,90))+'</div>':'<div class="m">Mesaj yoxdur</div>')
       +'</div><div class="act"><button class="btn sm dark" onclick="openChatById(\''+c.id+'\')">Aç</button></div></div>';
   }).join('');
@@ -2814,7 +2842,7 @@ function clickInboxItem(i){
   closeModal('inboxModal');
   if(it.type==='chat') openChatById(it.chatId);
   else if(it.type==='support') openSupportModal();
-  else if(it.type==='notice'){ go('host'); setTimeout(function(){ var b=document.getElementById('hostNotices'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); },150); }
+  else if(it.type==='notice'){ go('host'); hostSec('umumi',true); setTimeout(function(){ var b=document.getElementById('hostNotices'); if(b) b.scrollIntoView({behavior:'smooth',block:'center'}); },150); }
 }
 /* ============ admin — dəstək mesajları ============ */
 function renderSupportAdmin(){
@@ -3252,6 +3280,16 @@ function logout(){
 function needLogin(){ if(state.user) return false; openLogin(); toast("Davam etmək üçün daxil ol"); return true; }
 
 /* ============ naviqasiya ============ */
+var HOST_SECS=['umumi','gelir','yazis','rez','teqvim','yeni'];
+function hostSec(k,noScroll){
+  if(HOST_SECS.indexOf(k)<0) k='umumi';
+  state.hostSec=k;
+  document.querySelectorAll('#p-host .hsec').forEach(function(e){ e.classList.toggle('on',e.getAttribute('data-sec')===k); });
+  document.querySelectorAll('#hsubnav button').forEach(function(b){ var on=b.getAttribute('data-sec')===k; b.setAttribute('aria-selected',on?'true':'false'); if(on&&b.scrollIntoView){ try{ b.scrollIntoView({inline:'center',block:'nearest'}); }catch(e){} } });
+  if(k==='yeni'){ setTimeout(function(){ try{ ensureHostMap(); }catch(e){} try{ if(window.google&&gmPick&&gmPick.map) google.maps.event.trigger(gmPick.map,'resize'); }catch(e){} },80); }
+  if(k==='teqvim'){ try{ renderHostCalendar(); }catch(e){} }
+  if(!noScroll){ var t=document.getElementById('hsubnav'); if(t&&t.scrollIntoView){ try{ t.scrollIntoView({block:'start',behavior:'auto'}); }catch(e){} } }
+}
 function go(tab){
   state.tab=tab;
   if(tab==='host'){ try{ adminBoxUpdate(); }catch(e){} }
@@ -3261,7 +3299,7 @@ function go(tab){
   window.scrollTo(0,0);
   if(tab==='kesf') render();
   if(tab==='rez') renderBookings();
-  if(tab==='host'){ renderHost(); setTimeout(ensureHostMap,60); }
+  if(tab==='host'){ renderHost(); hostSec(state.hostSec||'umumi',true); setTimeout(ensureHostMap,60); }
   if(tab==='admin'){
     document.getElementById('adminGate').style.display = state.adminAuth?'none':'flex';
     document.getElementById('adminContent').style.display = state.adminAuth?'':'none';
@@ -5774,7 +5812,7 @@ function openProxyForm(){
   if(oe1===String(state.user.email).toLowerCase() || ADMIN_PROTECTED.indexOf(oe1)>=0){ toast('Bu admin hesabıdır, ev sahibinin öz Gmail-ini yaz'); return; }
   state.proxyEmail=oe1;
   if(state.editingListingId){ try{ cancelListingEdit(); }catch(e){} }
-  go('host'); proxyBannerUpdate();
+  go('host'); hostSec('yeni'); proxyBannerUpdate();
   toast('Elan formu açıldı: '+oe1+' adından yerləşdirirsən');
 }
 function cancelProxy(){ state.proxyEmail=null; proxyBannerUpdate(); toast('Ləğv edildi'); }
@@ -6782,7 +6820,7 @@ function draftRestore(){
     state.pendingRooms=d.rooms||[]; renderPendingRooms(); renderRoomPhotoGrid();
     var lat=parseFloat(F['h-lat']), lng=parseFloat(F['h-lng']);
     if(!isNaN(lat)&&!isNaN(lng)){ try{ setPinLatLng(lat,lng,true,16); }catch(e){} }
-    var form=document.getElementById('listingForm'); if(form&&form.scrollIntoView) form.scrollIntoView({behavior:'smooth'});
+    hostSec('yeni',true); var form=document.getElementById('listingForm'); if(form&&form.scrollIntoView) form.scrollIntoView({behavior:'smooth'});
     toast('Qaralama bərpa olundu. Şəkilləri (üz şəkli və otaq şəkilləri) yenidən əlavə etməlisən, şərtləri də təsdiqlə');
   }finally{ setTimeout(function(){ _draftRestoring=false; },400); }
 }
@@ -6924,6 +6962,7 @@ function openEdit(id){
   document.getElementById('cancelEditBtn').style.display='inline-block';
   document.getElementById('listingSubmitBtn').textContent='Dəyişiklikləri göndər';
 
+  hostSec('yeni',true);
   var form=document.getElementById('listingForm');
   if(form && form.scrollIntoView) form.scrollIntoView({behavior:'smooth'});
   toast("Elanı redaktə edirsən — qiymət/gecə şərtləri dərhal, qalanı admin təsdiqindən sonra tətbiq olunur");
