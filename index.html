@@ -589,6 +589,23 @@ table.tbl tr.clk:hover td{background:var(--paper)}
 #hostRepPeriod{width:auto;max-width:100%}
 .tierrow button{margin-left:auto;background:transparent;border:0;color:var(--nar);font-weight:800;font-size:13px}
 
+/* Elan formu: addım-addım */
+.fsteps{display:flex;gap:6px;margin-bottom:2px}
+.fsteps button{flex:1;display:grid;justify-items:center;gap:3px;padding:8px 4px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);color:var(--muted);font-weight:800;font-size:12.5px;cursor:pointer}
+.fsteps button b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--line);color:var(--text);font-size:13px}
+.fsteps button.on{border-color:var(--ok);color:var(--text)}
+.fsteps button.on b,.fsteps button.done b{background:var(--ok);color:#fff}
+.fstep{display:none;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:12px}
+.fstep.on{display:grid}
+.fintro{margin:0;font-size:14px;color:var(--muted);font-weight:600;line-height:1.45}
+details.adv{border:1.5px dashed var(--line);border-radius:12px;padding:0;background:var(--paper)}
+details.adv>summary{cursor:pointer;padding:12px 14px;font-weight:800;font-size:14px;list-style:none;line-height:1.4}
+details.adv>summary::-webkit-details-marker{display:none}
+details.adv[open]>summary{border-bottom:1px dashed var(--line)}
+details.adv .advgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
+.fnav{display:flex;gap:10px;justify-content:space-between;position:sticky;bottom:0;background:var(--card);padding:10px 0 2px;border-top:1px solid var(--line);z-index:3}
+.fnav .btn{width:auto;flex:1;max-width:240px}
+.fnav .btn.ghost{background:var(--paper);color:var(--text);border:1.5px solid var(--line)}
 form.frm{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
 form.frm .full{grid-column:1/-1}
 form.frm label{display:grid;gap:5px;font-size:13px;font-weight:700;color:var(--muted)}
@@ -640,7 +657,7 @@ form.frm h4:first-of-type{border-top:0;padding-top:0;margin-top:0}
 #rm-bedroom.is-hall .rm-hall-only{display:flex}
 #rm-bedroom.is-hall .rm-bed-only{display:none}
 .togs label{display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3}
-@media (max-width:640px){form.frm{grid-template-columns:minmax(0,1fr);padding:14px}form.frm>*,form.frm label{min-width:0}form.frm input,form.frm select,form.frm textarea{min-width:0;max-width:100%}.roombuilder{grid-template-columns:1fr}.rm-block{grid-template-columns:1fr}}
+@media (max-width:640px){form.frm{grid-template-columns:minmax(0,1fr);padding:14px}.fstep,details.adv .advgrid{grid-template-columns:minmax(0,1fr)}.fsteps button{font-size:11.5px}form.frm>*,form.frm label{min-width:0}form.frm input,form.frm select,form.frm textarea{min-width:0;max-width:100%}.roombuilder{grid-template-columns:1fr}.rm-block{grid-template-columns:1fr}}
 
 table.tbl{width:100%;border-collapse:collapse;font-size:14px;min-width:680px}
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
@@ -838,7 +855,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
   <div class="wrap">
     <div class="pagehead">
       <h2>Ev sahibi paneli</h2>
-      <p>Elan yerləşdirmək üçün VÖEN və bank hesabı tələb olunur. Elan idarəetmə tərəfindən təsdiqləndikdən və Epoint ödəniş hesabınız qoşulduqdan sonra saytda görünür. Səndən 3% komissiya tutulur. Rezervasiya ödənişi Epoint vasitəsilə avtomatik hesabına bölünür.</p>
+      <p>Elan yerləşdirmək asandır: VÖEN-li və VÖEN-siz (fərdi) ev sahibləri elan verə bilər. Elan idarəetmə tərəfindən yoxlanıldıqdan sonra saytda görünür. Komissiya: VÖEN-li ev sahibi üçün 3%, VÖEN-siz üçün 10%.</p>
     </div>
     <div class="hsubnav" id="hsubnav" role="tablist" aria-label="Ev sahibi bölmələri">
       <button type="button" role="tab" data-sec="umumi" onclick="hostSec('umumi')">🏠 Elanlarım</button>
@@ -930,6 +947,14 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div><b>Ev sahibi adından yerləşdirirsən:</b> <span id="h-proxy-email"></span><div class="hint" style="margin:2px 0 0">Elan bu Gmail-ə bağlanacaq və ev sahibi təsdiqləməyənə qədər bron üçün açılmayacaq. İstifadə Şərtləri və Məxfilik qutularını ev sahibi təsdiqləyir.</div></div>
         <button type="button" class="btn sm ghost" style="width:auto" onclick="cancelProxy()">Ləğv et</button>
       </div>
+      <div class="fsteps full" id="fsteps">
+        <button type="button" data-step="1" onclick="fstepGo(1)"><b>1</b>Ev</button>
+        <button type="button" data-step="2" onclick="fstepGo(2)"><b>2</b>Şərtlər</button>
+        <button type="button" data-step="3" onclick="fstepGo(3)"><b>3</b>Şəkillər</button>
+        <button type="button" data-step="4" onclick="fstepGo(4)"><b>4</b>Göndər</button>
+      </div>
+      <div class="fstep on" data-step="1">
+      <p class="fintro full">Evin əsas məlumatlarını yaz: ad, ünvan, növ, qonaq sayı və gecəlik qiymət.</p>
       <h4>Ev haqqında</h4>
       <label class="full">Elanın başlığı<input id="h-title" required maxlength="60" placeholder="Dəniz mənzərəli mənzil, Bakı bulvarı" oninput="document.getElementById('h-title-count').textContent=this.value.length"></label>
       <p class="note" style="text-align:left;margin:-10px 0 0 0"><span id="h-title-count">0</span>/60 hərf — əsas səhifədə uzun adlar qısaldılıb göstərilir</p>
@@ -952,9 +977,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>A-Frame</option><option>Villa</option><option>Bağ evi</option><option>Otaq</option></select></label>
       <label>1 gecəlik qiymət — baza (₼)<input id="h-price" type="number" min="15" max="3000" value="90" required onfocus="this.min=state.isAdminUser?1:15" oninput="renderPriceTiers()"></label>
       <label>Qonaq tutumu<input id="h-guests" type="number" min="1" max="100" value="4" required oninput="if(this.value>100)this.value=100"></label>
-      <label>Yataq otağı sayı (aşağıda otaqları əlavə etdikdə avtomatik hesablanır)<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
+      </div>
+      <div class="fstep" data-step="2">
+      <p class="fintro full">Qalan şərtlər istəyə bağlıdır. Dəyişmək istəmirsənsə, standart qiymətlərlə davam et.</p>
       <label>Təmizlik haqqı (₼)<input id="h-clean" type="number" min="0" max="300" value="20"></label>
       <label>Minimum neçə gecəyə verilir<input id="h-minstay" type="number" min="1" max="90" value="1" required oninput="syncTierMin()"></label>
+      <details class="adv full"><summary>⚙️ Əlavə şərtlər (istəyə bağlı) — qalma müddəti, qonaq qrupları, rezervasiya rejimi, endirimlər</summary><div class="advgrid">
+      <label>Yataq otağı sayı (aşağıda otaqları əlavə etdikdə avtomatik hesablanır)<input id="h-rooms" type="number" min="1" max="12" value="2" required></label>
       <label>Maksimum neçə gecəyə verilir (limit yoxdursa boş saxla)<input id="h-maxstay" type="number" min="1" max="365" placeholder="Limitsiz"></label>
       <p class="note full" style="text-align:left;margin:-4px 0 0">Məsələn evini 1 günlüyə vermirsənsə minimuma 2 yaz. Bu şərtə görə boş qalan tək günlər müştəriyə göstərilmir və təqvimində ayrı rənglə işarələnəcək.</p>
       <label>Minimum qonaq reytinqi<select id="h-minguest">
@@ -1001,11 +1030,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         </div>
         <div id="tierList" style="display:grid;gap:6px;margin-top:8px"></div>
       </div>
+      </div></details>
       <div class="full" id="h-amen-box"><div style="font-weight:800;margin:4px 0 8px">Ümumi imkanlar</div>
         <div class="roomamen" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr))"><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-0" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Wi-Fi</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-1" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Pulsuz parkinq</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-2" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Eyvan</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-3" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Yelləncək</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-4" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Səsgücləndirici</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-5" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Karaoke</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-6" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Həyətdə ocaq yeri</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-7" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Kölgəlik (çardaq)</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-8" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Şezlonq</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-9" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Generator</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-10" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Yanğınsöndürən</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-11" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> İlk yardım dəsti</label><label class="r" style="cursor:pointer"><input type="checkbox" id="h-am-12" style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"> Mühafizəli ərazi</label></div>
         <div class="hint" style="margin-top:6px">Evin ümumi imkanlarını işarələ. Televizor, kondisioner, mətbəx avadanlığı, istilik və s. otaqları əlavə edəndə otağın içində seçilir.</div></div>
       <label class="full">Ev haqqında təsvir<textarea id="h-desc" maxlength="400" placeholder="Evin yeri, yaxınlıqdakı yerlər, nə var..."></textarea></label>
 
+      </div>
+      <div class="fstep" data-step="3">
+      <p class="fintro full">Əvvəl üz şəklini yüklə (məcburidir), sonra hər otağı və sahəni ayrıca əlavə et.</p>
       <h4>Evin üz şəkli</h4>
       <div class="full">
         <label class="filebtn" for="h-cover">Üz şəklini yüklə (məcburidir — əsas səhifədə böyük formada bu görünəcək)</label>
@@ -1233,6 +1266,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="blist" id="pendingRoomsList"></div>
       </div>
 
+      </div>
+      <div class="fstep" data-step="4">
+      <p class="fintro full">Son addım: ev qaydaları, ev sahibi növü və ödəniş məlumatları. Sonra göndər.</p>
       <h4>Ev qaydaları — qonaq rezervasiyadan əvvəl bunları mütləq görəcək</h4>
       <div class="togs">
         <div class="tog"><input type="checkbox" id="r-kids" checked style="width:17px;height:17px;flex:none;margin:0;accent-color:var(--ok)"><label for="r-kids" style="display:block;flex:1;min-width:0;color:inherit;font-weight:700;font-size:14px;line-height:1.3">Uşaqlarla qalmaq olar</label></div>
@@ -1301,6 +1337,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <div class="full">
         <button class="btn dark" type="submit" id="listingSubmitBtn">Elanı təsdiqə göndər</button>
         <p class="note" style="margin-top:8px">Elan göndərildikdən sonra idarəetmə yoxlayır. Təsdiqlənənə qədər saytda görünmür.</p>
+      </div>
+      </div>
+      <div class="fnav full" id="fnav">
+        <button type="button" class="btn ghost" id="fBack" onclick="fstepMove(-1)">← Geri</button>
+        <button type="button" class="btn ok" id="fNext" onclick="fstepMove(1)">Növbəti →</button>
       </div>
     </form>
     </div>
@@ -3320,7 +3361,7 @@ function hostSec(k,noScroll){
   state.hostSec=k; var _ph=document.getElementById('p-host'); if(_ph) _ph.setAttribute('data-hsec',k);
   document.querySelectorAll('#p-host .hsec').forEach(function(e){ e.classList.toggle('on',e.getAttribute('data-sec')===k); });
   document.querySelectorAll('#hsubnav button').forEach(function(b){ var on=b.getAttribute('data-sec')===k; b.setAttribute('aria-selected',on?'true':'false'); if(on&&b.scrollIntoView){ try{ b.scrollIntoView({inline:'center',block:'nearest'}); }catch(e){} } });
-  if(k==='yeni'){ setTimeout(function(){ try{ ensureHostMap(); }catch(e){} try{ if(window.google&&gmPick&&gmPick.map) google.maps.event.trigger(gmPick.map,'resize'); }catch(e){} },80); }
+  if(k==='yeni'){ try{ fstepGo(state.fstep||1,true); }catch(e){} setTimeout(function(){ try{ ensureHostMap(); }catch(e){} try{ if(window.google&&gmPick&&gmPick.map) google.maps.event.trigger(gmPick.map,'resize'); }catch(e){} },80); }
   if(k==='teqvim'){ try{ renderHostCalendar(); }catch(e){} }
   if(!noScroll){ var t=document.getElementById('hsubnav'); if(t&&t.scrollIntoView){ try{ t.scrollIntoView({block:'start',behavior:'auto'}); }catch(e){} } }
 }
@@ -6854,7 +6895,7 @@ function draftRestore(){
     state.pendingRooms=d.rooms||[]; renderPendingRooms(); renderRoomPhotoGrid();
     var lat=parseFloat(F['h-lat']), lng=parseFloat(F['h-lng']);
     if(!isNaN(lat)&&!isNaN(lng)){ try{ setPinLatLng(lat,lng,true,16); }catch(e){} }
-    hostSec('yeni',true); var form=document.getElementById('listingForm'); if(form&&form.scrollIntoView) form.scrollIntoView({behavior:'smooth'});
+    hostSec('yeni',true); fstepGo(1,true); var form=document.getElementById('listingForm'); if(form&&form.scrollIntoView) form.scrollIntoView({behavior:'smooth'});
     toast('Qaralama bərpa olundu. Şəkilləri (üz şəkli və otaq şəkilləri) yenidən əlavə etməlisən, şərtləri də təsdiqlə');
   }finally{ setTimeout(function(){ _draftRestoring=false; },400); }
 }
@@ -6869,6 +6910,7 @@ function draftRestore(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
 })();
 function resetListingFormToCreateMode(){
+  try{ fstepGo(1,true); }catch(e){}
   state.editingListingId=null; state.adminEditing=false;
   var _bmb=document.getElementById('bm-create-box'); if(_bmb) _bmb.style.display='';
   var form=document.getElementById('listingForm');
@@ -6996,11 +7038,37 @@ function openEdit(id){
   document.getElementById('cancelEditBtn').style.display='inline-block';
   document.getElementById('listingSubmitBtn').textContent='Dəyişiklikləri göndər';
 
-  hostSec('yeni',true);
+  hostSec('yeni',true); fstepGo(1,true);
   var form=document.getElementById('listingForm');
   if(form && form.scrollIntoView) form.scrollIntoView({behavior:'smooth'});
   toast("Elanı redaktə edirsən — qiymət/gecə şərtləri dərhal, qalanı admin təsdiqindən sonra tətbiq olunur");
 }
+/* Elan formu addımları */
+function fstepGo(n,noScroll){
+  n=Math.max(1,Math.min(4,n)); state.fstep=n;
+  document.querySelectorAll('#listingForm .fstep').forEach(function(e){ e.classList.toggle('on',+e.getAttribute('data-step')===n); });
+  document.querySelectorAll('#fsteps button').forEach(function(b){ var k=+b.getAttribute('data-step'); b.classList.toggle('on',k===n); b.classList.toggle('done',k<n); });
+  var bk=document.getElementById('fBack'), nx=document.getElementById('fNext');
+  if(bk) bk.style.visibility=n===1?'hidden':'visible';
+  if(nx) nx.style.display=n===4?'none':'';
+  if(n===1){ setTimeout(function(){ try{ ensureHostMap(); }catch(e){} try{ if(window.google&&gmPick&&gmPick.map) google.maps.event.trigger(gmPick.map,'resize'); }catch(e){} },80); }
+  if(!noScroll){ var t=document.getElementById('fsteps'); if(t&&t.scrollIntoView){ try{ t.scrollIntoView({block:'start',behavior:'smooth'}); }catch(e){} } }
+}
+function fstepMove(d){
+  var n=state.fstep||1;
+  if(d>0){
+    var st=document.querySelector('#listingForm .fstep[data-step="'+n+'"]');
+    var bad=null; st.querySelectorAll('input,select,textarea').forEach(function(el){ if(!bad && el.willValidate && !el.checkValidity()) bad=el; });
+    if(bad){ var dt=bad.closest('details'); if(dt) dt.open=true; bad.reportValidity(); return; }
+    if(n===3){ var cv=document.getElementById('h-cover-preview'); if(cv && !cv.innerHTML.trim() && !state.editingListingId){ toast('Əvvəl üz şəklini yüklə'); return; } }
+  }
+  fstepGo(n+d);
+}
+document.addEventListener('invalid',function(e){
+  var el=e.target; if(!el||!el.closest) return; var st=el.closest('#listingForm .fstep'); if(!st) return;
+  var dt=el.closest('details'); if(dt) dt.open=true;
+  if(!st.classList.contains('on')) fstepGo(+st.getAttribute('data-step'),true);
+},true);
 function handleListingFormSubmit(e){
   if(state.editingListingId){ submitListingEdit(e); } else { addListing(e); }
 }
