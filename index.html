@@ -337,6 +337,13 @@ label.htype{display:flex!important;flex-direction:row;align-items:flex-start;gap
 .btn{border:0;border-radius:12px;padding:13px 16px;font-weight:700;background:var(--nar);color:#fff;width:100%;text-align:center}
 .btn:hover{background:#8C1B31}
 .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.off{background:#9AA5A1;color:#fff;opacity:.85}
+.bookwhy{display:flex;gap:10px;align-items:flex-start;margin:10px 0 8px;padding:11px 13px;border-radius:12px;font-size:14px;font-weight:700;line-height:1.45;background:rgba(214,150,20,.13);border:1px solid rgba(214,150,20,.55);color:var(--text)}
+.bookwhy.err{background:rgba(190,40,60,.10);border-color:rgba(190,40,60,.5)}
+.bookwhy .bwi{flex:none;font-size:18px;line-height:1.2}
+.bookwhy button{margin-top:6px;border:0;background:var(--text);color:var(--paper);border-radius:999px;padding:6px 14px;font-weight:800;font-size:13px;cursor:pointer}
+@keyframes bwpulse{0%,100%{box-shadow:0 0 0 0 rgba(214,150,20,0)}30%{box-shadow:0 0 0 5px rgba(214,150,20,.55)}}
+.bwpulse{animation:bwpulse 1.2s ease 2;border-radius:12px}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
 .btn.ghost:hover{background:var(--sand)}
 .btn.dark{background:var(--ink)}.btn.dark:hover{background:var(--ink-2)}
@@ -4344,7 +4351,8 @@ function openDetail(id,bookingCode){
           +'</ul><span>Sənədləri özünüzlə götürün.</span></div>'; })()
     +'<label class="accept"><input type="checkbox" id="acc" onchange="state.accepted=this.checked;calc()">'
       +(isNovoen(x)?'<span>Ev qaydalarını oxudum və qəbul edirəm. <b>Behin heç bir halda geri qaytarılmadığını</b>, ödənişin birbaşa ev sahibinin kartına edildiyini və platformanın bu ödənişin tərəfi olmadığını başa düşürəm.</span></label>':'<span>Ev qaydalarını oxudum və qəbul edirəm. Geri qaytarmanın yalnız şikayət yolu ilə mümkün olduğunu başa düşürəm.</span></label>')
-    +'<button class="btn" id="bookBtn" disabled onclick="openSafetyModal('+x.id+')">'+bookBtnLabel(x)+'</button>'
+    +'<div id="bookWhy" class="bookwhy" role="status" aria-live="polite" style="display:none"></div>'
+    +'<button class="btn off" id="bookBtn" aria-disabled="true" onclick="tryBook('+x.id+')">'+bookBtnLabel(x)+'</button>'
     +'<p class="note">'+(isNovoen(x)?'Ev sahibi qəbul etsə, 2 saat ərzində behi onun kartına göndərib ekran görüntüsünü saytda yükləyirsiniz. Qalan məbləği evdə ev sahibinə ödəyirsiniz.':bookModeOf(x)==='request'&&!isDriverListing(x)?'Ev sahibi təsdiqləyəndən sonra ödəniş edilir. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.':'Təsdiq gözləmədən dərhal bron olunur. Məbləğ girişdən 24 saat sonra ev sahibinə köçür.')+'</p>'
   +'</div></aside></div>';
   renderBanks(); calc();
@@ -4677,6 +4685,37 @@ function novoenBoxHtml(x){
   return '<div class="novbox"><b>👤 Fərdi ev sahibi (VÖEN-siz).</b> Bu ev və ev sahibi platformamız tərəfindən ciddi yoxlanışdan keçib. Evi sorğu ilə bron edirsiniz: ev sahibi <b>6 saat</b> ərzində cavab verir. Qəbul edərsə, <b>2 saat ərzində</b> '+(x.depPct===100?'1 günlük qiymət (100%) məbləğində':'1 günlük qiymətin '+esc(String(x.depPct||30))+'%-i qədər')+' beh məbləğini onun kartına göndərib ödəniş ekran görüntüsünü saytda yükləyirsiniz. Qalan məbləği evə gələndə ev sahibinə ödəyirsiniz. Beh bronunuzu qəti təsdiqləyir və geri qaytarılmır. Daha rahat və ödənişi Epoint ilə qorunan variant istəyirsinizsə, platformamız tərəfindən hər zaman tövsiyə etdiyimiz rəsmi qeydiyyatlı (VÖEN-li) evlərə də baxa bilərsiniz.</div>';
 }
 function bookBtnLabel(x){ return (bookModeOf(x)==='request'&&!isDriverListing(x)) ? 'Sorğu göndər' : 'Dərhal rezervasiya et'; }
+/* Düymə niyə boz? — səbəbi həm düymənin üstündə yazırıq, həm də düyməyə basanda həmin sahəyə aparırıq */
+function bookReason(x){
+  var a=document.getElementById('b1')?document.getElementById('b1').value:'', b=document.getElementById('b2')?document.getElementById('b2').value:'';
+  var g=bookGate(x,a,b);
+  if(g){
+    var n=nights(a,b), noType=!state.guestType, noDates=!(a&&b&&n>0), f='b2-btn';
+    if(noType&&noDates) f='b1-btn'; else if(noType) f='bgt'; else if(noDates) f='b1-btn';
+    else if(g.msg.indexOf('qonaq tipinə')>=0) f='bgt';
+    return {t:g.t,msg:g.msg,focus:f};
+  }
+  if(!state.accepted) return {t:'ask',msg:'Davam etmək üçün aşağıdakı xananı işarələyərək ev qaydalarını qəbul edin.',focus:'acc'};
+  return null;
+}
+function tryBook(id){
+  var x=byId(id); if(!x) return;
+  var r=bookReason(x);
+  if(!r){ openSafetyModal(id); return; }
+  toast(r.msg);
+  var el=document.getElementById(r.focus)||document.getElementById('bookWhy');
+  if(el){ try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+    var box=el.closest?(el.closest('.f')||el.closest('label.accept')||el):el; box.classList.remove('bwpulse'); void box.offsetWidth; box.classList.add('bwpulse'); setTimeout(function(){ box.classList.remove('bwpulse'); },2600); }
+}
+function bookWhyUpdate(x){
+  var bw=document.getElementById('bookWhy'), bb=document.getElementById('bookBtn'); if(!bw||!bb) return;
+  var r=bookReason(x);
+  if(r){
+    bw.className='bookwhy'+(r.t==='err'?' err':''); bw.style.display='flex';
+    bw.innerHTML='<span class="bwi">'+(r.t==='err'?'⛔':'👆')+'</span><div>Düymə hələ aktiv deyil: '+esc(r.msg)+'</div>';
+    bb.classList.add('off'); bb.setAttribute('aria-disabled','true');
+  } else { bw.style.display='none'; bw.innerHTML=''; bb.classList.remove('off'); bb.removeAttribute('aria-disabled'); }
+}
 function calc(){
   var x=byId(state.openId); if(!x) return;
   var a=document.getElementById('b1').value, b=document.getElementById('b2').value;
@@ -4684,12 +4723,11 @@ function calc(){
   var box=document.getElementById('calcbox');
   var bookBtn=document.getElementById('bookBtn');
   var gate=bookGate(x,a,b);
+  bookWhyUpdate(x);
   if(gate){
     box.innerHTML='<div class="hint" style="color:'+(gate.t==='ask'?'var(--warn)':'var(--nar)')+';font-weight:700;line-height:1.5">'+esc(gate.msg)+'</div>';
-    if(bookBtn) bookBtn.disabled=true;
     return;
   }
-  if(bookBtn) bookBtn.disabled=!state.accepted;
   if(isDriverListing(x) && fbOnline && fbFunctions){
     var _k=x.id+'|'+a+'|'+b, _sp=state.spots[_k];
     var _apply=function(sp){
