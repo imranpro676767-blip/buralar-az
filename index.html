@@ -992,7 +992,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <h4>Ev haqqında</h4>
       <label class="full">Elanın başlığı<input id="h-title" required maxlength="60" placeholder="Dəniz mənzərəli mənzil, Bakı bulvarı" oninput="document.getElementById('h-title-count').textContent=this.value.length"></label>
       <p class="note" style="text-align:left;margin:-10px 0 0 0"><span id="h-title-count">0</span>/60 hərf — əsas səhifədə uzun adlar qısaldılıb göstərilir</p>
-      <label>Rayon / şəhər<input id="h-city" list="places" required autocomplete="off" placeholder="Rayonun adını yazın, məs: Qəbələ" oninput="cityChosen()" onchange="cityChosen()"></label>
+      <label>Rayon / şəhər<input id="h-city" list="places" required maxlength="24" autocomplete="off" placeholder="Rayonun adını yazın, məs: Qəbələ" oninput="cityChosen()" onchange="cityChosen()"><small id="h-city-err" style="display:none;color:var(--nar);font-weight:700;margin-top:4px">Belə rayon və ya şəhər tapılmadı. Adı yazıb siyahıdan seçin.</small></label>
       <label>Qəsəbə / ünvan<input id="h-addr" required maxlength="50" placeholder="Məs: Sahil qəsəbəsi (ev nömrəsi yazmayın)"></label>
       <p class="note" style="text-align:left;margin-top:-4px">Bu yazı saytda hamıya göstərilir. Yalnız qəsəbə və ya küçə adını yazın, ev nömrəsini yazmayın. Dəqiq ünvanı aşağıdakı xəritə nişanı göstərir və yalnız rezervasiya təsdiqlənəndən sonra qonağa açılır.</p>
       <div class="full">
@@ -5134,8 +5134,9 @@ function cityCanon(s){
 function cityChosen(){
   var el=document.getElementById('h-city'); if(!el) return;
   var c=cityCanon(el.value);
-  if(c){ if(el.value!==c) el.value=c; el.setCustomValidity(''); centerPinOnRegion(); }
-  else el.setCustomValidity(el.value?'Siyahıdan rayon və ya şəhər seçin':'');
+  var er=document.getElementById('h-city-err');
+  if(c){ if(el.value!==c) el.value=c; el.setCustomValidity(''); if(er) er.style.display='none'; centerPinOnRegion(); }
+  else { el.setCustomValidity(el.value?'Siyahıdan rayon və ya şəhər seçin':''); if(er) er.style.display=el.value?'block':'none'; }
 }
 
 /* ============ Google Maps ============ */
@@ -6065,6 +6066,9 @@ function addListing(e){
     var _sl=totalSleepsOf(state.pendingRooms), _gs=parseInt(v('h-guests'),10)||1;
     if(_gs>_sl){ toast("Qonaq tutumu ("+_gs+") yataqların yatacaq sayından ("+_sl+") çoxdur. Otaqlarda yataq sayını düzəlt və ya qonaq tutumunu azalt"); return; }
   }
+  var _cc=cityCanon(v('h-city'));
+  if(!_cc){ toast("Rayon və ya şəhəri siyahıdan seç (məs: Qəbələ)"); var _ce=document.getElementById('h-city'); if(_ce){ cityChosen(); fstepGo(1,true); try{ _ce.focus(); }catch(_e){} } return; }
+  document.getElementById('h-city').value=_cc;
   var minStay=parseInt(v('h-minstay'),10)||1;
   var maxStayRaw=v('h-maxstay').trim();
   var maxStay=maxStayRaw?parseInt(maxStayRaw,10):null;
@@ -7208,6 +7212,9 @@ function submitListingEdit(e){
     var _sl=totalSleepsOf(state.pendingRooms), _gs=parseInt(v('h-guests'),10)||1;
     if(_gs>_sl){ toast("Qonaq tutumu ("+_gs+") yataqların yatacaq sayından ("+_sl+") çoxdur. Otaqlarda yataq sayını düzəlt və ya qonaq tutumunu azalt"); return; }
   }
+  var _cc=cityCanon(v('h-city'));
+  if(!_cc){ toast("Rayon və ya şəhəri siyahıdan seç (məs: Qəbələ)"); var _ce=document.getElementById('h-city'); if(_ce){ cityChosen(); fstepGo(1,true); try{ _ce.focus(); }catch(_e){} } return; }
+  document.getElementById('h-city').value=_cc;
   var minStay=parseInt(v('h-minstay'),10)||1;
   var maxStayRaw=v('h-maxstay').trim();
   var maxStay=maxStayRaw?parseInt(maxStayRaw,10):null;
