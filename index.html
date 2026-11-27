@@ -1007,7 +1007,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
           <div class="f"><label for="h-lng">Uzunluq (lng)</label><input id="h-lng" readonly></div>
         </div>
       </div>
-      <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>A-Frame</option><option>Villa</option><option>Bağ evi</option><option>Otaq</option></select></label>
+      <label>Ev tipi<select id="h-type"><option>Mənzil</option><option>Həyət evi</option><option>Kottec</option><option>Villa</option><option>Bağ evi</option><option>Dağ evi</option><option>Kənd evi</option><option>A-Frame</option><option>Otaq</option></select></label>
       <label>Qonaq tutumu<input id="h-guests" type="number" min="1" max="100" placeholder="4" required oninput="if(this.value>100)this.value=100"></label>
       <label>Yataq otağı sayı (aşağıda otaqları əlavə etdikdə avtomatik hesablanır)<input id="h-rooms" type="number" min="1" max="12" placeholder="2"></label>
       </div>
@@ -2070,6 +2070,8 @@ var REGIONS = {
  "Şərqi Zəngəzur":["Laçın","Kəlbəcər","Qubadlı","Zəngilan"],
  "Naxçıvan":["Naxçıvan","Ordubad","Culfa","Şahbuz","Şərur","Babək","Kəngərli","Sədərək"]
 };
+/* Ev tipləri — elan formasındakı seçim (h-type) ilə eyni sıra olmalıdır */
+var HOME_TYPES=['Mənzil', 'Həyət evi', 'Kottec', 'Villa', 'Bağ evi', 'Dağ evi', 'Kənd evi', 'A-Frame', 'Otaq'];
 function regionOf(city){ for(var r in REGIONS){ if(REGIONS[r].indexOf(city)>=0) return r; } return "Digər"; }
 function allPlaces(){ var a=[]; for(var r in REGIONS) a=a.concat(REGIONS[r]); return a; }
 
@@ -3532,7 +3534,7 @@ function renderChips(){
   /* "Bölgəyə görə axtar" bloku ləğv edildi: bölgə/şəhər axtarışı yuxarıdakı "Hara gedirsən?" sahəsi ilə aparılır. */
 
   var ht='<button class="chip" aria-pressed="'+(state.type==='Hamısı')+'" onclick="setType(\'Hamısı\')">Hamısı</button>';
-  ['Mənzil','Həyət evi','A-Frame','Villa','Bağ evi','Otaq'].forEach(function(t){
+  HOME_TYPES.forEach(function(t){
     ht+='<button class="chip" aria-pressed="'+(state.type===t)+'" onclick="setType(\''+t+'\')">'+t+'</button>'; });
   document.getElementById('chipsType').innerHTML=ht;
 
