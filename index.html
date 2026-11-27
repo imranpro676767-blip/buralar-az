@@ -986,8 +986,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <h4>Ev haqqında</h4>
       <label class="full">Elanın başlığı<input id="h-title" required maxlength="60" placeholder="Dəniz mənzərəli mənzil, Bakı bulvarı" oninput="document.getElementById('h-title-count').textContent=this.value.length"></label>
       <p class="note" style="text-align:left;margin:-10px 0 0 0"><span id="h-title-count">0</span>/60 hərf — əsas səhifədə uzun adlar qısaldılıb göstərilir</p>
-      <label>Bölgə<select id="h-region" onchange="fillDistricts()"></select></label>
-      <label>Şəhər / rayon<select id="h-city" onchange="centerPinOnRegion()"></select></label>
+      <label>Rayon / şəhər<input id="h-city" list="places" required autocomplete="off" placeholder="Rayonun adını yazın, məs: Qəbələ" oninput="cityChosen()" onchange="cityChosen()"></label>
       <label>Qəsəbə / ünvan<input id="h-addr" required maxlength="50" placeholder="Məs: Sahil qəsəbəsi (ev nömrəsi yazmayın)"></label>
       <p class="note" style="text-align:left;margin-top:-4px">Bu yazı saytda hamıya göstərilir. Yalnız qəsəbə və ya küçə adını yazın, ev nömrəsini yazmayın. Dəqiq ünvanı aşağıdakı xəritə nişanı göstərir və yalnız rezervasiya təsdiqlənəndən sonra qonağa açılır.</p>
       <div class="full">
@@ -4263,7 +4262,7 @@ function leftInfoHtml(x){
     +'<h2>'+esc(x.t)+'</h2>'
     +(x.st==='approved'?'<div style="margin:-2px 0 6px"><button type="button" class="btn sm ghost" style="width:auto" onclick="shareListing('+x.id+')">🔗 Linki paylaş</button></div>':'')
     +homeChipsHtml(x).replace('class="hchips"','class="hchips" style="margin:2px 0 10px"')
-    +'<div class="facts"><span>'+esc(x.d)+' · '+regionOf(x.c)+'</span>'
+    +'<div class="facts"><span>'+esc(x.d)+' · '+esc(x.c)+'</span>'
       +(x.rv?('<span style="cursor:pointer;text-decoration:underline" onclick="openListingReviews('+x.id+')" title="Rəylərə bax">★ '+x.rt.toFixed(2)+' ('+x.rv+' rəy)</span>'):'<span>★ Yeni elan</span>')
       +'</div>'
     +'<div style="max-width:460px;margin:10px 0 0">'+homeStatsHtml(x)+'</div>'
@@ -5117,15 +5116,20 @@ function renderBookings(){
 
 /* ============ ev sahibi ============ */
 function fillRegions(){
-  var sel=document.getElementById('h-region'), h='';
-  for(var r in REGIONS) h+='<option>'+r+'</option>';
-  sel.innerHTML=h; fillDistricts();
   document.getElementById('places').innerHTML=allPlaces().map(function(c){return '<option value="'+c+'">';}).join('');
+  var hc=document.getElementById('h-city'); if(hc) hc.setCustomValidity('');
 }
-function fillDistricts(){
-  var r=document.getElementById('h-region').value;
-  document.getElementById('h-city').innerHTML=REGIONS[r].map(function(c){return '<option>'+c+'</option>';}).join('');
-  centerPinOnRegion();
+/* Rayon adı yazıldıqda siyahıdakı dəqiq yazılışa çevrilir və xəritə həmin rayona yönəlir */
+function cityCanon(s){
+  s=String(s||'').trim().toLocaleLowerCase('az'); if(!s) return '';
+  var a=allPlaces(); for(var i=0;i<a.length;i++){ if(a[i].toLocaleLowerCase('az')===s) return a[i]; }
+  return '';
+}
+function cityChosen(){
+  var el=document.getElementById('h-city'); if(!el) return;
+  var c=cityCanon(el.value);
+  if(c){ if(el.value!==c) el.value=c; el.setCustomValidity(''); centerPinOnRegion(); }
+  else el.setCustomValidity(el.value?'Siyahıdan rayon və ya şəhər seçin':'');
 }
 
 /* ============ Google Maps ============ */
@@ -5149,8 +5153,8 @@ function whenMaps(cb,tries){
 }
 var gmPick={map:null,marker:null};
 function regionCenter(){
-  var r=(document.getElementById('h-region')||{}).value;
-  return REGION_CENTERS[r]||REGION_CENTERS["Abşeron"];
+  var c=cityCanon((document.getElementById('h-city')||{}).value);
+  return REGION_CENTERS[regionOf(c)]||REGION_CENTERS["Abşeron"];
 }
 function setPinLatLng(lat,lng,pan,zoom){
   document.getElementById('h-lat').value=Number(lat).toFixed(5);
@@ -5163,8 +5167,9 @@ function setPinLatLng(lat,lng,pan,zoom){
 }
 function centerPinOnRegion(){
   /* Seçilmiş şəhər/rayon üzrə mərkəz (yoxdursa bölgə mərkəzi) */
-  var city=(document.getElementById('h-city')||{}).value;
+  var city=cityCanon((document.getElementById('h-city')||{}).value);
   var c=CITY_CENTERS[city];
+  if(!city) return; /* rayon hələ seçilməyib — xəritəni toxunma */
   if(c){ setPinLatLng(c[0],c[1],true,12); return; }
   c=regionCenter();
   setPinLatLng(c[0],c[1],true,11);
@@ -6952,7 +6957,6 @@ function draftRestore(){
   try{
     resetListingFormToCreateMode();
     var F=d.fields;
-    if(F['h-region']!=null){ document.getElementById('h-region').value=F['h-region']; fillDistricts(); }
     for(var id in F){
       var el=document.getElementById(id); if(!el||id==='h-region') continue;
       if(el.type==='checkbox') el.checked=!!F[id]; else el.value=F[id];
@@ -7023,9 +7027,6 @@ function openEdit(id){
   document.getElementById('h-title').value=live.t||'';
   document.getElementById('h-title-count').textContent=(live.t||'').length;
   fillRegions();
-  var region=regionOf(live.c);
-  document.getElementById('h-region').value=region;
-  fillDistricts();
   document.getElementById('h-city').value=live.c;
   document.getElementById('h-addr').value=live.d||'';
   document.getElementById('h-type').value=live.ty||'Mənzil';
