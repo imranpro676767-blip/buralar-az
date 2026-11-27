@@ -651,12 +651,10 @@ form.frm h4{grid-column:1/-1;font-size:15px;margin-top:6px;padding-top:12px;bord
 .coverpreview{margin-top:8px}
 .coverpreview img{width:100%;max-height:260px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--line);display:block}
 #pendingRoomsBox .bk{grid-template-columns:64px 1fr auto}
-.nextbox{border:2px dashed #C2543E;background:#FFF6F1;border-radius:16px;padding:16px;display:grid;gap:10px}
-.nextbox .nb-h b{display:block;font-size:16px;color:#9A3A26;margin-bottom:2px}
-.nextbox .nb-h span{font-size:13px;color:var(--muted);line-height:1.4}
-.nextbox .nb-chips{display:flex;flex-wrap:wrap;gap:8px}
-.nextbox .nb-chips button{border:1.5px solid #C2543E;background:#fff;color:#9A3A26;border-radius:999px;padding:10px 14px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
-.nextbox .nb-chips button:hover{background:#C2543E;color:#fff}
+.nextline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#E7F6EE;border:1px solid #9AD3B6;border-radius:14px;padding:12px 14px}
+.nextline .nl-t{font-weight:800;color:#1C6B55;font-size:15px;flex:1;min-width:210px}
+.nextline .nl-btn{background:#1C6B55;color:#fff;border:0;border-radius:12px;padding:12px 18px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+.nextline .nl-btn:hover{background:#15594a}
 @keyframes rowflash{0%{background:#DDF3E8;box-shadow:0 0 0 3px #2F9E6E}100%{box-shadow:0 0 0 0 rgba(47,158,110,0)}}
 #pendingRoomsBox .bk.newrow{animation:rowflash 1.8s ease 1}
 .modal#lightboxModal .lightbox{background:transparent;box-shadow:none;position:relative;width:min(920px,100%);display:flex;align-items:center;justify-content:center}
@@ -5519,7 +5517,7 @@ function addRoomToPending(){
   document.getElementById('rm-kind').value=''; updateRoomKindUI();
   renderPendingRooms();
   setTimeout(function(){ var pb=document.getElementById('pendingRoomsBox'); if(pb&&pb.scrollIntoView){ try{ pb.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} } },80);
-  toast(_ed ? (roomLabel(room)+" yeniləndi") : (roomLabel(room)+" əlavə edildi ✓ Aşağıdan növbəti sahəni seçib davam et"));
+  toast(_ed ? (roomLabel(room)+" yeniləndi") : (roomLabel(room)+" əlavə edildi ✓"));
 }
 
 
@@ -5856,25 +5854,18 @@ function roomSummary(r){
   return r.photos.length+' şəkil';
 }
 var RM_LABELS={bedroom:'Yataq otağı',hall:'Zal / qonaq otağı',foyer:'Foye',gym:'İdman zalı',game:'Oyun zalı',bathroom:'Ümumi sanuzel',pool:'Hovuz',kitchen:'Mətbəx',hamam:'Hamam',yardsit:'Həyət oturma yeri',yard:'Həyət',other:'Digər şəkillər'};
-function pickRoomKind(k){
-  var sel=document.getElementById('rm-kind'); if(!sel) return;
-  sel.value=k; updateRoomKindUI();
-  var b=document.querySelector('#listingForm .roombuilder');
-  if(b){ b.classList.add('bwpulse'); setTimeout(function(){ b.classList.remove('bwpulse'); },2600); try{ b.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
-}
-/* Sahə əlavə ediləndən sonra: eyni səhifədə növbəti sahəni də əlavə etməyə təşviq */
+/* Sahə əlavə ediləndən sonra: qısa yaşıl sətir + "Növbəti sahəni əlavə et" düyməsi */
 function nextRoomBoxHtml(){
   if(!state.pendingRooms.length || state.editingRoom) return '';
-  var have={}; state.pendingRooms.forEach(function(r){ have[r.kind]=true; });
-  var order=['bedroom','hall','kitchen','bathroom','pool','yardsit','yard','hamam'];
-  var chips=[];
-  if(have.bedroom) chips.push(['bedroom','Başqa yataq otağı']);
-  order.forEach(function(k){ if(!have[k] && chips.length<6) chips.push([k,RM_LABELS[k]]); });
-  if(chips.length<6) chips.push(['other','Digər şəkillər']);
   var n=state.pendingRooms.length;
-  return '<div class="nextbox"><div class="nb-h"><b>✓ '+n+' sahə əlavə olundu. Növbəti sahəni də elə burada əlavə et</b>'
-    +'<span>"Növbəti" düyməsinə basmağa tələsmə. Hər otağın və sahənin şəkli qonağa evi daha aydın göstərir. Aşağıdakılardan birinə bas və davam et:</span></div>'
-    +'<div class="nb-chips">'+chips.map(function(c){ return '<button type="button" onclick="pickRoomKind(\''+c[0]+'\')">+ '+c[1]+'</button>'; }).join('')+'</div></div>';
+  return '<div class="nextline"><div class="nl-t">✓ '+n+' sahə əlavə olundu. Növbəti sahəni əlavə et</div>'
+    +'<button type="button" class="nl-btn" onclick="addNextRoom()">+ Növbəti sahəni əlavə et</button></div>';
+}
+function addNextRoom(){
+  var sel=document.getElementById('rm-kind'); if(!sel) return;
+  var b=document.querySelector('#listingForm .roombuilder');
+  if(b){ b.classList.add('bwpulse'); setTimeout(function(){ b.classList.remove('bwpulse'); },2600); try{ b.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
+  setTimeout(function(){ try{ sel.focus({preventScroll:true}); if(sel.showPicker) sel.showPicker(); }catch(e){} },450);
 }
 function renderPendingRooms(){
   var box=document.getElementById('pendingRoomsList');
