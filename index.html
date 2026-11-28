@@ -889,6 +889,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
       <h2>Ev sahibi paneli</h2>
       <p>Elan yerləşdirmək asandır: VÖEN-li və VÖEN-siz (fərdi) ev sahibləri elan verə bilər. Elan idarəetmə tərəfindən yoxlanıldıqdan sonra saytda görünür. Komissiya: VÖEN-li ev sahibi üçün 3%, VÖEN-siz üçün 10%.</p>
     </div>
+    <div id="hostNotices"></div>
     <div class="hsubnav" id="hsubnav" role="tablist" aria-label="Ev sahibi bölmələri">
       <button type="button" role="tab" data-sec="umumi" onclick="hostSec('umumi')">🏠 Elanlarım</button>
       <button type="button" role="tab" data-sec="gelir" onclick="hostSec('gelir')">📊 Gəlir və hesabatlar</button>
@@ -899,7 +900,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
     </div>
     <div class="hsec on" data-sec="umumi">
     <div class="stats" id="hoststats"></div>
-    <div id="hostNotices"></div>
     <div id="depDebtBox"></div>
     <div id="penBoxHost"></div>
 
@@ -1558,14 +1558,21 @@ footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
         <div class="tblwrap"><table class="tbl"><thead><tr><th>Vaxt</th><th>Admin</th><th>Əməliyyat</th><th>Obyekt</th></tr></thead><tbody id="auditRows"><tr><td colspan="4" style="text-align:center;color:var(--muted)">Yüklənir...</td></tr></tbody></table></div>
       </div>
       <div class="sub" id="s-hnotice">
-        <p class="note" style="text-align:left;margin:0 0 10px"><b>Ev sahiblərinə bildiriş.</b> "Şərt yeniləməsi" göndərəndə bütün ev sahiblərinə e-poçt gedir, onlar paneldə təsdiq edir. Müddət bitəndən sonra təsdiq etməyənlərin elanları yeni bron qəbul etmir (ödənilmiş bronlar təsirlənmir). "Məlumat" isə sadəcə xəbərdarlıqdır ("Oxudum" düyməsi ilə).</p>
+        <p class="note" style="text-align:left;margin:0 0 10px"><b>Ev sahiblərinə bildiriş.</b> "Şərt yeniləməsi" göndərəndə bütün ev sahiblərinə e-poçt gedir, onlar paneldə təsdiq edir. Müddət bitəndən sonra təsdiq etməyənlərin elanları yeni bron qəbul etmir (ödənilmiş bronlar təsirlənmir). "Məlumat / xəbərdarlıq" isə hamıya, seçilmiş ev sahiblərinə, bir rayona və ya konkret elanın sahibinə göndərilə bilər. Xəbərdarlıq ev sahibinin panelinin yuxarısında qırmızı fonda görünür ("Oxudum" düyməsi ilə).</p>
         <div class="split" style="margin-bottom:14px;padding:12px">
           <div style="display:grid;gap:8px">
-            <select id="hn-type" onchange="document.getElementById('hn-grace-wrap').style.display=this.value==='terms'?'':'none'" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600"><option value="terms">Şərt yeniləməsi (qəbul tələb olunur)</option><option value="info">Məlumat (yalnız oxumaq)</option></select>
-            <input type="text" id="hn-title" maxlength="100" placeholder="Başlıq" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600">
-            <textarea id="hn-body" rows="5" maxlength="1500" placeholder="Mətn (nə dəyişdi, nə etmək lazımdır)" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600"></textarea>
-            <label id="hn-grace-wrap" style="font-weight:700;font-size:13px">Təsdiq üçün müddət (gün)<input type="number" id="hn-grace" min="1" max="60" value="14" style="margin-top:4px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"></label>
-            <button class="btn sm" style="width:auto" id="hn-send" onclick="adminSendNotice()">Bütün ev sahiblərinə göndər</button>
+            <select id="hn-type" onchange="hnTypeChange()" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"><option value="info">Məlumat / xəbərdarlıq (oxumaq kifayətdir)</option><option value="terms">Şərt yeniləməsi (qəbul tələb olunur, hamıya)</option></select>
+            <div id="hn-opts" style="display:grid;gap:8px">
+              <select id="hn-sev" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"><option value="info">Adi bildiriş (sarı çərçivə)</option><option value="warning">Xəbərdarlıq (qırmızı fon)</option></select>
+              <select id="hn-aud" onchange="hnAudChange()" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"><option value="all">Kimə: bütün ev sahiblərinə</option><option value="emails">Kimə: seçilmiş ev sahiblərinə (e-poçtla)</option><option value="district">Kimə: bir rayonun ev sahiblərinə</option><option value="listing">Kimə: konkret elanın sahibinə</option></select>
+              <textarea id="hn-aud-emails" rows="3" placeholder="E-poçtları vergüllə və ya yeni sətirlə ayırın" style="display:none;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"></textarea>
+              <input type="text" id="hn-aud-district" list="places" maxlength="24" autocomplete="off" placeholder="Rayonun adı (məs: Qəbələ)" style="display:none;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box">
+              <select id="hn-aud-listing" style="display:none;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"></select>
+            </div>
+            <input type="text" id="hn-title" maxlength="100" placeholder="Başlıq" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box">
+            <textarea id="hn-body" rows="5" maxlength="1500" placeholder="Mətn (nə dəyişdi, nə etmək lazımdır)" style="border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"></textarea>
+            <label id="hn-grace-wrap" style="font-weight:700;font-size:13px;display:none">Təsdiq üçün müddət (gün)<input type="number" id="hn-grace" min="1" max="60" value="14" style="margin-top:4px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;font-weight:600;width:100%;box-sizing:border-box"></label>
+            <button class="btn sm" style="width:auto" id="hn-send" onclick="adminSendNotice()">Göndər</button>
           </div>
         </div>
         <div id="hnlist"></div>
@@ -2929,7 +2936,7 @@ function myInboxItems(){
     if(c.unreadForHost) items.push({type:'chat', chatId:c.id, title:c.listingTitle||'Yazışma', text:preview(c.messages), ts:c.lastAt||0});
   });
   (state.hostNotices||[]).forEach(function(n){
-    if(!n.acked) items.push({type:'notice', title:n.title, text:(n.type==='terms'?'Təsdiq tələb olunur'+(n.deadlineAt?' · '+Math.max(0,hnDaysLeft(n.deadlineAt))+' gün qalıb':''):'Yeni bildiriş'), ts:n.createdAt||0});
+    if(!n.acked) items.push({type:'notice', title:n.title, text:(n.type==='terms'?'Təsdiq tələb olunur'+(n.deadlineAt?' · '+Math.max(0,hnDaysLeft(n.deadlineAt))+' gün qalıb':''):(n.severity==='warning'?'⚠ Xəbərdarlıq':'Yeni bildiriş')), ts:n.createdAt||0});
   });
   var st=findMySupportThread();
   if(st && st.userUnread){ items.push({type:'support', text:preview(st.messages), ts:st.lastAt||0}); }
@@ -5741,17 +5748,22 @@ function renderHostNotices(){
   var box=document.getElementById('hostNotices'); if(!box) return;
   var list=(state.hostNotices||[]).filter(function(n){ return !n.acked; });
   if(!list.length){ box.innerHTML=''; return; }
-  box.innerHTML='<h3 style="margin:0 0 10px">Sizin üçün bildirişlər</h3>'+list.map(function(n){
+  var anyWarn=list.some(function(n){ return n.severity==='warning' && n.type!=='terms'; });
+  box.innerHTML='<h3 style="margin:0 0 10px">'+(anyWarn?'⚠ ':'')+'Sizin üçün bildirişlər</h3>'+list.map(function(n){
     var terms=n.type==='terms';
+    var warn=!terms && n.severity==='warning';
     var left=terms&&n.deadlineAt?hnDaysLeft(n.deadlineAt):null;
     var late=terms&&left!==null&&left<=0;
-    return '<div class="split" style="margin-bottom:12px;padding:14px;border:2px solid '+(late?'var(--nar)':'var(--warn)')+'">'
-      +'<div style="font-weight:800;font-size:16px;margin-bottom:6px">'+esc(n.title)+'</div>'
+    var style=warn?'background:#B42318;color:#fff;border:2px solid #7A1710;border-radius:14px'
+      :'border:2px solid '+(late?'var(--nar)':'var(--warn)');
+    return '<div class="split" style="margin-bottom:12px;padding:14px;'+style+'">'
+      +'<div style="font-weight:800;font-size:16px;margin-bottom:6px">'+(warn?'⚠ ':'')+esc(n.title)+'</div>'
+      +(n.listingTitle?'<div style="font-weight:700;font-size:13px;margin-bottom:6px;'+(warn?'opacity:.92':'color:var(--muted)')+'">Elan: '+esc(n.listingTitle)+'</div>':'')
       +'<div style="white-space:pre-wrap;margin-bottom:8px">'+esc(n.body)+'</div>'
       +(terms?'<div style="font-weight:800;margin-bottom:8px;color:'+(late?'var(--nar)':'var(--warn)')+'">'+(late?'Müddət bitib: təsdiq edilməyənə qədər elanlarınız yeni bron qəbul etmir':(left+' gün qalıb: sonra təsdiq etməsəniz elanlarınız yeni bron qəbul etməyəcək'))+'</div>'
         +'<label style="display:flex;gap:8px;align-items:flex-start;font-weight:700;font-size:14px;margin-bottom:8px"><input type="checkbox" id="hn-acc-'+n.id+'" style="width:17px;height:17px;flex:none;margin-top:2px"><span><a href="#" onclick="openModal(\'tosModal\');return false" style="color:var(--nar)">İstifadə Şərtlərini</a> və yuxarıdakı yeniliyi oxudum, qəbul edirəm</span></label>'
         +'<button class="btn sm" style="width:auto" onclick="ackHostNotice(\''+n.id+'\',true)">Təsdiq et</button>'
-        :'<button class="btn sm ghost" style="width:auto" onclick="ackHostNotice(\''+n.id+'\',false)">Oxudum</button>')
+        :'<button class="btn sm '+(warn?'':'ghost')+'" style="width:auto;'+(warn?'background:#fff;color:#B42318;border-color:#fff':'')+'" onclick="ackHostNotice(\''+n.id+'\',false)">Oxudum</button>')
       +'</div>';
   }).join('');
 }
@@ -5762,19 +5774,56 @@ function ackHostNotice(id,needCheck){
     renderHostNotices(); renderInboxBadge(); toast('Təşəkkürlər, qeyd edildi');
   }).catch(function(e){ toast((e&&e.message)||'Alınmadı, yenidən cəhd et'); });
 }
+function hnTypeChange(){
+  var terms=document.getElementById('hn-type').value==='terms';
+  document.getElementById('hn-grace-wrap').style.display=terms?'':'none';
+  document.getElementById('hn-opts').style.display=terms?'none':'grid';
+}
+function hnAudChange(){
+  var a=document.getElementById('hn-aud').value;
+  document.getElementById('hn-aud-emails').style.display=a==='emails'?'':'none';
+  document.getElementById('hn-aud-district').style.display=a==='district'?'':'none';
+  document.getElementById('hn-aud-listing').style.display=a==='listing'?'':'none';
+}
+function hnFillListings(){
+  var sel=document.getElementById('hn-aud-listing'); if(!sel) return;
+  var seen={}, h='<option value="">Elanı seçin...</option>';
+  (state.custom||[]).forEach(function(l){ if(!l||seen[l.id]) return; seen[l.id]=1; h+='<option value="'+esc(String(l.id))+'">'+esc((l.t||'')+' — '+(l.c||'')+' ('+(l.ownerEmail||'?')+')')+'</option>'; });
+  sel.innerHTML=h;
+}
 function adminSendNotice(){
   var type=document.getElementById('hn-type').value, title=document.getElementById('hn-title').value.trim(), body=document.getElementById('hn-body').value.trim();
   var grace=parseInt(document.getElementById('hn-grace').value,10)||14;
   if(title.length<5||body.length<10){ toast('Başlıq (ən azı 5) və mətn (ən azı 10 simvol) yaz'); return; }
-  if(!confirm('Bu bildiriş bütün ev sahiblərinə e-poçtla göndəriləcək. Davam edək?')) return;
+  var data={type:type,title:title,body:body,graceDays:grace};
+  var who='bütün ev sahiblərinə';
+  if(type==='info'){
+    data.severity=document.getElementById('hn-sev').value;
+    data.audience=document.getElementById('hn-aud').value;
+    if(data.audience==='emails'){
+      data.emails=document.getElementById('hn-aud-emails').value.split(/[\s,;]+/).filter(Boolean);
+      if(!data.emails.length){ toast('Ən azı bir e-poçt yaz'); return; }
+      who=data.emails.length+' seçilmiş e-poçta';
+    } else if(data.audience==='district'){
+      data.district=(typeof cityCanon==='function'?cityCanon(document.getElementById('hn-aud-district').value):'');
+      if(!data.district){ toast('Rayonu siyahıdan seç'); return; }
+      who=data.district+' rayonunun ev sahiblərinə';
+    } else if(data.audience==='listing'){
+      data.listingId=document.getElementById('hn-aud-listing').value;
+      if(!data.listingId){ toast('Elanı seç'); return; }
+      who='seçilmiş elanın sahibinə';
+    }
+  }
+  if(!confirm('Bu bildiriş '+who+' e-poçtla göndəriləcək'+(data.severity==='warning'?' (qırmızı xəbərdarlıq)':'')+'. Davam edək?')) return;
   var b=document.getElementById('hn-send'); b.disabled=true;
-  fbFunctions.httpsCallable('adminPublishNotice')({type:type,title:title,body:body,graceDays:grace}).then(function(res){
+  fbFunctions.httpsCallable('adminPublishNotice')(data).then(function(res){
     toast('Göndərildi: '+res.data.emailed+' ev sahibinə e-poçt');
     document.getElementById('hn-title').value=''; document.getElementById('hn-body').value='';
     loadAdminNotices();
   }).catch(function(e){ toast((e&&e.message)||'Göndərilmədi'); }).finally(function(){ b.disabled=false; });
 }
 function loadAdminNotices(){
+  try{ hnTypeChange(); hnFillListings(); }catch(_e){}
   var el=document.getElementById('hnlist'); if(!el||!fbOnline||!fbFunctions) return;
   el.innerHTML='<p class="note" style="text-align:left">Yüklənir...</p>';
   fbFunctions.httpsCallable('adminNoticeStatus')({}).then(function(res){
@@ -5782,7 +5831,8 @@ function loadAdminNotices(){
     if(!ns.length){ el.innerHTML='<p class="note" style="text-align:left">Hələ bildiriş göndərilməyib.</p>'; return; }
     el.innerHTML=ns.map(function(n){
       var terms=n.type==='terms';
-      return '<div class="split" style="margin-bottom:10px;padding:12px"><div style="font-weight:800">'+(terms?'[Şərt] ':'[Məlumat] ')+esc(n.title)+'</div>'
+      return '<div class="split" style="margin-bottom:10px;padding:12px"><div style="font-weight:800">'+(terms?'[Şərt] ':(n.severity==='warning'?'[Xəbərdarlıq] ':'[Məlumat] '))+esc(n.title)+'</div>'
+        +'<div class="m" style="margin:4px 0">Kimə: '+(n.targetCount!=null?((n.listingTitle?('elan sahibinə ('+esc(n.listingTitle)+')'):(n.audience==='district'?'rayonun ev sahiblərinə':'seçilmiş ev sahiblərinə'))+' · '+n.targetCount+' nəfər'):'bütün ev sahibləri')+'</div>'
         +'<div class="m" style="margin:4px 0">Göndərilib: '+new Date(n.createdAt).toLocaleString('az-AZ')+(terms&&n.deadlineAt?' · Son tarix: '+new Date(n.deadlineAt).toLocaleDateString('az-AZ'):'')+'</div>'
         +'<div style="font-weight:700">Təsdiq edən: '+n.acked+' / '+n.total+'</div>'
         +(n.pending.length?'<details style="margin-top:6px"><summary style="cursor:pointer;font-weight:700">Hələ təsdiq etməyənlər ('+n.pending.length+')</summary><div style="margin-top:6px;font-size:13px">'+n.pending.map(esc).join('<br>')+'</div></details>':'')
